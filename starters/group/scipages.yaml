@@ -1,0 +1,38 @@
+schemaVersion: 1
+kind: group
+name: Grupo Horizonte
+description:
+  pt: Modelagem matemática e computação científica.
+  en: Mathematical modeling and scientific computing.
+affiliation:
+  pt: Universidade Exemplo
+  en: Example University
+url: https://example.org
+base: /
+locales: [pt, en]
+defaultLocale: pt
+theme: classic
+# Ícones opcionais: omitir mantém os padrões; false oculta um ícone.
+# Veja docs/icones.md no SciPages para catálogos e arquivos próprios.
+icons:
+  navigation:
+    home: lucide:house
+    research: lucide:flask-conical
+    team: lucide:users-round
+    publications: lucide:book-open
+  languages:
+    pt: circle-flags:br
+    en: circle-flags:gb
+contentDir: content
+notice:
+  pt: Site de demonstração. Pessoas, instituições e publicações são fictícias.
+  en: Demonstration website. People, institutions and publications are fictional.
+home:
+  body:
+    pt: home.pt.md
+    en: home.en.md
+bibliography:
+  file: references.bib
+  style: apa
+  # Somente estas chaves aparecem em Publicações; outras continuam citáveis.
+  publications: [silva2025, costa2024]

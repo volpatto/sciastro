@@ -1,0 +1,211 @@
+---
+import '../styles/site.css';
+import Icon from './Icon.astro';
+import iconLicenses from '../../docs/icon-licenses.txt?raw';
+import type { BuiltSite, BuiltPage } from '../content.js';
+import { translate, labels, routePath, assetPath } from '../i18n.js';
+interface Props {
+  site: BuiltSite;
+  page: Pick<BuiltPage, 'id' | 'locale' | 'path' | 'title'>;
+}
+const { site, page } = Astro.props;
+const { config } = site;
+const l = labels[page.locale];
+const pages = site.pages.filter((item) => item.locale === page.locale);
+const canonical = new URL(page.path, config.url);
+---
+
+<!doctype html>
+<html lang={page.locale === 'pt' ? 'pt-BR' : 'en'} data-design={config.theme}>
+  <head>
+    <Fragment set:html={`<!--\n${iconLicenses}\n-->`} />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>{page.id === 'home' ? config.name : `${page.title} · ${config.name}`}</title>
+    <meta
+      name="description"
+      content={translate(config.description, page.locale)}
+    />
+    <link rel="canonical" href={canonical} />
+    {page.id !== '404' &&
+      config.locales.map((locale) => (
+        <link
+          rel="alternate"
+          hreflang={locale}
+          href={new URL(routePath(config, page.id, locale), config.url)}
+        />
+      ))}
+    <script is:inline>
+      (() => {
+        try {
+          const preference = localStorage.getItem('scipages-theme');
+          if (preference === 'dark' || preference === 'light')
+            document.documentElement.dataset.theme = preference;
+        } catch {}
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">
+      {l.skip}
+    </a>
+    <header class="site-header">
+      <div class="container masthead">
+        <a class="identity" href={routePath(config, 'home', page.locale)}>
+          {config.logo ? (
+            <img
+              class="brand-logo"
+              src={assetPath(config.base, config.logo.src)}
+              alt={translate(config.logo.alt, page.locale)}
+              width="44"
+              height="44"
+            />
+          ) : (
+            <svg
+              class="brand-mark"
+              width="40"
+              height="40"
+              viewBox="0 0 40 40"
+              fill="none"
+              aria-hidden="true"
+            >
+              <rect
+                x="3"
+                y="3"
+                width="34"
+                height="34"
+                rx="6"
+                stroke="currentColor"
+              />
+              <circle cx="20" cy="20" r="10" stroke="currentColor" />
+              <path
+                d="M3 20h34M20 3v34M8 8l24 24"
+                stroke="currentColor"
+                opacity=".5"
+              />
+            </svg>
+          )}
+          <span>
+            <strong>{config.name}</strong>
+            {config.affiliation && (
+              <small>{translate(config.affiliation, page.locale)}</small>
+            )}
+          </span>
+        </a>
+        <div class="header-tools">
+          {config.locales.length > 1 && (
+            <nav class="languages" aria-label={l.languages}>
+              {config.locales.map((locale) => (
+                <a
+                  href={routePath(
+                    config,
+                    page.id === '404' ? 'home' : page.id,
+                    locale,
+                  )}
+                  lang={locale}
+                  aria-label={locale === 'pt' ? 'Português' : 'English'}
+                  aria-current={page.locale === locale ? 'true' : undefined}
+                >
+                  <Icon
+                    icon={site.languageIcons[locale] ?? false}
+                    base={config.base}
+                  />
+                  <span>{locale.toUpperCase()}</span>
+                </a>
+              ))}
+            </nav>
+          )}
+          <button
+            class="theme-toggle"
+            type="button"
+            hidden
+            aria-label={l.theme}
+            title={l.theme}
+            aria-pressed="false"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="20"
+              height="20"
+              aria-hidden="true"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+            >
+              <circle cx="12" cy="12" r="8" />
+              <path d="M12 4a8 8 0 0 1 0 16Z" fill="currentColor" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="container">
+        <details class="navigation" open>
+          <summary>
+            {l.menu}
+            <span aria-hidden="true">＋</span>
+          </summary>
+          <nav aria-label={l.navigation}>
+            {pages.map((item) => (
+              <a
+                href={item.path}
+                aria-current={item.id === page.id ? 'page' : undefined}
+              >
+                <Icon icon={item.icon} base={config.base} />
+                <span>{item.title}</span>
+              </a>
+            ))}
+          </nav>
+        </details>
+      </div>
+    </header>
+    <main id="main" class="container">
+      <slot />
+    </main>
+    <footer class="site-footer container">
+      <div>
+        <strong>{config.name}</strong>
+        {config.notice && <p>{translate(config.notice, page.locale)}</p>}
+      </div>
+      <div class="footer-links">
+        {config.links.map((link) => (
+          <a href={link.url}>
+            {link.label}
+            <span aria-hidden="true"> ↗</span>
+          </a>
+        ))}
+        <a href="https://github.com/volpatto/scipages">{l.built}</a>
+      </div>
+    </footer>
+    <script>
+      const root = document.documentElement;
+      const button = document.querySelector<HTMLButtonElement>('.theme-toggle');
+      const system = matchMedia('(prefers-color-scheme: dark)');
+      const isDark = () =>
+        root.dataset.theme ? root.dataset.theme === 'dark' : system.matches;
+      if (button) {
+        button.hidden = false;
+        const sync = () =>
+          button.setAttribute('aria-pressed', String(isDark()));
+        sync();
+        system.addEventListener('change', sync);
+        button.addEventListener('click', () => {
+          root.dataset.theme = isDark() ? 'light' : 'dark';
+          try {
+            localStorage.setItem('scipages-theme', root.dataset.theme);
+          } catch {}
+          sync();
+        });
+      }
+      const menu = document.querySelector<HTMLDetailsElement>('.navigation');
+      const desktop = matchMedia('(min-width: 760px)');
+      if (menu) {
+        const syncMenu = () => {
+          menu.open = desktop.matches;
+        };
+        syncMenu();
+        desktop.addEventListener('change', syncMenu);
+      }
+    </script>
+  </body>
+</html>

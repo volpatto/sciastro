@@ -1,0 +1,33 @@
+---
+import type { BuiltIcon } from '../icons.js';
+import { assetPath } from '../i18n.js';
+interface Props {
+  icon: BuiltIcon;
+  base: string;
+}
+const { icon, base } = Astro.props;
+---
+
+{icon &&
+  (icon.kind === 'svg' ? (
+    <svg
+      class="ui-icon"
+      data-icon={icon.name}
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox={icon.viewBox}
+      width="20"
+      height="20"
+      aria-hidden="true"
+      focusable="false"
+      set:html={icon.body}
+    />
+  ) : (
+    <img
+      class="ui-icon"
+      src={assetPath(base, icon.src)}
+      alt=""
+      aria-hidden="true"
+      width="20"
+      height="20"
+    />
+  ))}

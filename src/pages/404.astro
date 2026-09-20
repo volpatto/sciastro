@@ -1,0 +1,23 @@
+---
+import site from 'virtual:scipages';
+import Layout from '../components/Layout.astro';
+import { labels, routePath } from '../i18n.js';
+const locale = site.config.defaultLocale;
+const l = labels[locale];
+const page = {
+  id: '404',
+  locale,
+  path: `${site.config.base}404.html`,
+  title: l.notFound,
+};
+---
+
+<Layout site={site} page={page}>
+  <section class="page-heading">
+    <p class="eyebrow">404</p>
+    <h1>{l.notFound}</h1>
+    <p>
+      <a href={routePath(site.config, 'home', locale)}>{l.back} →</a>
+    </p>
+  </section>
+</Layout>

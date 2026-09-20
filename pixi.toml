@@ -1,0 +1,68 @@
+[workspace]
+name = "scipages"
+channels = ["conda-forge"]
+platforms = ["osx-arm64", "osx-64", "linux-64", "win-64"]
+requires-pixi = ">=0.72.2"
+
+[dependencies]
+nodejs = "24.*"
+pnpm = "==11.19.0"
+
+[tasks.setup]
+cmd = "pnpm install --frozen-lockfile"
+description = "Install dependencies using the lockfile"
+
+[tasks.build]
+cmd = "pnpm build"
+depends-on = ["setup"]
+description = "Compile the SciPages package"
+
+[tasks.verify]
+cmd = "pnpm verify"
+depends-on = ["setup"]
+description = "Check types, tests, examples and installed consumers"
+
+[tasks.dev]
+cmd = "pnpm dev"
+depends-on = ["build"]
+description = "Preview the research-group example"
+
+[tasks.test]
+cmd = "pnpm build && pnpm test"
+depends-on = ["setup"]
+description = "Compile and run content, bibliography and icon tests"
+
+[tasks.browser-install]
+cmd = "pnpm exec playwright install chromium"
+depends-on = ["setup"]
+description = "Install the browser used by automated tests"
+
+[tasks.test-browser]
+cmd = "pnpm test:browser"
+depends-on = ["setup"]
+description = "Build examples and test the interface in Chromium"
+
+[tasks.verify-all]
+cmd = "pnpm verify:all"
+depends-on = ["setup"]
+description = "Run all checks, including browser tests"
+
+[tasks.dev-individual]
+cmd = "pnpm dev:individual"
+depends-on = ["build"]
+description = "Preview the individual website example"
+
+[tasks.dev-stop]
+cmd = "pnpm --filter scipages-example-group exec astro dev stop"
+depends-on = ["setup"]
+description = "Stop the group preview"
+
+[tasks.dev-individual-stop]
+cmd = "pnpm --filter scipages-example-individual exec astro dev stop"
+depends-on = ["setup"]
+description = "Stop the individual preview"
+
+[tasks.pack]
+cmd = "pnpm pack --pack-destination artifacts"
+depends-on = ["setup"]
+description = "Create an installable package without publishing to npm"

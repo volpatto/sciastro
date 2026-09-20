@@ -1,0 +1,58 @@
+name: Verify SciPages
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    name: Package (${{ matrix.os }})
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install locked Pixi environment
+        uses: prefix-dev/setup-pixi@v0.10.2
+        with:
+          pixi-version: v0.72.2
+          locked: true
+          cache: true
+      - name: Types, tests, builds and installed consumers
+        run: pixi run --locked verify
+  browser:
+    name: Browser (Chromium)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install locked Pixi environment
+        uses: prefix-dev/setup-pixi@v0.10.2
+        with:
+          pixi-version: v0.72.2
+          locked: true
+          cache: true
+      - name: Install locked package dependencies
+        run: pixi run --locked setup
+      - name: Install Chromium and system dependencies
+        run: pixi run --locked pnpm exec playwright install --with-deps chromium
+      - name: Test desktop, mobile and navigation without JavaScript
+        run: pixi run --locked test-browser
+      - name: Save test report and failure traces
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-test-report
+          path: .test-output/
+          include-hidden-files: true
+          retention-days: 14
+          if-no-files-found: ignore

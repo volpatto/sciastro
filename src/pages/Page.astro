@@ -1,0 +1,225 @@
+---
+import site from 'virtual:scipages';
+import type { BuiltPage } from '../content.js';
+import Layout from '../components/Layout.astro';
+import References from '../components/References.astro';
+import MemberCard from '../components/MemberCard.astro';
+import { labels, translate, routePath, assetPath } from '../i18n.js';
+export function getStaticPaths() {
+  return site.pages.map((page) => ({
+    params: {
+      scipage:
+        page.path.slice(site.config.base.length).replace(/\/$/, '') ||
+        undefined,
+    },
+    props: { page },
+  }));
+}
+interface Props {
+  page: BuiltPage;
+}
+const { page } = Astro.props;
+const { config, members } = site;
+const l = labels[page.locale];
+const faculty = members.filter(
+  (person) => person.status === 'active' && person.role === 'faculty',
+);
+const researchers = members.filter(
+  (person) => person.status === 'active' && person.role === 'researcher',
+);
+const alumni = members.filter((person) => person.status === 'alumni');
+const groups = [
+  { id: 'faculty', title: l.faculty, members: faculty },
+  { id: 'researchers', title: l.researchers, members: researchers },
+];
+---
+
+<Layout site={site} page={page}>
+  {page.id === 'home' ? (
+    <>
+      <section class="home-introduction">
+        <div class="intro-copy">
+          <p class="eyebrow">
+            {page.title}
+            {config.affiliation && (
+              <>
+                {' '}
+                <span aria-hidden="true">/</span>{' '}
+                {translate(config.affiliation, page.locale)}
+              </>
+            )}
+          </p>
+          <h1>{config.name}</h1>
+          <p class="standfirst">{translate(config.description, page.locale)}</p>
+          <div class="prose overview" set:html={page.html} />
+        </div>
+        <aside class="research-note" aria-label={l.areas}>
+          <svg viewBox="0 0 240 170" fill="none" aria-hidden="true">
+            <g stroke="currentColor" opacity=".2">
+              <path d="M20 30h200M20 65h200M20 100h200M20 135h200M50 15v140M85 15v140M120 15v140M155 15v140M190 15v140" />
+            </g>
+            <g stroke="currentColor" stroke-width="1.5">
+              <ellipse
+                cx="120"
+                cy="85"
+                rx="80"
+                ry="27"
+                transform="rotate(-25 120 85)"
+              />
+              <ellipse
+                cx="120"
+                cy="85"
+                rx="80"
+                ry="27"
+                transform="rotate(25 120 85)"
+              />
+              <circle cx="120" cy="85" r="5" fill="currentColor" />
+            </g>
+          </svg>
+          <p>
+            {config.kind === 'group'
+              ? page.locale === 'pt'
+                ? 'Pesquisa, formação e colaboração.'
+                : 'Research, education and collaboration.'
+              : page.locale === 'pt'
+                ? 'Pesquisa e formação acadêmica.'
+                : 'Research and academic education.'}
+          </p>
+        </aside>
+      </section>
+      {page.areas.length > 0 && (
+        <section class="areas-section" aria-labelledby="areas-title">
+          <div class="section-heading">
+            <h2 id="areas-title">{l.areas}</h2>
+            <a href={routePath(config, 'research', page.locale)}>
+              {l.research} <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+          <div class="area-grid">
+            {page.areas.map((area, index) => (
+              <a
+                class="area-card"
+                href={`${routePath(config, 'research', page.locale)}#${area.id}`}
+              >
+                <span class="area-number" aria-hidden="true">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+                <h3>{area.title}</h3>
+                <p>{area.summary}</p>
+                <span class="card-link">
+                  {l.details}
+                  <span aria-hidden="true"> →</span>
+                </span>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
+    </>
+  ) : (
+    <>
+      <header class="page-heading">
+        <p class="eyebrow">{config.name}</p>
+        <h1>{page.title}</h1>
+      </header>
+      {page.id === 'research' && (
+        <div class="research-list">
+          {page.areas.map((area) => (
+            <section class="research-section" id={area.id}>
+              <div>
+                <h2>{area.title}</h2>
+                <p class="section-summary">{area.summary}</p>
+                <div class="prose" set:html={area.html} />
+              </div>
+              {area.image && (
+                <figure>
+                  <img
+                    src={assetPath(config.base, area.image.src)}
+                    alt={area.image.alt}
+                    loading="lazy"
+                  />
+                </figure>
+              )}
+            </section>
+          ))}
+        </div>
+      )}
+      {page.id === 'team' && (
+        <div class="team-sections">
+          {groups
+            .filter((group) => group.members.length)
+            .map((group) => (
+              <section id={group.id} class="team-section">
+                <h2>{group.title}</h2>
+                <div class="member-grid">
+                  {group.members.map((member) => (
+                    <MemberCard
+                      member={member}
+                      locale={page.locale}
+                      config={config}
+                    />
+                  ))}
+                </div>
+              </section>
+            ))}
+          {members.some(
+            (member) => member.role === 'student' && member.status === 'active',
+          ) && (
+            <section id="students" class="team-section">
+              <h2>{l.students}</h2>
+              {config.studentLevels.map((level) => {
+                const students = members.filter(
+                  (member) =>
+                    member.status === 'active' &&
+                    member.role === 'student' &&
+                    member.level === level.id,
+                );
+                return (
+                  students.length > 0 && (
+                    <section class="student-level" id={`level-${level.id}`}>
+                      <h3>{translate(level.label, page.locale)}</h3>
+                      <div class="member-grid">
+                        {students.map((member) => (
+                          <MemberCard
+                            member={member}
+                            locale={page.locale}
+                            config={config}
+                          />
+                        ))}
+                      </div>
+                    </section>
+                  )
+                );
+              })}
+            </section>
+          )}
+          {alumni.length > 0 && (
+            <section id="alumni" class="team-section">
+              <h2>{l.alumni}</h2>
+              <div class="member-grid">
+                {alumni.map((member) => (
+                  <MemberCard
+                    member={member}
+                    locale={page.locale}
+                    config={config}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
+      )}
+      {page.html && <div class="prose content-page" set:html={page.html} />}
+      {page.id === 'publications' && !page.references.length && (
+        <p>{l.emptyReferences}</p>
+      )}
+    </>
+  )}
+  <References
+    references={page.references}
+    locale={page.locale}
+    keys={site.bibliographyKeys}
+    style={config.bibliography?.style ?? 'apa'}
+    heading={page.id !== 'publications'}
+  />
+</Layout>

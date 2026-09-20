@@ -1,0 +1,9 @@
+node_modules/
+.pixi/
+dist/
+pixi.lock
+pnpm-lock.yaml
+examples/*/dist/
+.astro/
+.test-output/
+artifacts/

@@ -1,0 +1,9 @@
+node_modules/
+.pixi/
+dist/
+.astro/
+.sites-runtime/
+.test-output/
+artifacts/
+*.tgz
+.DS_Store

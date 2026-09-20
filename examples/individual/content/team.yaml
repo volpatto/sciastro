@@ -1,0 +1,37 @@
+- id: clara-santos
+  name: Clara Santos
+  role: student
+  status: active
+  level: undergraduate
+  startYear: 2025
+  topic:
+    pt: Verificação de implementações numéricas
+    en: Verification of numerical implementations
+- id: pedro-lima
+  name: Pedro Lima
+  role: student
+  status: active
+  level: masters
+  startYear: 2025
+  topic:
+    pt: Equilíbrio de fases
+    en: Phase equilibria
+- id: beatriz-souza
+  name: Beatriz Souza
+  role: student
+  status: active
+  level: phd
+  startYear: 2024
+  topic:
+    pt: Modelos híbridos com informação física
+    en: Physics-informed hybrid models
+- id: rafael-alves
+  name: Rafael Alves
+  role: student
+  status: alumni
+  level: masters
+  startYear: 2022
+  endYear: 2024
+  topic:
+    pt: Estudo demonstrativo de métodos numéricos
+    en: Demonstration study of numerical methods

@@ -1,0 +1,83 @@
+{
+  "name": "scipages",
+  "version": "0.1.0-alpha.0",
+  "description": "Academic websites from YAML, Markdown and BibTeX, powered by Astro.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Diego Tavares Volpatto",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/volpatto/scipages.git"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "pnpm@11.19.0",
+  "files": [
+    "dist",
+    "starters",
+    "README.md",
+    "LICENSE",
+    "docs"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./content": {
+      "types": "./dist/content.d.ts",
+      "import": "./dist/content.js"
+    },
+    "./bibliography": {
+      "types": "./dist/bibliography.d.ts",
+      "import": "./dist/bibliography.js"
+    },
+    "./page.astro": "./dist/pages/Page.astro",
+    "./404.astro": "./dist/pages/404.astro"
+  },
+  "bin": {
+    "scipages": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && node scripts/copy-assets.mjs",
+    "check": "tsc --noEmit -p tsconfig.build.json && astro check",
+    "test": "node --test tests/*.test.mjs",
+    "test:package": "node scripts/test-package.mjs",
+    "test:browser": "pnpm build && pnpm build:examples && playwright test",
+    "test:browser:run": "playwright test",
+    "verify:all": "pnpm verify && pnpm test:browser:run",
+    "build:examples": "pnpm --filter scipages-example-group build && pnpm --filter scipages-example-individual build",
+    "dev": "pnpm --filter scipages-example-group dev",
+    "dev:individual": "pnpm --filter scipages-example-individual dev",
+    "verify": "pnpm check && pnpm build && pnpm test && pnpm build:examples && pnpm test:package",
+    "prepack": "pnpm build",
+    "format": "prettier --write src scripts tests .github package.json tsconfig*.json"
+  },
+  "peerDependencies": {
+    "astro": "^7.3.3"
+  },
+  "dependencies": {
+    "@citation-js/core": "0.9.0",
+    "@citation-js/plugin-bibtex": "0.9.0",
+    "@citation-js/plugin-csl": "0.9.0",
+    "@iconify-json/circle-flags": "1.2.11",
+    "@iconify-json/lucide": "1.2.134",
+    "@iconify/utils": "3.1.7",
+    "markdown-it": "15.0.2",
+    "sanitize-html": "^2.17.0",
+    "yaml": "^2.9.1",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@playwright/test": "1.63.0",
+    "@types/markdown-it": "^14.1.2",
+    "@types/node": "^24.13.6",
+    "@types/sanitize-html": "^2.16.0",
+    "astro": "7.3.3",
+    "prettier": "^3.9.8",
+    "prettier-plugin-astro": "^1.0.1",
+    "typescript": "^5.9.3"
+  }
+}

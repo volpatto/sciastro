@@ -1,0 +1,14 @@
+{
+  "name": "scipages-example-group",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "astro build",
+    "dev": "astro dev --host 127.0.0.1 --port 4340",
+    "preview": "astro preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "scipages": "workspace:*",
+    "astro": "7.3.3"
+  }
+}

@@ -1,0 +1,37 @@
+---
+import type { Reference } from '../bibliography.js';
+import type { Locale } from '../schema.js';
+import { labels } from '../i18n.js';
+interface Props {
+  references: Reference[];
+  locale: Locale;
+  keys: string[];
+  style: 'apa' | 'vancouver';
+  heading?: boolean;
+}
+const { references, locale, keys, style, heading = true } = Astro.props;
+---
+
+{references.length > 0 && (
+  <section
+    class="references"
+    aria-label={labels[locale].references}
+    data-bibliography
+  >
+    {heading && <h2>{labels[locale].references}</h2>}
+    <ol class:list={['reference-list', { numeric: style === 'vancouver' }]}>
+      {references.map((entry) => (
+        <li id={entry.id} value={keys.indexOf(entry.key) + 1}>
+          <div class="reference-text" set:html={entry.html} />
+          <div class="reference-meta">
+            <code>{entry.key}</code>
+            {entry.doi && (
+              <a href={`https://doi.org/${encodeURI(entry.doi)}`}>DOI ↗</a>
+            )}
+            {entry.url && <a href={entry.url}>URL ↗</a>}
+          </div>
+        </li>
+      ))}
+    </ol>
+  </section>
+)}

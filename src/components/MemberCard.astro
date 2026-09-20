@@ -1,0 +1,58 @@
+---
+import type { Member, Locale, SiteConfig } from '../schema.js';
+import { assetPath, translate, labels } from '../i18n.js';
+interface Props {
+  member: Member;
+  locale: Locale;
+  config: SiteConfig;
+}
+const { member, locale, config } = Astro.props;
+const initials = member.name
+  .split(/\s+/)
+  .filter(Boolean)
+  .map((part) => part[0])
+  .slice(0, 2)
+  .join('');
+const level = config.studentLevels.find((entry) => entry.id === member.level);
+---
+
+<article class="member-card" id={`member-${member.id}`}>
+  {member.photo ? (
+    <img
+      class="avatar"
+      src={assetPath(config.base, member.photo.src)}
+      alt={translate(member.photo.alt, locale)}
+      width="60"
+      height="60"
+      loading="lazy"
+    />
+  ) : (
+    <span class="avatar initials" aria-hidden="true">
+      {initials}
+    </span>
+  )}
+  <div class="member-description">
+    <h3>{member.name}</h3>
+    {member.affiliation && (
+      <p class="member-affiliation">{translate(member.affiliation, locale)}</p>
+    )}
+    {member.topic && <p>{translate(member.topic, locale)}</p>}
+    {member.status === 'alumni' && level && (
+      <p class="member-level">{translate(level.label, locale)}</p>
+    )}
+    {member.startYear && (
+      <small>
+        {member.endYear
+          ? `${member.startYear}–${member.endYear}`
+          : `${labels[locale].since} ${member.startYear}`}
+      </small>
+    )}
+    {member.links.length > 0 && (
+      <div class="member-links">
+        {member.links.map((link) => (
+          <a href={link.url}>{link.label} ↗</a>
+        ))}
+      </div>
+    )}
+  </div>
+</article>

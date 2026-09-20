@@ -1,0 +1,31 @@
+# Resumos curtos aparecem nos cards. Os detalhes ficam nos arquivos Markdown.
+- id: numerical-methods
+  title:
+    pt: Métodos numéricos
+    en: Numerical methods
+  summary:
+    pt: Discretização e solução de modelos matemáticos para fenômenos de transporte.
+    en: Discretization and solution of mathematical models for transport phenomena.
+  body:
+    pt: research/numerical.pt.md
+    en: research/numerical.en.md
+- id: scientific-ml
+  title:
+    pt: Aprendizagem de máquina científica
+    en: Scientific machine learning
+  summary:
+    pt: Modelos que combinam dados, conhecimento físico e simulação computacional.
+    en: Models combining data, physical knowledge and computational simulation.
+  body:
+    pt: research/sciml.pt.md
+    en: research/sciml.en.md
+- id: thermodynamics
+  title:
+    pt: Termodinâmica computacional
+    en: Computational thermodynamics
+  summary:
+    pt: Equilíbrio de fases e propriedades de misturas, com atenção à consistência dos modelos.
+    en: Phase equilibria and mixture properties, with attention to model consistency.
+  body:
+    pt: research/thermo.pt.md
+    en: research/thermo.en.md

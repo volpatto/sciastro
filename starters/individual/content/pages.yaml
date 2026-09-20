@@ -1,0 +1,15 @@
+# Páginas adicionais usam o mesmo motor de Markdown e citações.
+- slug: software
+  icon: lucide:code-xml
+  title: Software
+  body:
+    pt: software.pt.md
+    en: software.en.md
+- slug: contato
+  icon: lucide:mail
+  title:
+    pt: Contato
+    en: Contact
+  body:
+    pt: contact.pt.md
+    en: contact.en.md

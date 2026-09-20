@@ -1,0 +1,59 @@
+# role: faculty, researcher ou student. status: active ou alumni.
+# Níveis padrão: undergraduate, masters, phd e postdoc.
+- id: ana-silva
+  name: Ana Silva
+  role: faculty
+  status: active
+  affiliation:
+    pt: Universidade Exemplo · Departamento de Matemática
+    en: Example University · Department of Mathematics
+  topic:
+    pt: Métodos numéricos e computação científica
+    en: Numerical methods and scientific computing
+- id: lucas-costa
+  name: Lucas Costa
+  role: faculty
+  status: active
+  affiliation:
+    pt: Instituto Exemplo · Engenharia
+    en: Example Institute · Engineering
+  topic:
+    pt: Termodinâmica e modelos de misturas
+    en: Thermodynamics and mixture models
+- id: clara-santos
+  name: Clara Santos
+  role: student
+  status: active
+  level: undergraduate
+  startYear: 2025
+  topic:
+    pt: Verificação de implementações numéricas
+    en: Verification of numerical implementations
+- id: pedro-lima
+  name: Pedro Lima
+  role: student
+  status: active
+  level: masters
+  startYear: 2025
+  topic:
+    pt: Equilíbrio de fases
+    en: Phase equilibria
+- id: beatriz-souza
+  name: Beatriz Souza
+  role: student
+  status: active
+  level: phd
+  startYear: 2024
+  topic:
+    pt: Modelos híbridos com informação física
+    en: Physics-informed hybrid models
+- id: rafael-alves
+  name: Rafael Alves
+  role: student
+  status: alumni
+  level: masters
+  startYear: 2022
+  endYear: 2024
+  topic:
+    pt: Estudo demonstrativo de métodos numéricos
+    en: Demonstration study of numerical methods
