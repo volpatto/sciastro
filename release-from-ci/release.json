@@ -1,0 +1,11 @@
+{
+  "version": "0.1.0-alpha.1",
+  "tag": "v0.1.0-alpha.1",
+  "channel": "next",
+  "prerelease": true,
+  "name": "sciastro",
+  "notes": "- Initial alpha package for individual and research-group websites using YAML,\n  Markdown and BibTeX, with Portuguese/English content and light/dark modes.\n- Automatic academic pages, team and alumni grouping, citations, configurable\n  icons, composed sections, custom components and classic/modern/LNCC themes.\n- CLI scaffolding, content checks and independently installed package tests.\n- MkDocs documentation with individual/group tutorials, API reference and a\n  dedicated locked Pixi environment.\n- Tag-triggered releases with version consistency checks, cross-platform tests,\n  npm trusted publishing and documentation deployment tied to the release.\n\nThis is an initial alpha. Configuration and extension APIs may change; subsequent\nincompatible changes will include migration notes. The content schema is version 1.",
+  "commit": "66bc47dfe76580d0427d20396be25e9dba834603",
+  "archive": "artifacts/sciastro-0.1.0-alpha.1.tgz",
+  "integrity": "sha512-2BQYLuKY+ca4Lh31QSAQw2d9nKIlggACmqQo5F5vKDWoQeEBRDW+QfWMVD1liQl6sH5hz0WK696pDRJKbhGzvQ=="
+}

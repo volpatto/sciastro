@@ -1,6 +1,7 @@
 # SciAstro
 
 [![Tests](https://github.com/volpatto/sciastro/actions/workflows/ci.yml/badge.svg)](https://github.com/volpatto/sciastro/actions/workflows/ci.yml)
+[![npm version](https://img.shields.io/npm/v/sciastro/next?logo=npm&label=npm)](https://www.npmjs.com/package/sciastro)
 [![Astro](https://img.shields.io/badge/Astro-BC52EE?logo=astro&logoColor=white)](https://astro.build/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Pixi](https://img.shields.io/badge/Pixi-41B3A3)](https://pixi.sh/)
@@ -13,10 +14,10 @@ SciAstro supplies the pages, themes and validation. Each website owns its conten
 and public assets. Astro generates a static site suitable for GitHub Pages or any
 static web server.
 
-**Alpha software.** The package can be built and installed locally
-as a `.tgz` archive. Until the first npm publication, use that local installation
-path. Configuration may change
-during the alpha period; incompatible changes should include migration instructions.
+**Alpha software.** SciAstro is available on [npm](https://www.npmjs.com/package/sciastro).
+Use `sciastro@next` for the current alpha release. Local `.tgz` archives remain
+available for testing unpublished changes. Configuration may change during the
+alpha period; incompatible changes should include migration instructions.
 
 The package documentation is in English. The example websites intentionally keep
 Portuguese as their default language and include English translations. You can
@@ -42,9 +43,9 @@ production build in `site/`. The environment supplies Python, MkDocs and Materia
 it is separate from the Node.js/pnpm package-development environment. See
 [documentation maintenance](docs/development/documentation.md).
 
-The documentation URL is [volpatto.github.io/sciastro](https://volpatto.github.io/sciastro/),
-available after the first successful release deployment. CI builds docs on every
-push/PR; only releases update the public site.
+Read the published documentation at
+[volpatto.github.io/sciastro](https://volpatto.github.io/sciastro/). CI builds docs
+on every push/PR; only releases update the public site.
 
 See [Pages, themes and extensions](docs/customization.md) for complete page composition,
 LNCC Theme settings, custom CSS and component overrides.
@@ -73,6 +74,26 @@ visitors' saved theme preferences across the rename.
 
 The examples contain **fictional people, institutions and publications**, clearly
 identified in the footer. They are demonstration websites, not real academic profiles.
+
+## Create a website from npm
+
+With Node.js 24 and pnpm 11.19.0 installed:
+
+```sh
+pnpm dlx sciastro@next init my-site --kind individual --theme modern
+cd my-site
+pnpm install
+pnpm dev
+```
+
+Use `--kind group` for a research-group website and `--theme lncc` for the
+LNCC Theme. The generator pins the website's SciAstro dependency to the release
+used to create it. Open the preview URL printed in the terminal, normally
+`http://127.0.0.1:4321/`.
+
+A checkout of this repository is not required. For installation with Pixi,
+including Node.js and pnpm, follow the [installation guide](docs/getting-started.md).
+The development environment below is for working on SciAstro itself.
 
 ## Install the development environment
 
