@@ -76,17 +76,109 @@ package contents merely to reserve the name.
 
 ## Prepare a release
 
-From a development branch in the SciAstro repository:
+Use a dedicated preparation PR after merging the changes intended for the release.
+Its branch name and PR title are arbitrary; a descriptive title such as
+`Prepare Release vVERSION` is useful but does not trigger publication.
+
+Start from an up-to-date `main`:
+
+```sh
+git switch main
+git pull --ff-only origin main
+git switch -c prepare-release
+```
+
+Choose an unused branch name; `prepare-release` above is just an example. If you
+already created a preparation branch, continue there. It must include the current
+`origin/main` before generating the release files.
 
 ```sh
 pixi install --locked
-pixi run --locked version-set VERSION
+pixi run --locked release-fetch
+pixi run --locked changelog-preview
+pixi run --locked release-prepare VERSION
 ```
 
-Replace `VERSION` with the version intended for the next release. This task updates
-`package.json` and inserts a new `CHANGELOG.md` heading;
-replace the TODO with changes and migration instructions. It does not commit,
-create a tag, update dependencies or publish anything.
+Replace `VERSION` with the intended release version **without** the leading `v`.
+It must be greater than the previous release version and must not already have a
+tag, including a local tag. The locked development environment supplies
+[git-cliff](https://git-cliff.org/); no separate installation is needed.
+
+| Task | Effect |
+| --- | --- |
+| `release-fetch` | Fetches `origin/main` and tags, leaving the working branch and files alone |
+| `changelog-preview` | Prints notes for the next release without editing files |
+| `release-prepare VERSION` | Updates `package.json` and prepends or regenerates the matching `CHANGELOG.md` entry |
+| `version-set VERSION` | Alias for `release-prepare VERSION` |
+| `version-check` | Validates the package version and completed changelog |
+
+Run these through `pixi run --locked`. Fetching is explicit: preview and preparation
+use the **locally stored `origin/main`**, work offline and do not contact GitHub's
+API. Always fetch first to avoid using stale references. Preparation does not
+commit, create a tag, update dependencies or publish anything.
+
+### Which commits enter the changelog?
+
+The script walks the first-parent history of `origin/main` to find its nearest
+release tag in canonical `vSEMVER` format, including prerelease tags. It selects
+by history, not tag creation date. If a commit has multiple release tags, the
+highest version wins. Tags on unmerged branches and malformed tags are ignored.
+
+git-cliff receives the explicit range **`last-release-commit..origin/main-commit`**:
+the tagged commit is excluded and subsequent commits reachable from `origin/main`
+are included. Neither local `main` nor the preparation branch's `HEAD` is used as
+the endpoint. With squash merging, each merged PR contributes its squash commit;
+unmerged preparation commits stay out even if their messages start with `feat:`.
+The generated block records the source tag and exact main commit in an HTML comment.
+
+`cliff.toml` controls grouping and formatting. Prefixes such as `feat:`, `fix:`,
+`docs:`, `test:` and `refactor:` group the changes, and breaking changes are marked.
+Conventional Commits are optional: messages without a recognized prefix appear
+under **Other changes**. Notes include commit links; no PR labels or API tokens
+are required. The generated summary uses commit subjects, so review it and add
+user-facing explanations or migration instructions where needed.
+
+Generation requires full Git history and an existing release tag. For a shallow
+clone, run `git fetch --unshallow` and then `release-fetch`. A repository with no
+release tag needs a manually written first release: use
+`pixi run --locked node scripts/version.mjs set VERSION`, complete the changelog
+placeholder and follow the same checks and tag workflow. If that version is already
+set, edit its existing entry. Normal releases use `release-prepare`.
+
+### Review and regenerate
+
+The new entry contains these boundaries:
+
+```markdown
+<!-- sciastro:generated:start -->
+...generated notes...
+<!-- sciastro:generated:end -->
+
+### Migration
+
+Add reviewed instructions here when needed.
+```
+
+Repeat `release-prepare VERSION` to refresh the **same** version. Only the marked
+block is replaced; handwritten notes outside it, within that release entry, and
+previous release entries are preserved. Keep both markers. Edits inside the block
+will be overwritten on regeneration. Changing the target version during an ongoing
+preparation requires deliberately restoring its package/changelog changes first,
+so an abandoned version is not left behind as a fictitious past release.
+
+If another PR lands on `main` before the preparation PR is merged:
+
+1. Run `pixi run --locked release-fetch` again.
+2. Merge or rebase `origin/main` into the preparation branch, resolving any conflicts.
+3. Repeat `pixi run --locked release-prepare VERSION`, review and commit the updated notes.
+
+The preparation task rejects a branch that does not include the fetched main
+commit. CI checks version consistency but does not fetch new commits to rewrite
+your changelog; keeping the preparation current remains part of the review.
+Keep feature changes in their own PRs, merged before preparation: code introduced
+only in the preparation PR is intentionally absent from its automatic notes.
+
+Before merging the preparation PR, run:
 
 ```sh
 pixi run --locked version-check
@@ -102,7 +194,11 @@ previous green PR alone is not sufficient to publish.
 
 ### Push the tag
 
-Once the version change is on `main`:
+Once the preparation PR is merged into `main`, synchronize and tag its resulting
+commit. Do not create the tag on the preparation branch before the merge, and do
+not regenerate the changelog after merging: the reviewed notes are already committed.
+Tag before merging further changes; otherwise those changes would be released
+without appearing in the prepared notes.
 
 ```sh
 git switch main

@@ -34,7 +34,7 @@ export function releaseNotes(changelog, version) {
   const notes = changelog
     .slice(headings[0].index + headings[0][0].length, headings[1]?.index)
     .trim();
-  if (!notes || /\bTODO\b/.test(notes))
+  if (!notes || /^\s*-\s+TODO(?:\s|:|$)/m.test(notes))
     throw new Error('Write release notes in CHANGELOG.md before releasing.');
   return notes;
 }
