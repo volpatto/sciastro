@@ -246,6 +246,7 @@ export async function loadSite(
     config.locales.map((locale) => [locale, languageIcon(config, locale)]),
   );
   if (config.logo) await checkImage(root, config.logo.src);
+  if (config.home?.photo) await checkImage(root, config.home.photo.src);
   if (config.people?.avatarFallback)
     await checkImage(root, config.people.avatarFallback.src);
   for (const area of research) {

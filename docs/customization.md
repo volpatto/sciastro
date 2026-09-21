@@ -143,6 +143,70 @@ category can be added without repeating any bibliographic fields. Fully manual
 records still use `title`, `authors`, `year`, `journal`, `citation` and `doi`;
 they do not automatically create BibTeX keys.
 
+## Profile photographs
+
+About pages can display a circular or rectangular portrait in every built-in
+theme, in light and dark modes and on mobile. Put the original file in
+`public/images/portrait.jpg`; no image editor or custom CSS is needed.
+
+For **automatic pages**, add `photo` alongside the existing `home.body` in
+`sciastro.yaml`:
+
+```yaml
+home:
+  body:
+    pt: home.pt.md
+    en: home.en.md
+  photo:
+    src: /images/portrait.jpg
+    alt:
+      pt: Retrato de Ana Silva
+      en: Portrait of Ana Silva
+    shape: circle
+    position: [50, 35]
+```
+
+For **composed pages** (`pageFiles`), configure the `image` of the `profile`
+section instead. `home.photo` does not change a composed page:
+
+```yaml
+sections:
+  - type: profile
+    title: Ana Silva
+    text: I work on numerical methods and scientific computing.
+    image:
+      src: /images/portrait.jpg
+      alt: Portrait of Ana Silva
+      shape: circle
+      position: [50, 35]
+      caption: Photograph by Example Photographer
+```
+
+| Field | Behavior |
+| --- | --- |
+| `src` | Required path from `public/`, starting with `/`; the deployment base is added automatically |
+| `alt` | Required description; use `pt`/`en` when it should change with the language |
+| `shape` | `circle` fills a square frame and clips its corners; `rectangle` (default) preserves the original aspect ratio |
+| `position` | Optional `[horizontal, vertical]` percentages from 0 to 100; default `[50, 50]`. Adjusts framing within a circle, like CSS `object-position` |
+| `width`, `height` | Optional positive integer dimensions of the original file, not the displayed circle's size |
+
+For a tall photograph, a lower vertical percentage such as `[50, 35]` keeps more
+of its upper portion visible. Framing only moves along an axis if some of the
+image overflows the frame. The original file is never changed or stretched.
+
+Omit `photo` to keep the automatic page's existing illustration, or omit `image`
+for a composed profile without a photograph. Omit `shape` (or set `rectangle`)
+to retain the existing rectangular presentation. The individual example shows
+a circular portrait using a fictional illustration; starters still omit the photo.
+
+Composed images also support `caption`, source `links`, and `enlarge: true` as
+described above. Captions and credits stay outside the circle; enlargement opens
+the original file. The same optional `shape` and `position` fields are available
+on other composed figures. When using `viewBox`, adjust the crop through that
+window instead of `position`; a circular SVG window is centered and fills the
+frame. Profile photographs are independent of [team portraits and their fallback
+symbols](conteudo.md#portraits-and-fallback-symbols).
+
 ## LNCC Theme
 
 Select `theme: lncc`, or start with `sciastro init my-site --kind individual --theme lncc`. This theme adapts Diego Volpatto's MIT-licensed website design:

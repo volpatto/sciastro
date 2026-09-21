@@ -22,6 +22,7 @@ a value for every enabled locale: `{ pt: Pesquisa, en: Research }`.
 | `defaultLocale` | `pt` | Must be included in `locales` |
 | `contentDir` | `content` | Directory inside the website root |
 | `home.body` | Required in automatic mode | Localized Markdown filename relative to `contentDir` |
+| `home.photo` | No portrait | Optional automatic About/Home image: `src`, localized `alt`, `shape: rectangle` (default) or `circle`, optional `position: [x, y]` percentages and original `width`/`height`. For composed pages, use `profile.image`; see [profile photographs](../customization.md#profile-photographs) |
 | `pageFiles` | Optional nonempty list | YAML page files relative to `contentDir`; replaces automatic pages |
 | `navigation` | Optional list | Existing page IDs, in menu order |
 | `routes` | `{}` | Automatic-page ID → localized path overrides |

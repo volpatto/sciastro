@@ -34,6 +34,15 @@ home:
   body:
     pt: home.pt.md
     en: home.en.md
+  photo:
+    src: /images/fictional-portrait.svg
+    alt:
+      pt: Ilustração de uma pesquisadora fictícia
+      en: Illustration of a fictional researcher
+    width: 240
+    height: 300
+    shape: circle
+    position: [50, 30]
 bibliography:
   file: references.bib
   style: apa

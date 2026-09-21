@@ -10,7 +10,7 @@ const sites = [
 export default defineConfig({
   testDir: './tests/browser',
   testMatch: '**/*.spec.mjs',
-  globalSetup: './tests/browser/prepare-analytics.mjs',
+  globalSetup: './tests/browser/prepare.mjs',
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: 0,
@@ -31,6 +31,11 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
   projects: [
+    {
+      name: 'portraits',
+      testMatch: '**/portraits.spec.mjs',
+      use: { javaScriptEnabled: false },
+    },
     { name: 'analytics', testMatch: '**/analytics.spec.mjs' },
     ...sites.flatMap(({ kind, port }) =>
       [

@@ -100,6 +100,13 @@ fields remain available in `BuiltSite.members` and `BuiltSite.config`; the share
 team renderer selects the photo, then the member fallback, then the site fallback,
 then the built-in fictional symbol. See the [people guide](../conteudo.md#portraits-and-fallback-symbols).
 
+`SiteConfig.home?.photo` accepts `{ src, alt, shape, position?, width?, height? }`.
+The schema defaults `shape` to `rectangle`; `circle` enables a CSS crop. Composed
+`profile.image` uses the same fields plus figure captions, links and enlargement.
+`BuiltFigure.shape` is optional for compatibility with custom components;
+an omitted value renders a rectangle. `position` is a pair of percentages in
+`[0, 100]` and defaults visually to `[50, 50]`. See [profile photographs](../customization.md#profile-photographs).
+
 ### Prepared data
 
 | Type | Main fields |
@@ -108,7 +115,7 @@ then the built-in fictional symbol. See the [people guide](../conteudo.md#portra
 | `BuiltPage` | `id`, resolved `icon`, `locale`, base-aware `path`, `title`, `html`, `references`, `areas`; optional `sections`, `heading`, `description`, `navigation`, `header` |
 | `BuiltSection` | `type`, optional `id`, `title`, sanitized `html`, `links`, and type-specific fields such as `items`, `image`, `logos`, `publications`, `component`, `props` |
 | `BuiltEntry` | `title`, optional `id`, `eyebrow`, `subtitle`, `html`, `meta`, `period`; `images` and `links` |
-| `BuiltFigure` | `src`, translated `alt`, `links`, `enlarge`; optional dimensions, `caption`, `viewBox` |
+| `BuiltFigure` | `src`, translated `alt`, `links`, `enlarge`; optional dimensions, `caption`, `viewBox`, `shape`, `position` |
 | `BuiltLink` | Translated `label`/`url`, resolved `icon`, optional `download` and `analyticsEvent` |
 
 `AnalyticsConfig` is `false` or a union discriminated by `provider`. Custom link

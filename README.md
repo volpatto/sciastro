@@ -59,7 +59,9 @@ visitors' saved theme preferences across the rename.
 
 - **Research groups:** a Home page with a brief overview and research cards linking
   to the corresponding sections on the Research page.
-- **Individual researchers:** an About page and a Supervision page.
+- **Individual researchers:** an About page and a Supervision page; optional
+  [circular or rectangular profile photographs](docs/customization.md#profile-photographs)
+  with adjustable framing in YAML.
 - **People:** faculty, researchers, active students grouped by level, and alumni.
   Circular portraits with adjustable framing, configurable institution symbols
   and a fictional built-in fallback; see [photo settings](docs/conteudo.md#portraits-and-fallback-symbols).

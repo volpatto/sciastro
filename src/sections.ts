@@ -1,6 +1,10 @@
 import { z } from 'zod';
 import { analyticsEventSchema } from './analytics.js';
-import { localizedSchema as localized, iconSchema } from './schema.js';
+import {
+  localizedSchema as localized,
+  iconSchema,
+  profilePhotoSchema,
+} from './schema.js';
 import type { Locale } from './schema.js';
 import { translate } from './i18n.js';
 import { resolveIcon, type BuiltIcon } from './icons.js';
@@ -28,15 +32,8 @@ export const sectionLinkSchema = z
     analyticsEvent: analyticsEventSchema.optional(),
   })
   .strict();
-export const figureSchema = z
-  .object({
-    src: text.refine(
-      (value) => value.startsWith('/') && !value.startsWith('//'),
-      'Images must use /paths in public/.',
-    ),
-    alt: localized,
-    width: z.number().int().positive().optional(),
-    height: z.number().int().positive().optional(),
+export const figureSchema = profilePhotoSchema
+  .extend({
     caption: localized.optional(),
     links: z.array(sectionLinkSchema).default([]),
     enlarge: z.boolean().default(false),
@@ -206,6 +203,8 @@ export interface BuiltFigure {
   links: BuiltLink[];
   enlarge: boolean;
   viewBox?: string;
+  shape?: 'rectangle' | 'circle';
+  position?: [number, number];
 }
 export interface BuiltEntry {
   id?: string;
