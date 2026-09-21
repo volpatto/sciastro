@@ -5,8 +5,8 @@ for individual researchers and research groups. Maintain your content in
 **Markdown, YAML and BibTeX**; Astro generates a static website, with the structure,
 themes and content validation supplied by SciAstro.
 
-**SciAstro is in alpha.** Configuration and
-extension contracts may evolve. The public documentation is deployed with releases,
+Install regular releases from npm using `sciastro@latest`. Review the changelog
+and any migration instructions when upgrading. The public documentation is deployed with releases,
 so unreleased changes on `main` appear only in local previews and CI artifacts.
 
 <div class="grid cards" markdown>

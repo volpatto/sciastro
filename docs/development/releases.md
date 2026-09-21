@@ -9,6 +9,19 @@ The prepared workflow is `.github/workflows/release.yml`. It publishes only on
 **a pushed tag matching `v*`**, after validating the version and commit. PR titles
 and ordinary pushes to `main` do not publish or deploy documentation.
 
+Regular releases use `X.Y.Z` without a prerelease suffix. The workflow automatically
+publishes them to npm's `latest` channel and creates a normal GitHub release.
+No change to the existing npm trusted publisher or GitHub environments is needed
+when moving from a prerelease to a regular release. The installation instructions
+and npm badge track `latest`.
+
+Older prereleases remain in the version history. Their `next` channel is separate
+and is not moved by a regular release: consumers following older instructions
+should switch to `sciastro@latest` or an exact regular version. Existing sites pin
+their dependency, so update them explicitly with
+`pnpm add sciastro@latest --save-exact` and rebuild. See
+[npm distribution tags](https://docs.npmjs.com/adding-dist-tags-to-packages/).
+
 ## One-time account and repository setup
 
 1. Create/sign in to an [npm account](https://www.npmjs.com/signup), verify the
@@ -56,18 +69,18 @@ below, and wait for all checks. Without trusted publishing, the publication job
 may fail; its `npm-release` artifact contains the already tested `.tgz`.
 
 Download that workflow artifact from GitHub Actions and extract it into an
-`artifacts/` directory in a checkout of the tag. For the initial alpha:
+`artifacts/` directory in a checkout of the tag. For a regular release:
 
 ```sh
 pixi install --locked
 pixi run --locked node scripts/version.mjs check --tag vVERSION --archive artifacts/sciastro-VERSION.tgz
 pixi run --locked npm login
-pixi run --locked npm publish ./artifacts/sciastro-VERSION.tgz --access public --tag next --ignore-scripts
+pixi run --locked npm publish ./artifacts/sciastro-VERSION.tgz --access public --tag latest --ignore-scripts
 ```
 
 Replace `VERSION` with the version in the downloaded artifact filename.
 The final command is a real public publication and may prompt for 2FA. Use
-`--tag latest` for a stable version. Afterward, add the trusted publisher in npm
+`--tag next` only when intentionally publishing a prerelease. Afterward, add the trusted publisher in npm
 settings and rerun the failed workflow jobs. The publication step compares the
 registry's archive integrity and continues only if the existing version is the
 **identical** tested artifact; then GitHub release creation and docs deployment run.
@@ -233,7 +246,7 @@ tags are also accepted. Do not move tags after publication.
 6. **Docs:** deploy the already built Pages artifact only after publication and
    GitHub release creation succeed. No publication is triggered by editing docs alone.
 
-The public docs represent the last deployed release, including alpha releases.
+The public docs represent the last deployed release.
 There is currently one docs site, not a multi-version selector. The deployment
 includes `release.json` with version and commit for diagnostics.
 

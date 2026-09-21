@@ -27,9 +27,8 @@ All remaining commands work from a terminal in the indicated project directory.
 
 ## Create a site from npm
 
-This path requires a **published** SciAstro version. Until the first npm release,
-use [the local archive path below](#create-a-site-before-the-first-npm-release).
-A checkout of the framework is not needed for npm installations.
+Install the published package from npm; a checkout of the framework is not needed.
+To test unpublished changes, use [a local archive](#create-a-site-from-a-local-archive).
 
 Create a temporary tool environment in a new directory:
 
@@ -38,16 +37,16 @@ mkdir academic-sites
 cd academic-sites
 pixi init
 pixi add "nodejs=24.*" "pnpm==11.19.0"
-pixi run pnpm dlx sciastro@next init my-site --kind individual --theme modern
+pixi run pnpm dlx sciastro@latest init my-site --kind individual --theme modern
 cd my-site
 pixi install
 pixi run pnpm install
 pixi run dev
 ```
 
-`@next` selects the alpha/prerelease channel. After a stable release is available,
-use `sciastro@latest`; for a reproducible initial scaffold use an exact published
-version using `sciastro@VERSION` (replace `VERSION` with that release). The generated site's dependency
+`@latest` selects the latest regular release. For a reproducible initial scaffold,
+use an exact published version with `sciastro@VERSION` (replace `VERSION` with that release).
+The generated site's dependency
 is pinned to the generator's version, regardless of the channel used to invoke it.
 Choose `--kind group` for a group. `--theme classic`, `modern` or `lncc` sets the
 initial theme; you can change it later in YAML.
@@ -59,7 +58,7 @@ install dependencies. Open the URL printed by the preview, normally
 If you already have Node.js 24 and pnpm 11.19.0, run `pnpm dlx ...` directly, then
 `pnpm install` and `pnpm dev` in the generated directory. Pixi is optional for consumers.
 
-## Create a site before the first npm release
+## Create a site from a local archive
 
 Clone and build the source, then scaffold and install its archive:
 

@@ -22,8 +22,11 @@ already exist: keep `--locked` and fix any mismatch rather than silently updatin
 
 ## Package not found on npm
 
-Before the first release, use the [archive installation](../getting-started.md#create-a-site-before-the-first-npm-release).
-A prerelease is published to `next`, not necessarily `latest`. A `file:../...`
+For regular releases, use `sciastro@latest` or an exact published version. Older
+instructions using `sciastro@next` select a separate prerelease channel, which may
+still point to an older release. For unpublished changes, use the
+[archive installation](../getting-started.md#create-a-site-from-a-local-archive).
+A `file:../...`
 dependency also fails on another machine when its referenced archive is missing;
 use an npm version or a committed archive inside the consumer repository.
 

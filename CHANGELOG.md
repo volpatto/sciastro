@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.1.1
+
+<!-- sciastro:generated:start -->
+<!-- Source: v0.1.0-alpha.1..16d3a3795dfdc0fc34c5538fbb87ecc57a73bd55 -->
+
+### Features
+
+- add changelog generation and preparation scripts (#3) ([dcb592d](https://github.com/volpatto/sciastro/commit/dcb592dcfc7daa8ccccfb465e8595e63c23c65bf))
+
+- add fictional portraits and academic symbols for team members (#4) ([16d3a37](https://github.com/volpatto/sciastro/commit/16d3a3795dfdc0fc34c5538fbb87ecc57a73bd55))
+
+
+### Other changes
+
+- Add initial alpha release notes and version metadata for SciAstro (#1) ([08af91e](https://github.com/volpatto/sciastro/commit/08af91e37112449b90739d4f8047fe988ecb15bc))
+
+- Add support for automatic publication cards from BibTeX files and keys (#2) ([cbd4c0f](https://github.com/volpatto/sciastro/commit/cbd4c0f2abf8556a8dccd7b317405288b540deb4))
+
+<!-- sciastro:generated:end -->
+
 ## 0.1.0-alpha.1
 
 - Initial alpha package for individual and research-group websites using YAML,
