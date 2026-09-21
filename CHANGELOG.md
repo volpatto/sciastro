@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.1.2
+
+<!-- sciastro:generated:start -->
+<!-- Source: v0.1.1..2b906e81ac9fbabb28d2d590a60011b18af16ed9 -->
+
+### Features
+
+- enhance flexibility for people records configuration and validation (#7) ([2b906e8](https://github.com/volpatto/sciastro/commit/2b906e81ac9fbabb28d2d590a60011b18af16ed9))
+
+
+### Maintenance
+
+- remove outdated release notes and configuration files (#6) ([4358b6c](https://github.com/volpatto/sciastro/commit/4358b6c2bd3073ad1727cd66837c698307c5c494))
+
+<!-- sciastro:generated:end -->
+
 ## 0.1.1
 
 <!-- sciastro:generated:start -->
