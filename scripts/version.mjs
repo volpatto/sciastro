@@ -17,7 +17,7 @@ export function versionInfo(version) {
     (match[4] && match[4].split('.').some((part) => /^0\d+$/.test(part)))
   )
     throw new Error(
-      `Invalid release version: ${version}. Use X.Y.Z or X.Y.Z-alpha.N (no leading v or build metadata).`,
+      `Invalid release version: ${version}. Use X.Y.Z, optionally with a prerelease suffix (no leading v or build metadata).`,
     );
   return {
     version,
@@ -66,7 +66,7 @@ export async function checkVersions(root, { tag, archive, docs } = {}) {
       )
     )
       throw new Error(
-        `${path}: describe the alpha status without embedding a package version.`,
+        `${path}: describe the project without embedding a package version.`,
       );
     for (const match of source.matchAll(
       /sciastro(?:-|@)(\d+\.\d+\.\d+(?:-[\w.-]+)?)(?:\.tgz|(?=[\s`]))/g,

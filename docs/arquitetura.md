@@ -57,7 +57,7 @@ This detects missing package files and dependencies that only work because they
 happen to be present in the development checkout.
 
 When changing configuration contracts, maintain `schemaVersion` and document
-migrations. This alpha does not provide automatic migration. Keep an individual
+migrations. SciAstro does not provide automatic migration. Keep an individual
 researcher's content out of the generic package implementation.
 
 ## Verification boundaries

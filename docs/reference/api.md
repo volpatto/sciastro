@@ -2,7 +2,7 @@
 
 Most authors only need YAML and Markdown. The API is for integration, validation
 and custom presentation. This page describes the **public package export paths**
-for this alpha; importing arbitrary `dist/` files is not supported.
+for SciAstro; importing arbitrary `dist/` files is not supported.
 The npm package ships TypeScript declarations alongside JavaScript.
 
 ## Astro integration: `sciastro`
@@ -183,7 +183,7 @@ cross-file constraints. No supported public context factory is currently exporte
 A custom layout also receives the 404 descriptor: it has the locale, path, title
 and optional metadata but no normal page sections. Render `<slot />` to keep page
 content. Theme CSS variables are the intended styling surface; internal classes
-and unexported modules may change during alpha releases.
+and unexported modules may change between releases.
 
 This reference is maintained with the source. Automated tests check that every
 public runtime export and root type export remains represented here, and execute

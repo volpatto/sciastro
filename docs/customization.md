@@ -257,5 +257,5 @@ Public extension imports:
 
 Theme CSS variables are the stable styling surface. Internal DOM classes and
 unexported files are not an extension API. Do not edit `node_modules/sciastro`.
-This alpha introduces additive configuration fields under `schemaVersion: 1`;
+Additive configuration fields use `schemaVersion: 1`;
 future incompatible contracts require a version change and migration instructions.

@@ -1,7 +1,7 @@
 # SciAstro
 
 [![Tests](https://github.com/volpatto/sciastro/actions/workflows/ci.yml/badge.svg)](https://github.com/volpatto/sciastro/actions/workflows/ci.yml)
-[![npm version](https://img.shields.io/npm/v/sciastro/next?logo=npm&label=npm)](https://www.npmjs.com/package/sciastro)
+[![npm version](https://img.shields.io/npm/v/sciastro/latest?logo=npm&label=npm)](https://www.npmjs.com/package/sciastro)
 [![Astro](https://img.shields.io/badge/Astro-BC52EE?logo=astro&logoColor=white)](https://astro.build/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Pixi](https://img.shields.io/badge/Pixi-41B3A3)](https://pixi.sh/)
@@ -14,10 +14,10 @@ SciAstro supplies the pages, themes and validation. Each website owns its conten
 and public assets. Astro generates a static site suitable for GitHub Pages or any
 static web server.
 
-**Alpha software.** SciAstro is available on [npm](https://www.npmjs.com/package/sciastro).
-Use `sciastro@next` for the current alpha release. Local `.tgz` archives remain
-available for testing unpublished changes. Configuration may change during the
-alpha period; incompatible changes should include migration instructions.
+SciAstro is available on [npm](https://www.npmjs.com/package/sciastro).
+Use `sciastro@latest` for the latest regular release. Local `.tgz` archives remain
+available for testing unpublished changes. Review the changelog before upgrading;
+incompatible changes should include migration instructions.
 
 The package documentation is in English. The example websites intentionally keep
 Portuguese as their default language and include English translations. You can
@@ -51,7 +51,7 @@ See [Pages, themes and extensions](docs/customization.md) for complete page comp
 LNCC Theme settings, custom CSS and component overrides.
 
 The package and CLI are named `sciastro`; configuration lives in `sciastro.yaml`.
-Existing alpha consumers should rename their configuration file and update their
+Sites created with the former SciPages name should rename their configuration file and update their
 package dependency and imports. Keep a custom `themeStorageKey` to preserve
 visitors' saved theme preferences across the rename.
 
@@ -84,7 +84,7 @@ identified in the footer. They are demonstration websites, not real academic pro
 With Node.js 24 and pnpm 11.19.0 installed:
 
 ```sh
-pnpm dlx sciastro@next init my-site --kind individual --theme modern
+pnpm dlx sciastro@latest init my-site --kind individual --theme modern
 cd my-site
 pnpm install
 pnpm dev
@@ -373,7 +373,7 @@ run `init` over the existing website.
 
 ## Scope and licenses
 
-This alpha supports file-based configuration, composed pages and three built-in themes. Lattes/ORCID
+SciAstro supports file-based configuration, composed pages and three built-in themes. Lattes/ORCID
 importers, a visual editor, a theme-package registry and automatic configuration migrations
 are not implemented. Only Portuguese and English UI labels are currently supported.
 BibTeX processing is local and does not fetch references at runtime.
