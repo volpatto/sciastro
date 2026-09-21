@@ -75,6 +75,8 @@ visitors' saved theme preferences across the rename.
 - **Icons:** menu icons and Brazilian/British language flags by default; replace
   them with catalog icons or local images, or hide them through YAML.
 - **CLI:** create a project and validate its content with `sciastro`.
+- **Analytics (opt-in):** Cloudflare Web Analytics or Umami through YAML, with
+  optional Umami link events and previews excluded; see [setup](docs/guides/analytics.md).
 
 The examples contain **fictional people, institutions and publications**, clearly
 identified in the footer. They are demonstration websites, not real academic profiles.

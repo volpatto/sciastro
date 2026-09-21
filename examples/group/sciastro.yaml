@@ -9,6 +9,8 @@ affiliation:
   en: Example University
 url: https://example.org
 base: /
+# Optional analytics: see the Analytics guide for Cloudflare or Umami.
+analytics: false
 locales: [pt, en]
 defaultLocale: pt
 theme: classic

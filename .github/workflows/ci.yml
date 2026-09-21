@@ -66,7 +66,7 @@ jobs:
         run: pixi run --locked setup
       - name: Install Chromium and system dependencies
         run: pixi run --locked pnpm exec playwright install --with-deps chromium
-      - name: Test desktop, mobile and navigation without JavaScript
+      - name: Test desktop, mobile, analytics and navigation without JavaScript
         run: pixi run --locked test-browser
       - name: Save test report and failure traces
         if: ${{ !cancelled() }}

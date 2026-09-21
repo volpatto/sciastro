@@ -105,6 +105,10 @@ try {
       const configPath = join(consumer, 'sciastro.yaml');
       const config = parse(await readFile(configPath, 'utf8'));
       config.people = { ...config.people, file: 'orientacoes.yaml' };
+      config.analytics = {
+        provider: 'umami',
+        websiteId: '94db1cb1-74f4-4a40-ad6c-962362670409',
+      };
       await rename(
         join(consumer, 'content/team.yaml'),
         join(consumer, 'content/orientacoes.yaml'),
@@ -159,6 +163,10 @@ try {
     if (kind === 'group') {
       const configFile = join(consumer, 'sciastro.yaml');
       const config = parse(await readFile(configFile, 'utf8'));
+      config.analytics = {
+        provider: 'cloudflare',
+        token: '0123456789abcdef0123456789abcdef',
+      };
       config.icons = {
         navigation: {
           home: false,
@@ -218,6 +226,21 @@ finally { await server.stop(); }`,
     run(['build'], consumer, overrides);
     const count = await audit(join(consumer, 'dist'), overrides.BASE_PATH);
     const home = await readFile(join(consumer, 'dist/index.html'), 'utf8');
+    // Resolve the browser runtime from the installed tarball, not this checkout.
+    const assets = join(consumer, 'dist/_astro');
+    const javascript = await Promise.all(
+      (await readdir(assets))
+        .filter((file) => file.endsWith('.js'))
+        .map((file) => readFile(join(assets, file), 'utf8')),
+    );
+    const client = home + javascript.join('\n');
+    assert(
+      client.includes(
+        kind === 'group'
+          ? '0123456789abcdef0123456789abcdef'
+          : '94db1cb1-74f4-4a40-ad6c-962362670409',
+      ),
+    );
     assert.match(home, kind === 'group' ? /Início/ : /Sobre/);
     assert.match(home, /Copyright \(c\) 2026 Lucide/);
     assert.match(home, /Copyright \(c\) 2026 HatScripts/);

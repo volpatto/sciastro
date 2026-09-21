@@ -12,7 +12,15 @@ const { links, base } = Astro.props;
 {links.length > 0 && (
   <div class="sp-links">
     {links.map((link) => (
-      <a href={linkPath(base, link.url)} download={link.download || undefined}>
+      <a
+        href={linkPath(base, link.url)}
+        download={link.download || undefined}
+        data-sciastro-event={
+          link.analyticsEvent === undefined
+            ? undefined
+            : String(link.analyticsEvent)
+        }
+      >
         <Icon icon={link.icon} base={base} />
         <span>{link.label}</span>
       </a>

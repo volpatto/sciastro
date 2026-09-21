@@ -122,6 +122,8 @@ require `period`. This lets you use the same presentation for software, courses,
 collaborations, projects and professional appointments.
 
 A link has `label`, `url`, optional `icon`, and optional `download: true`.
+It also accepts `analyticsEvent` (an event name or `false` to exclude the link).
+See [analytics](guides/analytics.md) to enable a provider and click events.
 Labels and URLs can be translated. Supported destinations are `http(s)`, `mailto`,
 `tel`, `#anchors`, and site-root-relative `/paths/`. Root-relative paths are
 adjusted automatically for `BASE_PATH`.

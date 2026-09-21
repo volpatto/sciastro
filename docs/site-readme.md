@@ -4,6 +4,11 @@ Edit `sciastro.yaml` and the files in `content/`. Put public images and download
 in `public/`. References live in `content/references.bib`; cite them with `[@key]`.
 Generated pages and styles are provided by the SciAstro package.
 
+Analytics is optional and off by default. Configure Cloudflare Web Analytics or
+Umami following the [analytics guide](https://volpatto.github.io/sciastro/guides/analytics/).
+Set the provider and public site identifier in `sciastro.yaml`; no custom
+JavaScript is needed. Local previews are excluded from tracking.
+
 ## Set up the environment
 
 Install [Pixi](https://pixi.prefix.dev/latest/installation/). Pixi installs Node.js

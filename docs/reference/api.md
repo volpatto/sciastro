@@ -25,6 +25,8 @@ const options: SciAstroOptions = {
 The default export goes in `defineConfig({ integrations: [sciastro()] })`.
 It loads/validates content, configures static output, the URL/base and trailing
 slashes, injects pages plus a 404, and watches content in development.
+Enabled `SiteConfig.analytics` is injected into production pages, including custom
+layouts; no analytics component needs to be added manually.
 
 | Option | Default | Contract |
 | --- | --- | --- |
@@ -74,6 +76,8 @@ The root module exports these Zod schemas:
 | `teamSchema` | Array of person records |
 | `pagesSchema` | Array of additional automatic-mode page records |
 | `iconSchema` | Catalog name, local image object or `false` |
+| `analyticsSchema` | `false`, Cloudflare token configuration or Umami website/script/event configuration |
+| `analyticsEventSchema` | Lowercase event name (up to 50 letters/digits/underscores/hyphens, starting with a letter) or `false` |
 | `sectionSchema` | One composed section, discriminated by `type` |
 | `composedPageSchema` | One explicit page record |
 
@@ -84,7 +88,7 @@ to inspect errors. Configuration field details are in
 
 The root type exports are `SciAstroOptions`, `SiteConfig`, `Member`, `ResearchArea`,
 `Locale`, `IconSetting`, `Section`, `BuiltSection`, `BuiltFigure`, `BuiltLink`,
-`BuiltEntry`, `BuiltPage` and `BuiltSite`. `SiteConfig`/`Section` describe parsed data
+`BuiltEntry`, `BuiltPage`, `BuiltSite` and `AnalyticsConfig`. `SiteConfig`/`Section` describe parsed data
 including defaults, so an authored YAML object may have fewer fields. `Locale` is
 `'pt' | 'en'`. `Section` is a discriminated union; narrow by `section.type`.
 
@@ -105,7 +109,12 @@ then the built-in fictional symbol. See the [people guide](../conteudo.md#portra
 | `BuiltSection` | `type`, optional `id`, `title`, sanitized `html`, `links`, and type-specific fields such as `items`, `image`, `logos`, `publications`, `component`, `props` |
 | `BuiltEntry` | `title`, optional `id`, `eyebrow`, `subtitle`, `html`, `meta`, `period`; `images` and `links` |
 | `BuiltFigure` | `src`, translated `alt`, `links`, `enlarge`; optional dimensions, `caption`, `viewBox` |
-| `BuiltLink` | Translated `label`/`url`, resolved `icon`, optional `download` |
+| `BuiltLink` | Translated `label`/`url`, resolved `icon`, optional `download` and `analyticsEvent` |
+
+`AnalyticsConfig` is `false` or a union discriminated by `provider`. Custom link
+renderers can forward `BuiltLink.analyticsEvent` as `data-sciastro-event`
+(stringify boolean false). The runtime is internal, not a public event API.
+See the [analytics guide](../guides/analytics.md).
 
 Page paths already include `base`; prepared section image and link paths are
 resolved by the rendering components. Do not prefix paths twice. A custom

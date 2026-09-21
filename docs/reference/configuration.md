@@ -31,6 +31,25 @@ a value for every enabled locale: `{ pt: Pesquisa, en: Research }`.
 `SITE_URL` and `BASE_PATH` override `url` and `base` in the CLI and Astro integration.
 The lower-level `loadSite` API takes explicit overrides instead of reading the environment.
 
+## Analytics
+
+See the [analytics guide](../guides/analytics.md) for setup and complete examples.
+
+| Field | Default | Meaning |
+| --- | --- | --- |
+| `analytics` | `false` | Disabled, or one provider configuration |
+| `analytics.provider` | Required when enabled | `cloudflare` or `umami` |
+| `analytics.token` | Required for Cloudflare | Public 32-character hexadecimal Web Analytics token |
+| `analytics.websiteId` | Required for Umami | Public website UUID |
+| `analytics.scriptUrl` | `https://cloud.umami.is/script.js` | Umami tracker HTTPS URL; override for self-hosting |
+| `analytics.events.downloads` | `false` | Umami file-link clicks |
+| `analytics.events.externalLinks` | `false` | Umami external HTTP(S) link clicks |
+| `analytics.events.custom` | `false` | Umami names from `analyticsEvent` on links |
+
+Provider fields cannot be mixed; Cloudflare rejects `events`. Production tracking
+is limited to `url` and `base`. Set `SCIASTRO_ANALYTICS=false` in the build environment
+to disable injection temporarily. Settings are public, never secret API credentials.
+
 ## Appearance
 
 | Field | Default | Meaning |
@@ -61,7 +80,7 @@ and [theme customization](../customization.md#colors-typography-and-width).
 | `studentLevels` | Undergraduate, masters, phd, postdoc | Ordered objects with `id` and localized `label`; replaces the whole list |
 | `people.file` | `team.yaml` | People records, relative to `contentDir`; an explicitly configured file must exist |
 | `people.avatarFallback` | Built-in fictional symbol | Shared fallback for people without a photo: `src`, localized `alt`, optional `viewBox`, `width`, `height`; separate from the header `logo` |
-| `links` | `[]` | Profile links with string `label` and HTTP(S) `url` |
+| `links` | `[]` | Profile links with string `label`, HTTP(S) `url` and optional `analyticsEvent` (name or `false`) |
 
 The [content guide](../conteudo.md) covers `research.yaml`, `team.yaml` and
 `pages.yaml`. The [composition guide](../customization.md#page-fields) specifies

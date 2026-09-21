@@ -73,3 +73,25 @@ people and institutions.
 
 Start with [installation](getting-started.md), then choose a tutorial. If you
 already have a website, use the [migration recipe](guides/recipes.md#migrate-an-existing-website).
+
+## Licenses
+
+SciAstro's code, documentation and fictional example content are released under
+the [MIT License](https://github.com/volpatto/sciastro/blob/main/LICENSE),
+copyright Diego Tavares Volpatto. The license text includes the required notices
+and terms for reuse and redistribution.
+
+Third-party dependencies and bundled resources retain their own licenses:
+
+| Resource | License and notices |
+| --- | --- |
+| Astro, Citation.js, markdown-it, Zod and sanitize-html | MIT; see each dependency's license file |
+| YAML parser | ISC; see the dependency's license file |
+| Lucide icons | ISC, with MIT notices for icons derived from Feather; see [icon notices](icon-licenses.txt) |
+| Circle Flags | MIT; see [icon notices](icon-licenses.txt) |
+| Manrope and Newsreader fonts | SIL Open Font License 1.1; see [font notices](font-licenses.txt) |
+
+Your website's texts, photographs, publications, institutional logos and other
+supplied materials retain their own licensing conditions. Using SciAstro does
+not automatically place those materials under MIT or grant permission to reuse
+third-party content.

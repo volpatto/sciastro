@@ -82,6 +82,12 @@ const heading = s.title ? 'h3' : 'h2';
               {item.link ? (
                 <a
                   href={linkPath(base, item.link.url)}
+                  data-sciastro-event={
+                    item.link.analyticsEvent === undefined
+                      ? undefined
+                      : String(item.link.analyticsEvent)
+                  }
+                  download={item.link.download || undefined}
                   aria-label={item.link.label}
                 >
                   <Figure image={item.image} base={base} />
