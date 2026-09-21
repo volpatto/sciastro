@@ -1,6 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { cp, mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
+import {
+  cp,
+  mkdir,
+  mkdtemp,
+  readFile,
+  rename,
+  writeFile,
+  rm,
+} from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { parse, stringify } from 'yaml';
@@ -45,6 +53,54 @@ const symbol = {
 for (const kind of ['group', 'individual']) {
   for (const composed of [false, true]) {
     const mode = `${kind}, ${composed ? 'composed' : 'automatic'}`;
+    test(`a custom people file preserves records, photos and grouping (${mode})`, async (t) => {
+      const f = await fixture(t, kind, composed);
+      f.config.people = { avatarFallback: symbol };
+      await f.save();
+      const original = await loadSite(f.path);
+      f.config.people.file = 'pessoas/orientacoes.yaml';
+      await f.save();
+      await mkdir(join(f.root, 'content/pessoas'));
+      const file = join(f.root, 'content/pessoas/orientacoes.yaml');
+      await rename(join(f.root, 'content/team.yaml'), file);
+      const custom = await loadSite(f.path);
+      assert.equal(custom.config.people.file, 'pessoas/orientacoes.yaml');
+      assert.deepEqual(custom.config.people.avatarFallback, symbol);
+      assert.deepEqual(custom.members, original.members);
+      assert.deepEqual(custom.pages, original.pages);
+
+      // A legacy file must not be loaded or merged when an explicit source exists.
+      await writeFile(join(f.root, 'content/team.yaml'), 'invalid: [');
+      assert.deepEqual((await loadSite(f.path)).members, original.members);
+      await writeFile(file, 'not-an-array: true');
+      await assert.rejects(loadSite(f.path), /orientacoes\.yaml/);
+    });
+
+    test(`custom people files are required and stay inside contentDir (${mode})`, async (t) => {
+      const f = await fixture(t, kind, composed);
+      f.config.people = { avatarFallback: symbol };
+      await f.save();
+      await rm(join(f.root, 'content/team.yaml'));
+      assert.deepEqual(
+        (await loadSite(f.path)).members,
+        [],
+        'the omitted default remains optional',
+      );
+
+      for (const file of ['missing.yaml', 'team.yaml']) {
+        f.config.people.file = file;
+        await writeFile(f.path, stringify(f.config));
+        await assert.rejects(loadSite(f.path), /Arquivo obrigatório ausente/);
+      }
+      for (const file of ['../outside.yaml', join(f.root, 'outside.yaml')]) {
+        f.config.people.file = file;
+        await writeFile(f.path, stringify(f.config));
+        await assert.rejects(loadSite(f.path), /fora da pasta de conteúdo/);
+      }
+      f.config.people.file = '';
+      assert.throws(() => configSchema.parse(f.config));
+    });
+
     test(`people photos and site/member fallbacks load with localized labels (${mode})`, async (t) => {
       const f = await fixture(t, kind, composed);
       f.config.people = { avatarFallback: symbol };

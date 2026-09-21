@@ -52,7 +52,9 @@ content files are ready to edit; research/person names in the starter are fictio
 - `sciastro.yaml`: site identity, languages, theme, icons and bibliography settings.
 - `content/home.*.md`: introduction.
 - `content/research.yaml` and `content/research/`: research cards and details.
-- `content/team.yaml`: faculty, researchers, active students and alumni.
+- `content/team.yaml`: faculty, researchers, active students and alumni. To use a
+  different name, set `people.file` in `sciastro.yaml` (relative to `contentDir`)
+  and move this file to the selected path.
 - `content/pages.yaml`: additional pages and their Markdown paths.
 - `content/references.bib`: available citations; select your own work separately
   in `bibliography.publications`.

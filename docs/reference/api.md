@@ -58,6 +58,11 @@ Invalid input rejects with an `Error`; do not depend on exact wording, which may
 change or be localized. Schemas alone validate shapes; `loadSite` also checks file
 existence, translations, IDs, routes and relationships.
 
+`SiteConfig.people?.file` selects the people YAML relative to `contentDir`, for
+both automatic and composed pages. It replaces `team.yaml` and is required to
+exist when explicitly set. If omitted, a missing `team.yaml` still represents an
+empty people list. Absolute paths and paths outside `contentDir` are rejected.
+
 ## Public schemas and types
 
 The root module exports these Zod schemas:

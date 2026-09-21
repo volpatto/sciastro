@@ -54,7 +54,27 @@ when required. The build checks that declared local images exist.
 
 ## Team and supervision
 
-`team.yaml` supplies the **Team** page for groups and **Supervision** for individuals.
+By default, `team.yaml` supplies the **Team** page for groups and **Supervision**
+for individuals. To choose another name or a subdirectory, configure
+`people.file` in `sciastro.yaml`:
+
+```yaml
+contentDir: content
+people:
+  file: orientacoes.yaml
+```
+
+Move the existing records to `content/orientacoes.yaml`; no `team.yaml` alias or
+duplicate is needed. The path is relative to `contentDir` and must stay inside
+it. The selected file replaces the default source in both automatic pages and
+composed `type: team` sections. Existing `people.avatarFallback` settings can
+remain alongside `file`.
+
+An explicitly configured file must exist and pass the usual people validation;
+a typo fails the build instead of silently hiding the people section. Without
+`people.file`, the original optional `team.yaml` behavior is unchanged. File names
+do not change navigation labels or URLs; configure those separately.
+
 Each person has one record:
 
 ```yaml
