@@ -1,0 +1,29 @@
+schemaVersion: 1
+kind: individual
+name: Marina Silva
+description:
+  pt: Exemplo fictício de site acadêmico com o LNCC Theme.
+  en: Fictional academic website demonstrating the LNCC Theme.
+affiliation: Instituto Exemplo
+url: https://example.org
+locales: [pt, en]
+defaultLocale: pt
+theme: lncc
+appearance:
+  contentWidth: 1140
+  light: { accent: "#6250a6" }
+  dark: { accent: "#c2b6fa" }
+contentDir: content
+pageFiles:
+  - pages/about.yaml
+  - pages/research.yaml
+  - pages/software.yaml
+  - pages/credits.yaml
+navigation: [home, research, software]
+copyright: © 2026 Marina Silva · Instituto Exemplo
+footer:
+  pt: Exemplo fictício. O nome LNCC Theme identifica o tema; não implica endosso institucional.
+  en: Fictional example. LNCC Theme is the theme name and does not imply institutional endorsement.
+bibliography:
+  file: references.bib
+  style: apa

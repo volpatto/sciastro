@@ -1,22 +1,32 @@
-# SciPages
+# SciAstro
 
-[![CI](https://github.com/volpatto/scipages/actions/workflows/ci.yml/badge.svg)](https://github.com/volpatto/scipages/actions/workflows/ci.yml)
+[![Tests](https://github.com/volpatto/scipages/actions/workflows/ci.yml/badge.svg)](https://github.com/volpatto/scipages/actions/workflows/ci.yml)
 [![Astro](https://img.shields.io/badge/Astro-BC52EE?logo=astro&logoColor=white)](https://astro.build/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Pixi](https://img.shields.io/badge/Pixi-41B3A3)](https://pixi.sh/)
 
 Academic websites for researchers and research groups, maintained through **YAML,
-Markdown and BibTeX**. SciPages supplies the pages, themes and validation as a
+Markdown and BibTeX**. SciAstro supplies the pages, themes and validation as a
 package; each website owns its content and public assets. The output is a static
 site suitable for GitHub Pages or any static web server.
 
-**Current version: `0.1.0-alpha.0`.** The package can be built and installed locally
+**Current version: `0.1.0-alpha.1`.** The package can be built and installed locally
 as a `.tgz` archive. It has not been published to npm. Configuration may change
 during the alpha period; incompatible changes should include migration instructions.
 
 The package documentation is in English. The example websites intentionally keep
 Portuguese as their default language and include English translations. You can
 build a Portuguese-only, English-only or bilingual site.
+
+See [Pages, themes and extensions](docs/customization.md) for complete page composition,
+LNCC Theme settings, custom CSS and component overrides.
+
+The package and CLI are named `sciastro`; configuration lives in `sciastro.yaml`.
+The GitHub source repository still uses the `scipages` URL;
+source links and the Tests badge intentionally point there until it is renamed.
+Existing alpha consumers should rename their configuration file and update their
+package dependency and imports. Keep a custom `themeStorageKey` to preserve
+visitors' saved theme preferences across the rename.
 
 ## Features
 
@@ -28,12 +38,12 @@ build a Portuguese-only, English-only or bilingual site.
 - **References:** local BibTeX files, `[@key]` citations, per-page bibliographies,
   and an explicitly selected list of the site's own publications.
 - **Additional pages:** software, teaching, projects, CV and contact, defined in YAML.
-- **Themes:** `classic` (violet, serif headings) and `modern` (green, sans-serif),
+- **Themes:** `classic`, `modern`, and **LNCC Theme** (`lncc`, sidebar and academic typography),
   with light/dark modes and responsive layouts.
 - **Languages:** Portuguese and English, together or separately, with translation validation.
 - **Icons:** menu icons and Brazilian/British language flags by default; replace
   them with catalog icons or local images, or hide them through YAML.
-- **CLI:** create a project and validate its content with `scipages`.
+- **CLI:** create a project and validate its content with `sciastro`.
 
 The examples contain **fictional people, institutions and publications**, clearly
 identified in the footer. They are demonstration websites, not real academic profiles.
@@ -62,11 +72,11 @@ powershell -ExecutionPolicy Bypass -c "irm -useb https://pixi.sh/install.ps1 | i
 Reopen your terminal and check `pixi --version`. If you have not cloned the repository:
 
 ```sh
-git clone https://github.com/volpatto/scipages.git
-cd scipages
+git clone https://github.com/volpatto/scipages.git sciastro
+cd sciastro
 ```
 
-From the SciPages repository directory:
+From the SciAstro repository directory:
 
 ```sh
 pixi install --locked
@@ -95,12 +105,13 @@ means its preview server is not running.
 | Command | Purpose |
 | --- | --- |
 | `pixi run --locked setup` | Install package dependencies using the lockfile |
-| `pixi run --locked build` | Compile the SciPages package into `dist/` |
+| `pixi run --locked build` | Compile the SciAstro package into `dist/` |
 | `pixi run --locked test` | Compile and run content, bibliography and icon tests |
 | `pixi run --locked verify` | Check types, tests, examples and independently installed consumers |
 | `pixi run --locked browser-install` | Download the Chromium version used by browser tests |
 | `pixi run --locked test-browser` | Build the examples and run browser tests |
 | `pixi run --locked verify-all` | Run all package and browser checks; install Chromium first |
+| `pixi run --locked dev-lncc` | Preview the composed LNCC Theme example on port 4342 |
 | `pixi run --locked dev` | Preview the group example |
 | `pixi run --locked dev-individual` | Preview the individual example |
 | `pixi run --locked pack` | Create an installable `.tgz` archive in `artifacts/` |
@@ -111,7 +122,7 @@ Local validation does not replace an actual run on those CI runners.
 
 ## Create an independent website from the local package
 
-From the SciPages repository:
+From the SciAstro repository:
 
 ```sh
 pixi run --locked pack
@@ -127,13 +138,13 @@ In the generated project:
 ```sh
 cd ../my-group
 pixi install
-pixi run pnpm add scipages@file:../scipages/artifacts/scipages-0.1.0-alpha.0.tgz --save-exact
+pixi run pnpm add sciastro@file:../sciastro/artifacts/sciastro-0.1.0-alpha.1.tgz --save-exact
 pixi run dev
 ```
 
-The archive path assumes `scipages` and `my-group` are sibling directories. Adjust
+The archive path assumes `sciastro` and `my-group` are sibling directories. Adjust
 it to match your filesystem. The generated site consumes the packaged artifact;
-it does not depend on the SciPages source checkout.
+it does not depend on the SciAstro source checkout.
 
 The first installation creates `pixi.lock` and `pnpm-lock.yaml`. Commit both to
 version control. Subsequent installations can use `pixi install --locked` and
@@ -146,7 +157,7 @@ project also provides `pnpm dev`, `pnpm check` and `pnpm build`.
 ## Files you edit
 
 ```text
-scipages.yaml              Identity, site kind, languages, theme, icons and bibliography
+sciastro.yaml              Identity, site kind, languages, theme, icons and bibliography
 content/
   home.pt.md               Portuguese introduction
   home.en.md               English introduction
@@ -195,7 +206,7 @@ references or publications are needed.
 ### Customize icons
 
 Menu icons and the Brazil (PT) / United Kingdom (EN) flags are enabled by default.
-Override only the items you want to change in `scipages.yaml`:
+Override only the items you want to change in `sciastro.yaml`:
 
 ```yaml
 icons:
@@ -247,7 +258,7 @@ For GitHub Pages, select **Settings → Pages → Source → GitHub Actions**, b
 consumer website and deploy its `dist/`. This repository's workflow checks the
 **package**; it does not deploy the examples or publish to npm.
 
-**There are two different `dist/` directories:** at the SciPages root it contains
+**There are two different `dist/` directories:** at the SciAstro root it contains
 the compiled package; inside a consumer or `examples/group/` it contains the
 publishable website.
 
@@ -259,7 +270,7 @@ Run the package checks without installing a browser:
 pixi run --locked verify
 ```
 
-This checks TypeScript/Astro, runs automated content/BibTeX/icon tests, builds both
+This checks TypeScript/Astro, runs automated content/BibTeX/icon tests, builds all three
 examples, and installs the actual `.tgz` into independent temporary projects. The
 consumer checks cover CLI execution, configuration overrides, assets, links,
 anchors, citations and team grouping, including deployment under a subdirectory.
@@ -277,7 +288,7 @@ On Linux, browser system libraries may also be required:
 pixi run --locked pnpm exec playwright install --with-deps chromium
 ```
 
-The browser suite tests both site kinds on desktop and mobile: navigation, icons,
+The browser suite tests both site kinds and the LNCC Theme on desktop and mobile: navigation, icons,
 language switching, persistent themes, research/citation anchors, team sections,
 404 recovery and navigation with JavaScript disabled. It serves the generated
 static sites on ports `4360` and `4361`; it does not use or stop the previews on
@@ -303,8 +314,8 @@ run `init` over the existing website.
 
 ## Scope and licenses
 
-This alpha supports file-based configuration and two built-in themes. Lattes/ORCID
-importers, a visual editor, external themes and automatic configuration migrations
+This alpha supports file-based configuration, composed pages and three built-in themes. Lattes/ORCID
+importers, a visual editor, a theme-package registry and automatic configuration migrations
 are not implemented. Only Portuguese and English UI labels are currently supported.
 BibTeX processing is local and does not fetch references at runtime.
 
@@ -313,5 +324,5 @@ User-provided materials retain their own licensing conditions. Dependencies reta
 their licenses: [Astro](https://astro.build/), [Citation.js](https://citation.js.org/),
 [markdown-it](https://github.com/markdown-it/markdown-it), [YAML](https://eemeli.org/yaml/),
 [Zod](https://zod.dev/), [sanitize-html](https://github.com/apostrophecms/sanitize-html),
-and the [icon collections](docs/icon-licenses.txt). Browser testing uses
+the [icon collections](docs/icon-licenses.txt), and the [font notices](docs/font-licenses.txt). Browser testing uses
 [Playwright](https://playwright.dev/).

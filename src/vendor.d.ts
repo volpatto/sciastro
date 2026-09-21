@@ -11,7 +11,13 @@ declare module '@citation-js/core' {
 }
 declare module '@citation-js/plugin-bibtex';
 declare module '@citation-js/plugin-csl';
-declare module 'virtual:scipages' {
+declare module 'virtual:sciastro' {
   const site: import('./content.js').BuiltSite;
   export default site;
+}
+
+declare module 'virtual:sciastro/components' {
+  import type { AstroComponentFactory } from 'astro/runtime/server/index.js';
+  export const Layout: AstroComponentFactory;
+  export const sections: Record<string, AstroComponentFactory>;
 }

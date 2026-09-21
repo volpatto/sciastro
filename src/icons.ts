@@ -5,13 +5,18 @@ import type { IconSetting, Locale, SiteConfig } from './schema.js';
 
 export type BuiltIcon =
   | { kind: 'svg'; name: string; viewBox: string; body: string }
-  | { kind: 'image'; src: string }
+  | { kind: 'image'; src: string; monochrome?: boolean }
   | false;
 
 /** Only installed catalogs are used; there are no requests to an icon API. */
 export function resolveIcon(setting: IconSetting, field: string): BuiltIcon {
   if (setting === false) return false;
-  if (typeof setting === 'object') return { kind: 'image', src: setting.src };
+  if (typeof setting === 'object')
+    return {
+      kind: 'image',
+      src: setting.src,
+      ...(setting.monochrome ? { monochrome: true } : {}),
+    };
   const [prefix, name] = setting.split(':');
   const collection =
     prefix === 'lucide'

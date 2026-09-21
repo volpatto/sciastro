@@ -21,6 +21,12 @@ const { icon, base } = Astro.props;
       focusable="false"
       set:html={icon.body}
     />
+  ) : icon.monochrome ? (
+    <span
+      class="ui-icon monochrome-icon"
+      aria-hidden="true"
+      style={`mask-image:url("${encodeURI(assetPath(base, icon.src)).replaceAll('\"', '%22')}")`}
+    />
   ) : (
     <img
       class="ui-icon"

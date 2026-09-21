@@ -4,6 +4,7 @@ import { defineConfig } from '@playwright/test';
 const sites = [
   { kind: 'group', port: 4360 },
   { kind: 'individual', port: 4361 },
+  { kind: 'lncc', port: 4362 },
 ];
 
 export default defineConfig({
@@ -34,6 +35,7 @@ export default defineConfig({
       { label: 'mobile', width: 390, height: 844 },
     ].map(({ label, width, height }) => ({
       name: `${kind}-${label}`,
+      testMatch: kind === 'lncc' ? '**/lncc.spec.mjs' : '**/site.spec.mjs',
       metadata: { kind, mobile: label === 'mobile' },
       use: { baseURL: `http://127.0.0.1:${port}`, viewport: { width, height } },
     })),

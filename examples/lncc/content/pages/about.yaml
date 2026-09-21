@@ -1,0 +1,30 @@
+id: home
+title: { pt: Sobre, en: About }
+paths: { pt: '', en: en/ }
+header: false
+sections:
+  - type: profile
+    title: Marina Silva
+    eyebrow: { pt: Modelagem computacional, en: Computational modeling }
+    text:
+      pt: Este exemplo demonstra páginas compostas com conteúdo em YAML, sem informações de uma pessoa real.
+      en: This example demonstrates composable YAML pages, without a real person's information.
+    links:
+      - label: { pt: Pesquisa, en: Research }
+        url: { pt: /linhas/#simulation, en: /en/topics/#simulation }
+        icon: lucide:flask-conical
+  - type: cards
+    title: { pt: Áreas de atuação, en: Research areas }
+    items:
+      - title: { pt: Simulação científica, en: Scientific simulation }
+        text: { pt: Métodos numéricos e software de pesquisa., en: Numerical methods and research software. }
+        links:
+          - label: { pt: Ver detalhes, en: View details }
+            url: { pt: /linhas/#simulation, en: /en/topics/#simulation }
+  - type: custom
+    component: project-note
+    id: custom-example
+    title: { pt: Uma extensão local, en: A local extension }
+    text:
+      pt: Esta seção usa um componente Astro do site e uma folha de estilos própria.
+      en: This section uses the website's own Astro component and stylesheet.

@@ -1,8 +1,8 @@
-# My SciPages website
+# My SciAstro website
 
-Edit `scipages.yaml` and the files in `content/`. Put public images and downloads
+Edit `sciastro.yaml` and the files in `content/`. Put public images and downloads
 in `public/`. References live in `content/references.bib`; cite them with `[@key]`.
-Generated pages and styles are provided by the SciPages package.
+Generated pages and styles are provided by the SciAstro package.
 
 ## Set up the environment
 
@@ -15,14 +15,14 @@ In this website's directory:
 pixi install
 ```
 
-**If SciPages is not published on npm yet**, install a local package archive before
-running the normal installation. Assuming sibling `scipages` and website directories:
+**If SciAstro is not published on npm yet**, install a local package archive before
+running the normal installation. Assuming sibling `sciastro` and website directories:
 
 ```sh
-pixi run pnpm add scipages@file:../scipages/artifacts/scipages-0.1.0-alpha.0.tgz --save-exact
+pixi run pnpm add sciastro@file:../sciastro/artifacts/sciastro-0.1.0-alpha.1.tgz --save-exact
 ```
 
-The archive is created with `pixi run --locked pack` in the SciPages repository.
+The archive is created with `pixi run --locked pack` in the SciAstro repository.
 Adjust its path and version to your installation. If you have a version already
 published to npm, use `pixi run pnpm install` instead.
 
@@ -49,7 +49,7 @@ Use `locales: [en]` and `defaultLocale: en` for an English-only site, or keep bo
 languages and set `defaultLocale: en` for English at the root URL. Existing English
 content files are ready to edit; research/person names in the starter are fictional.
 
-- `scipages.yaml`: site identity, languages, theme, icons and bibliography settings.
+- `sciastro.yaml`: site identity, languages, theme, icons and bibliography settings.
 - `content/home.*.md`: introduction.
 - `content/research.yaml` and `content/research/`: research cards and details.
 - `content/team.yaml`: faculty, researchers, active students and alumni.
@@ -65,7 +65,7 @@ Check content without producing a website:
 pixi run pnpm check
 ```
 
-Before deployment, set `url` and `base` in `scipages.yaml`. For a site hosted at
+Before deployment, set `url` and `base` in `sciastro.yaml`. For a site hosted at
 `https://example.org/my-group/`, use `url: https://example.org` and `base: /my-group/`.
 `SITE_URL` and `BASE_PATH` can also override the destination during the build.
 
@@ -79,4 +79,4 @@ static files, including `index.html` for directories and `404.html` with HTTP 40
 for missing pages. No Node.js process is needed on the hosting server.
 
 For package development, installation details and configuration guides, see the
-[SciPages README](https://github.com/volpatto/scipages#readme).
+[SciAstro README](https://github.com/volpatto/scipages#readme).

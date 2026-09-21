@@ -7,7 +7,7 @@ import { loadSite, within } from '../dist/content.js';
 import { configSchema, teamSchema } from '../dist/schema.js';
 
 test('group home has short cards pointing to stable research section identifiers', async () => {
-  const site = await loadSite(resolve('examples/group/scipages.yaml'));
+  const site = await loadSite(resolve('examples/group/sciastro.yaml'));
   const home = site.pages.find(
     (page) => page.id === 'home' && page.locale === 'pt',
   );
@@ -30,7 +30,7 @@ test('group home has short cards pointing to stable research section identifiers
 });
 
 test('individual site uses Sobre/Orientações', async () => {
-  const site = await loadSite(resolve('examples/individual/scipages.yaml'));
+  const site = await loadSite(resolve('examples/individual/sciastro.yaml'));
   assert.equal(
     site.pages.find((page) => page.id === 'home' && page.locale === 'pt').title,
     'Sobre',
@@ -42,7 +42,7 @@ test('individual site uses Sobre/Orientações', async () => {
 });
 
 test('all generated routes and Markdown links can be mounted in a subdirectory', async () => {
-  const site = await loadSite(resolve('examples/group/scipages.yaml'), {
+  const site = await loadSite(resolve('examples/group/sciastro.yaml'), {
     url: 'https://university.example.org',
     base: '/research/lab/',
   });
@@ -89,10 +89,10 @@ test('student levels and periods must be consistent', () => {
 });
 
 test('missing translations and unknown student levels include actionable errors', async (t) => {
-  const folder = await mkdtemp(join(tmpdir(), 'scipages-content-'));
+  const folder = await mkdtemp(join(tmpdir(), 'sciastro-content-'));
   t.after(() => rm(folder, { recursive: true, force: true }));
   await cp('starters/group', folder, { recursive: true });
-  const configFile = join(folder, 'scipages.yaml');
+  const configFile = join(folder, 'sciastro.yaml');
   const config = await readFile(configFile, 'utf8');
   await writeFile(
     configFile,
@@ -138,7 +138,7 @@ test('minimal configuration supports one language and optional sections', () => 
 });
 
 test('a minimal English-only site builds without research, people or bibliography files', async (t) => {
-  const folder = await mkdtemp(join(tmpdir(), 'scipages-minimal-'));
+  const folder = await mkdtemp(join(tmpdir(), 'sciastro-minimal-'));
   t.after(() => rm(folder, { recursive: true, force: true }));
   await cp('starters/group', folder, { recursive: true });
   for (const file of [
@@ -149,20 +149,20 @@ test('a minimal English-only site builds without research, people or bibliograph
   ])
     await rm(join(folder, 'content', file));
   await writeFile(
-    join(folder, 'scipages.yaml'),
+    join(folder, 'sciastro.yaml'),
     'schemaVersion: 1\nkind: group\nname: Example\ndescription: Minimal English site\nurl: https://example.org\nlocales: [en]\ndefaultLocale: en\nhome:\n  body: home.en.md\n',
   );
-  const site = await loadSite(join(folder, 'scipages.yaml'));
+  const site = await loadSite(join(folder, 'sciastro.yaml'));
   assert.equal(site.pages.length, 1);
   assert.equal(site.pages[0].title, 'Home');
   assert.equal(site.pages[0].path, '/');
 });
 
 test('citable references are not automatically listed as the site author’s publications', async (t) => {
-  const folder = await mkdtemp(join(tmpdir(), 'scipages-publications-'));
+  const folder = await mkdtemp(join(tmpdir(), 'sciastro-publications-'));
   t.after(() => rm(folder, { recursive: true, force: true }));
   await cp('starters/group', folder, { recursive: true });
-  const configFile = join(folder, 'scipages.yaml');
+  const configFile = join(folder, 'sciastro.yaml');
   const config = await readFile(configFile, 'utf8');
   await writeFile(
     configFile,

@@ -1,9 +1,9 @@
 schemaVersion: 1
-kind: group
-name: Grupo Horizonte
+kind: individual
+name: Ana Silva
 description:
-  pt: Modelagem matemática e computação científica.
-  en: Mathematical modeling and scientific computing.
+  pt: Pesquisadora em métodos numéricos e computação científica.
+  en: Researcher in numerical methods and scientific computing.
 affiliation:
   pt: Universidade Exemplo
   en: Example University
@@ -11,14 +11,14 @@ url: https://example.org
 base: /
 locales: [pt, en]
 defaultLocale: pt
-theme: classic
+theme: modern
 # Ícones opcionais: omitir mantém os padrões; false oculta um ícone.
-# Veja docs/icones.md no SciPages para catálogos e arquivos próprios.
+# Veja docs/icones.md no SciAstro para catálogos e arquivos próprios.
 icons:
   navigation:
-    home: lucide:house
+    home: lucide:user-round
     research: lucide:flask-conical
-    team: lucide:users-round
+    team: lucide:graduation-cap
     publications: lucide:book-open
   languages:
     pt: circle-flags:br

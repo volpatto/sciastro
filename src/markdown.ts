@@ -10,7 +10,7 @@ export function markdownContext(
 ) {
   const cited = new Set<string>();
   const md = new MarkdownIt({ html: false, linkify: true });
-  md.inline.ruler.before('link', 'scipages-citation', (state, silent) => {
+  md.inline.ruler.before('link', 'sciastro-citation', (state, silent) => {
     if (state.src.slice(state.pos, state.pos + 2) !== '[@') return false;
     const end = state.src.indexOf(']', state.pos);
     if (end === -1) return false;
@@ -29,13 +29,13 @@ export function markdownContext(
           );
         cited.add(key);
       });
-      const token = state.push('scipages-citation', '', 0);
+      const token = state.push('sciastro-citation', '', 0);
       token.meta = { keys: ids };
     }
     state.pos = end + 1;
     return true;
   });
-  md.renderer.rules['scipages-citation'] = (tokens, index) =>
+  md.renderer.rules['sciastro-citation'] = (tokens, index) =>
     bibliography.citation(tokens[index].meta!.keys as string[], locale);
   const linkRule =
     md.renderer.rules.link_open ??

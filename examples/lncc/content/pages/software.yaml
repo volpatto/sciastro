@@ -1,0 +1,19 @@
+id: software
+title: Software
+paths: { pt: software/, en: en/software/ }
+icon: lucide:code-xml
+sections:
+  - type: prose
+    tone: note
+    title: { pt: Práticas de desenvolvimento, en: Development practices }
+    text: { pt: Exemplo de apresentação de testes e documentação., en: Example presentation of testing and documentation. }
+  - type: cards
+    layout: rows
+    items:
+      - title: Example Solver
+        eyebrow: Python
+        text: { pt: Software fictício para demonstração., en: Fictional demonstration software. }
+        links:
+          - label: GitHub
+            url: https://github.com/volpatto/scipages
+            icon: lucide:code-xml

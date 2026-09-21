@@ -1,0 +1,214 @@
+/* LNCC Theme: adapted from Diego Volpatto's MIT-licensed personal website.
+   Institutional logos and personal content are supplied by each consumer. */
+:root[data-design='lncc'] {
+  --paper: #fcfcfe;
+  --surface: #f2f3f8;
+  --ink: #20263e;
+  --muted: #606779;
+  --accent: #5146a5;
+  --line: #dfe2eb;
+  --content-width: 1160px;
+  --body-font: 'Manrope Variable', sans-serif;
+  --heading: 'Newsreader Variable', Georgia, serif;
+}
+:root[data-design='lncc'][data-theme='dark'] {
+  --paper: #141827;
+  --surface: #1d2235;
+  --ink: #e7eaf4;
+  --muted: #adb5c9;
+  --accent: #b6abed;
+  --line: #353b50;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-design='lncc']:not([data-theme='light']) {
+    --paper: #141827;
+    --surface: #1d2235;
+    --ink: #e7eaf4;
+    --muted: #adb5c9;
+    --accent: #b6abed;
+    --line: #353b50;
+  }
+}
+[data-design='lncc'] {
+  scroll-padding-top: 108px;
+}
+[data-design='lncc'] body {
+  line-height: 1.8;
+}
+[data-design='lncc'] h1 {
+  font: 500 2.55rem/1.2 var(--heading);
+  letter-spacing: -0.025em;
+}
+[data-design='lncc'] h2 {
+  font: 650 1.13rem/1.5 var(--body-font);
+  letter-spacing: -0.015em;
+}
+[data-design='lncc'] h3 {
+  font: 650 1rem/1.6 var(--body-font);
+}
+[data-design='lncc'] a {
+  text-decoration: none;
+}
+[data-design='lncc'] .prose a,
+[data-design='lncc'] .sp-links a {
+  text-decoration: underline;
+}
+[data-design='lncc'] .site-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--paper);
+}
+[data-design='lncc'] .masthead {
+  min-height: 84px;
+  padding-block: 16px;
+}
+[data-design='lncc'] .identity strong {
+  font-size: 1rem;
+}
+[data-design='lncc'] .identity small {
+  font-size: 0.75rem;
+}
+.lncc-shell {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: 52px;
+  align-items: start;
+}
+.lncc-shell .site-navigation {
+  align-self: stretch;
+  padding-top: 42px;
+}
+.lncc-shell .navigation {
+  position: sticky;
+  top: 110px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+.lncc-shell .navigation nav {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 0;
+}
+.lncc-shell .navigation a {
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  border-left: 2px solid transparent;
+  border-bottom: 0;
+}
+.lncc-shell .navigation a[aria-current] {
+  color: var(--accent);
+  border-left-color: var(--accent);
+  background: var(--surface);
+}
+.lncc-shell main {
+  padding-top: 44px;
+  padding-bottom: 40px;
+}
+.lncc-shell .page-heading {
+  padding: 0 0 32px;
+}
+.lncc-shell .page-heading h1 {
+  margin: 0;
+}
+[data-design='lncc'] .sp-profile h1 {
+  font-size: 3rem;
+}
+[data-design='lncc'] .sp-section {
+  margin-bottom: 42px;
+}
+[data-design='lncc'] .sp-figure .sp-links a {
+  font-size: 0.73rem;
+}
+[data-design='lncc'] .sp-section.sp-figure {
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--line);
+}
+[data-design='lncc'] .sp-profile .prose {
+  font-size: 0.98rem;
+}
+[data-design='lncc'] .site-footer {
+  margin-top: 15px;
+  padding-block: 26px;
+  font-size: 0.8rem;
+}
+@media (max-width: 1100px) {
+  .lncc-shell {
+    grid-template-columns: 160px minmax(0, 1fr);
+    gap: 30px;
+  }
+}
+@media (max-width: 850px) {
+  .lncc-shell {
+    display: block;
+  }
+  .lncc-shell .site-navigation {
+    padding-top: 18px;
+  }
+  .lncc-shell .navigation {
+    position: static;
+  }
+  .lncc-shell .navigation summary {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+  }
+  .lncc-shell .navigation:not([open]) nav {
+    display: none;
+  }
+  .lncc-shell main {
+    padding-top: 26px;
+  }
+}
+@media (min-width: 851px) {
+  .lncc-shell .navigation summary {
+    display: none;
+  }
+}
+@media (max-width: 600px) {
+  [data-design='lncc'] h1 {
+    font-size: 2.2rem;
+  }
+  [data-design='lncc'] .sp-profile h1 {
+    font-size: 2.5rem;
+  }
+  [data-design='lncc'] .masthead {
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  [data-design='lncc'] .identity {
+    gap: 10px;
+  }
+  [data-design='lncc'] .identity strong {
+    font-size: 0.88rem;
+  }
+  [data-design='lncc'] .brand-logo,
+  [data-design='lncc'] .brand-mark {
+    width: 34px;
+    height: 34px;
+  }
+  [data-design='lncc'] .header-tools {
+    gap: 10px;
+  }
+}
+@media print {
+  .lncc-shell {
+    display: block;
+  }
+  .site-header,
+  .site-navigation,
+  .theme-toggle {
+    display: none;
+  }
+  .sp-section,
+  .sp-entry {
+    break-inside: avoid;
+  }
+}
+
+.lncc-shell .navigation nav a[aria-current]::after {
+  display: none;
+}

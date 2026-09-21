@@ -1,12 +1,12 @@
 # BibTeX references and citations
 
-SciPages uses Citation.js to parse BibTeX and format references with CSL. Processing
+SciAstro uses Citation.js to parse BibTeX and format references with CSL. Processing
 happens during the build. Visitors receive static HTML without external lookups
 or bibliography processing in the browser.
 
 ## Configuration
 
-In `scipages.yaml`:
+In `sciastro.yaml`:
 
 ```yaml
 bibliography:

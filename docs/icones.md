@@ -21,7 +21,7 @@ Contact in `content/pages.yaml`.
 
 ## Change an icon
 
-In `scipages.yaml`, override only the items you want to change. Omitted items keep
+In `sciastro.yaml`, override only the items you want to change. Omitted items keep
 their defaults:
 
 ```yaml

@@ -1,11 +1,12 @@
-# SciPages architecture
+# SciAstro architecture
 
 This repository produces an npm package. Consumer websites keep their content
-separate and load the integration with `import scipages from 'scipages'`.
+separate and load the integration with `import sciastro from 'sciastro'`.
 
 | Path | Responsibility |
 | --- | --- |
 | `src/index.ts` | Astro integration: configuration, routes and virtual content module |
+| `src/sections.ts` | Composed-page schemas and localized section preparation |
 | `src/schema.ts` | Configuration, research, team and page contracts |
 | `src/content.ts` | Reading, validation and preparation of localized pages |
 | `src/markdown.ts` | Markdown, base-aware links and citation syntax |
@@ -14,7 +15,7 @@ separate and load the integration with `import scipages from 'scipages'`.
 | `src/icons.ts` | Local icon resolution and menu/language defaults |
 | `src/components/` | Layout, bibliography, icons and member presentation |
 | `src/pages/` | Routes injected into consumer websites |
-| `src/styles/site.css` | Themes, light/dark modes and responsive layout |
+| `src/styles/` | Shared styling, sections and LNCC Theme |
 | `src/cli.ts` | Project generation and content validation |
 | `starters/` | Initial files shipped with the package |
 | `examples/` | Local consumers using the workspace dependency |
@@ -26,7 +27,7 @@ separate and load the integration with `import scipages from 'scipages'`.
 
 ## Build flow
 
-1. The integration reads `scipages.yaml` from the consumer's root.
+1. The integration reads `sciastro.yaml` from the consumer's root.
 2. Zod validates the configuration and content; enabled languages are resolved.
 3. Markdown and BibTeX become page data and HTML during generation.
 4. A virtual module supplies that data to the package's Astro pages.
@@ -46,7 +47,7 @@ restart Vite so that configuration and routes also refresh.
 
 TypeScript compiles to JavaScript and type declarations. Astro components and CSS
 are copied into `dist/` and compiled by the consumer's Astro build. The package
-includes `starters/` and documentation. Development examples and tests are not shipped.
+includes `starters/` and documentation. The small LNCC example is included as a customization reference; other development examples and tests are not shipped.
 
 `pnpm pack` builds before creating the `.tgz`. Distribution tests install that
 archive in temporary directories outside the workspace and build both site kinds.
@@ -61,7 +62,7 @@ researcher's content out of the generic package implementation.
 
 The build checks structure, translations, declared images/icons, bibliography keys,
 identifiers and student-level relationships. Consumer tests additionally check local
-links and anchors in generated HTML. `scipages check` does not check external websites
+links and anchors in generated HTML. `sciastro check` does not check external websites
 or establish the scientific accuracy of text and references.
 
 CI runs package verification on Linux, macOS and Windows, and browser interaction
@@ -69,3 +70,13 @@ tests on Linux/Chromium. Browser tests exercise both example themes at desktop a
 mobile viewport sizes, including navigation without JavaScript. They are not a
 complete accessibility audit or a substitute for checking other browser engines.
 See [Testing and contributing](testing.md) for commands, reports and expectations.
+
+## Extension boundaries
+
+`pageFiles` opts into explicit, composed pages. The integration exposes a virtual
+component registry populated only from the consumer Astro configuration. Renderer
+overrides and CSS remain executable project code, separate from editorial YAML.
+See [the public customization contract](customization.md).
+
+The development server keeps Fontsource CSS in the Vite pipeline; installed-package
+tests exercise this as well as production builds. See [Astro styling guidance](https://docs.astro.build/en/guides/styling/).

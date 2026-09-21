@@ -1,0 +1,2 @@
+/* Optional consumer CSS, without modifying the package. */
+.project-note { padding: 24px; margin-block: 32px; border: 1px dashed var(--accent); }

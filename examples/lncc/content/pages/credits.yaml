@@ -1,0 +1,7 @@
+id: credits
+title: { pt: Créditos, en: Credits }
+paths: { pt: creditos/, en: en/credits/ }
+navigation: false
+sections:
+  - type: prose
+    text: { pt: Conteúdo fictício de demonstração., en: Fictional demonstration content. }

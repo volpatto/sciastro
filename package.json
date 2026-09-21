@@ -1,6 +1,6 @@
 {
-  "name": "scipages",
-  "version": "0.1.0-alpha.0",
+  "name": "sciastro",
+  "version": "0.1.0-alpha.1",
   "description": "Academic websites from YAML, Markdown and BibTeX, powered by Astro.",
   "type": "module",
   "license": "MIT",
@@ -18,7 +18,12 @@
     "starters",
     "README.md",
     "LICENSE",
-    "docs"
+    "docs",
+    "examples/lncc/content",
+    "examples/lncc/src",
+    "examples/lncc/sciastro.yaml",
+    "examples/lncc/astro.config.mjs",
+    "examples/lncc/package.json"
   ],
   "exports": {
     ".": {
@@ -34,10 +39,18 @@
       "import": "./dist/bibliography.js"
     },
     "./page.astro": "./dist/pages/Page.astro",
-    "./404.astro": "./dist/pages/404.astro"
+    "./404.astro": "./dist/pages/404.astro",
+    "./components/Layout.astro": "./dist/components/Layout.astro",
+    "./components/Section.astro": "./dist/components/sections/Section.astro",
+    "./components/Figure.astro": "./dist/components/sections/Figure.astro",
+    "./components/Links.astro": "./dist/components/sections/Links.astro",
+    "./sections": {
+      "types": "./dist/sections.d.ts",
+      "import": "./dist/sections.js"
+    }
   },
   "bin": {
-    "scipages": "./dist/cli.js"
+    "sciastro": "./dist/cli.js"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json && node scripts/copy-assets.mjs",
@@ -47,12 +60,13 @@
     "test:browser": "pnpm build && pnpm build:examples && playwright test",
     "test:browser:run": "playwright test",
     "verify:all": "pnpm verify && pnpm test:browser:run",
-    "build:examples": "pnpm --filter scipages-example-group build && pnpm --filter scipages-example-individual build",
-    "dev": "pnpm --filter scipages-example-group dev",
-    "dev:individual": "pnpm --filter scipages-example-individual dev",
+    "build:examples": "pnpm --filter sciastro-example-group build && pnpm --filter sciastro-example-individual build && pnpm --filter sciastro-example-lncc build",
+    "dev": "pnpm --filter sciastro-example-group dev",
+    "dev:individual": "pnpm --filter sciastro-example-individual dev",
     "verify": "pnpm check && pnpm build && pnpm test && pnpm build:examples && pnpm test:package",
     "prepack": "pnpm build",
-    "format": "prettier --write src scripts tests .github package.json tsconfig*.json"
+    "format": "prettier --write src scripts tests .github package.json tsconfig*.json",
+    "dev:lncc": "pnpm --filter sciastro-example-lncc dev"
   },
   "peerDependencies": {
     "astro": "^7.3.3"
@@ -67,7 +81,9 @@
     "markdown-it": "15.0.2",
     "sanitize-html": "^2.17.0",
     "yaml": "^2.9.1",
-    "zod": "^4.6.5"
+    "zod": "^4.6.5",
+    "@fontsource-variable/manrope": "^5.2.8",
+    "@fontsource-variable/newsreader": "^5.2.8"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",

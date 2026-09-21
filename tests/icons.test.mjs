@@ -85,16 +85,16 @@ test('invalid catalog names, raw SVG and remote images cannot masquerade as loca
   ])
     assert.equal(iconSchema.safeParse(input).success, false);
   assert.throws(
-    () => resolveIcon('lucide:no-such-icon-scipages', 'icons.navigation.home'),
+    () => resolveIcon('lucide:no-such-icon-sciastro', 'icons.navigation.home'),
     /icons.navigation.home.*não encontrado/,
   );
 });
 
 test('content validation handles partial locale overrides, custom files and actionable errors', async (t) => {
-  const folder = await mkdtemp(join(tmpdir(), 'scipages-icons-'));
+  const folder = await mkdtemp(join(tmpdir(), 'sciastro-icons-'));
   t.after(() => rm(folder, { recursive: true, force: true }));
   await cp(resolve('starters/group'), folder, { recursive: true });
-  const file = join(folder, 'scipages.yaml');
+  const file = join(folder, 'sciastro.yaml');
   const data = parse(await readFile(file, 'utf8'));
   const save = async (icons) => writeFile(file, stringify({ ...data, icons }));
   await save({ languages: { pt: 'circle-flags:pt' } });

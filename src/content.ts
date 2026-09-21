@@ -21,6 +21,11 @@ import {
 import { translate, routePath, labels } from './i18n.js';
 import { Bibliography, type Reference } from './bibliography.js';
 import { markdownContext } from './markdown.js';
+import {
+  composedPageSchema,
+  buildSection,
+  type BuiltSection,
+} from './sections.js';
 
 export interface BuiltArea {
   id: string;
@@ -38,6 +43,11 @@ export interface BuiltPage {
   html: string;
   references: Reference[];
   areas: BuiltArea[];
+  description?: string;
+  heading?: string;
+  navigation?: boolean;
+  header?: boolean;
+  sections?: BuiltSection[];
 }
 export interface BuiltSite {
   config: SiteConfig;
@@ -45,6 +55,8 @@ export interface BuiltSite {
   pages: BuiltPage[];
   members: Member[];
   bibliographyKeys: string[];
+  copyright: Partial<Record<Locale, string>>;
+  footer: Partial<Record<Locale, string>>;
 }
 
 export function within(root: string, file: string): string {
@@ -117,7 +129,10 @@ function checkTranslations(
 
 async function checkImage(root: string, src: string) {
   if (/^https?:\/\//.test(src)) return;
-  const file = within(join(root, 'public'), src.replace(/^\//, ''));
+  const file = within(
+    join(root, 'public'),
+    src.split(/[?#]/)[0].replace(/^\//, ''),
+  );
   try {
     await access(file);
   } catch {
@@ -137,6 +152,7 @@ export async function loadSite(
     ),
   });
   const dir = within(root, config.contentDir);
+  if (config.pageFiles) return loadComposed(root, dir, config);
   const research = await yaml(join(dir, 'research.yaml'), researchSchema, true);
   const members = await yaml(join(dir, 'team.yaml'), teamSchema, true);
   const custom = await yaml(join(dir, 'pages.yaml'), pagesSchema, true);
@@ -273,7 +289,7 @@ export async function loadSite(
     });
     const homeContext = markdownContext(bibliography, locale, config.base);
     const home = makePage('home', config.kind === 'group' ? l.home : l.about);
-    home.html = await render(translate(config.home.body, locale), homeContext);
+    home.html = await render(translate(config.home!.body, locale), homeContext);
     home.references = homeContext.references();
     home.areas = research.map((area) => ({
       id: area.id,
@@ -332,5 +348,206 @@ export async function loadSite(
     pages,
     members,
     bibliographyKeys: bibliography.keys,
+    copyright: Object.fromEntries(
+      config.locales.map((locale) => [
+        locale,
+        config.copyright
+          ? markdownContext(bibliography, locale, config.base).render(
+              translate(config.copyright, locale),
+            )
+          : '',
+      ]),
+    ),
+    footer: Object.fromEntries(
+      config.locales.map((locale) => [
+        locale,
+        config.footer
+          ? markdownContext(bibliography, locale, config.base).render(
+              translate(config.footer, locale),
+            )
+          : '',
+      ]),
+    ),
+  };
+}
+
+async function loadComposed(
+  root: string,
+  dir: string,
+  config: SiteConfig,
+): Promise<BuiltSite> {
+  const members = await yaml(join(dir, 'team.yaml'), teamSchema, true);
+  unique(
+    members.map((member) => member.id),
+    'Team',
+  );
+  for (const member of members)
+    if (
+      member.level &&
+      !config.studentLevels.some((level) => level.id === member.level)
+    )
+      throw new Error(
+        `Team ${member.id}: unknown student level ${member.level}`,
+      );
+  checkTranslations(members, config.locales, 'team');
+  const entries = await Promise.all(
+    config.pageFiles!.map((file) =>
+      yaml(within(dir, file), composedPageSchema),
+    ),
+  );
+  unique(
+    entries.map((page) => page.id),
+    'Pages',
+  );
+  if (!entries.some((page) => page.id === 'home'))
+    throw new Error('pageFiles must contain a home page.');
+  const pageIds = new Set(entries.map((page) => page.id));
+  for (const page of entries) {
+    checkTranslations(page, config.locales, `page.${page.id}`);
+    for (const locale of config.locales) {
+      const path = page.paths[locale];
+      if (
+        path === undefined ||
+        (path !== '' && !/^(?:[a-z0-9-]+\/)+$/.test(path))
+      )
+        throw new Error(
+          `page.${page.id}.paths.${locale}: use a relative path ending in /, or an empty home path.`,
+        );
+      if (path === '404/' || path.startsWith('_astro/'))
+        throw new Error(`page.${page.id}: reserved path ${path}`);
+    }
+    config.routes[page.id] = page.paths;
+    const ids: string[] = [];
+    for (const section of page.sections) {
+      if (section.id) ids.push(section.id);
+      if (
+        'items' in section &&
+        section.type !== 'logos' &&
+        section.type !== 'publications'
+      )
+        for (const item of section.items) if (item.id) ids.push(item.id);
+    }
+    unique(ids, `page.${page.id} section IDs`);
+    if (ids.includes('main'))
+      throw new Error(`page.${page.id}: main is a reserved section ID.`);
+    const profileCount = page.sections.filter(
+      (section) => section.type === 'profile',
+    ).length;
+    if (
+      profileCount > 1 ||
+      (profileCount && page.header) ||
+      (!page.header && profileCount !== 1)
+    )
+      throw new Error(
+        `page.${page.id}: use one profile with header: false, or header: true without a profile.`,
+      );
+  }
+  unique(config.navigation ?? [], 'Navigation');
+  for (const key of config.navigation ?? [])
+    if (!pageIds.has(key))
+      throw new Error(`navigation: unknown page '${key}'.`);
+  const { icons, routes, ...translated } = config;
+  checkTranslations(translated, config.locales);
+  if (icons !== false && icons.navigation !== false)
+    for (const key of Object.keys(icons.navigation))
+      if (!pageIds.has(key))
+        throw new Error(`icons.navigation: unknown page '${key}'.`);
+  // Walk declared assets and icon settings before rendering. Custom props stay opaque.
+  async function assets(value: unknown): Promise<void> {
+    if (!value || typeof value !== 'object') return;
+    if (Array.isArray(value)) {
+      for (const child of value) await assets(child);
+      return;
+    }
+    const object = value as Record<string, unknown>;
+    if (typeof object.src === 'string') await checkImage(root, object.src);
+    if (object.icon !== undefined)
+      resolveIcon(object.icon as IconSetting, 'section.icon');
+    for (const [key, child] of Object.entries(object))
+      if (key !== 'props' && key !== 'structuredData') await assets(child);
+  }
+  await assets([config, entries, members]);
+  for (const member of members)
+    if (member.photo) await checkImage(root, member.photo.src);
+  if (config.favicon) await checkImage(root, config.favicon);
+  const bibliography = new Bibliography(
+    config.bibliography
+      ? await read(within(dir, config.bibliography.file))
+      : '',
+    config.bibliography?.style,
+  );
+  const pages: BuiltPage[] = [];
+  for (const locale of config.locales)
+    for (const entry of entries) {
+      const context = markdownContext(bibliography, locale, config.base);
+      const html = entry.body
+        ? context.render(await read(within(dir, translate(entry.body, locale))))
+        : '';
+      const sections = entry.sections.map((section) =>
+        buildSection(section, locale, context),
+      );
+      pages.push({
+        id: entry.id,
+        title: translate(entry.title, locale),
+        heading: entry.heading ? translate(entry.heading, locale) : undefined,
+        description: translate(entry.description ?? config.description, locale),
+        locale,
+        path: routePath(config, entry.id, locale),
+        icon: navigationIcon(config, entry.id, entry.icon),
+        navigation:
+          entry.navigation &&
+          (!config.navigation || config.navigation.includes(entry.id)),
+        header: entry.header,
+        html,
+        sections,
+        references: bibliography.references(
+          [
+            ...new Set([
+              ...entry.references,
+              ...context.references().map((reference) => reference.key),
+            ]),
+          ],
+          locale,
+        ),
+        areas: [],
+      });
+    }
+  unique(
+    pages.map((page) => page.path),
+    'URLs',
+  );
+  if (config.navigation)
+    pages.sort(
+      (a, b) =>
+        config.navigation!.indexOf(a.id) - config.navigation!.indexOf(b.id),
+    );
+  return {
+    config,
+    pages,
+    members,
+    bibliographyKeys: bibliography.keys,
+    languageIcons: Object.fromEntries(
+      config.locales.map((locale) => [locale, languageIcon(config, locale)]),
+    ),
+    copyright: Object.fromEntries(
+      config.locales.map((locale) => [
+        locale,
+        config.copyright
+          ? markdownContext(bibliography, locale, config.base).render(
+              translate(config.copyright, locale),
+            )
+          : '',
+      ]),
+    ),
+    footer: Object.fromEntries(
+      config.locales.map((locale) => [
+        locale,
+        config.footer
+          ? markdownContext(bibliography, locale, config.base).render(
+              translate(config.footer, locale),
+            )
+          : '',
+      ]),
+    ),
   };
 }

@@ -1,0 +1,125 @@
+---
+import { linkPath } from '../../i18n.js';
+import type { BuiltSection } from '../../sections.js';
+import type { BuiltSite, BuiltPage } from '../../content.js';
+import Links from './Links.astro';
+import Figure from './Figure.astro';
+import Entry from './Entry.astro';
+import Team from '../Team.astro';
+interface Props {
+  section: BuiltSection;
+  site: BuiltSite;
+  page: BuiltPage;
+}
+const { section: s, site, page } = Astro.props;
+const base = site.config.base;
+const heading = s.title ? 'h3' : 'h2';
+---
+
+<section
+  id={s.id}
+  class:list={[
+    'sp-section',
+    `sp-${s.type}`,
+    s.layout && `sp-${s.layout}`,
+    s.tone && `sp-${s.tone}`,
+  ]}
+>
+  {s.type === 'profile' ? (
+    <>
+      <div class="sp-profile-copy">
+        {s.eyebrow && <p class="sp-eyebrow">{s.eyebrow}</p>}
+        <h1>{s.title}</h1>
+        {s.html && <div class="prose" set:html={s.html} />}
+        <Links links={s.links} base={base} />
+      </div>
+      {s.image && <Figure image={s.image} base={base} priority />}
+    </>
+  ) : (
+    <>
+      {s.title && !s.collapsible && <h2>{s.title}</h2>}
+      {s.html && <div class="prose" set:html={s.html} />}
+      {s.type === 'team' && <Team site={site} locale={page.locale} />}
+      {s.type === 'figure' && s.image && <Figure image={s.image} base={base} />}
+      {s.type === 'cards' && (
+        <div class="sp-items">
+          {s.items!.map((item) => (
+            <Entry item={item} base={base} heading={heading} />
+          ))}
+        </div>
+      )}
+      {s.type === 'list' &&
+        (s.collapsible ? (
+          <details class="sp-disclosure" open={s.open}>
+            <summary>{s.title}</summary>
+            <div class="sp-items">
+              {s.items!.map((item) => (
+                <Entry item={item} base={base} heading={heading} />
+              ))}
+            </div>
+          </details>
+        ) : (
+          <div class="sp-items">
+            {s.items!.map((item) => (
+              <Entry item={item} base={base} heading={heading} />
+            ))}
+          </div>
+        ))}
+      {s.type === 'timeline' && (
+        <ol class="sp-timeline-items">
+          {s.items!.map((item) => (
+            <li>
+              <p class="sp-period">{item.period}</p>
+              <Entry item={item} base={base} heading={heading} />
+            </li>
+          ))}
+        </ol>
+      )}
+      {s.type === 'logos' && (
+        <ul class="sp-logo-grid">
+          {s.logos!.map((item) => (
+            <li>
+              {item.link ? (
+                <a
+                  href={linkPath(base, item.link.url)}
+                  aria-label={item.link.label}
+                >
+                  <Figure image={item.image} base={base} />
+                </a>
+              ) : (
+                <Figure image={item.image} base={base} />
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+      {s.type === 'publications' && (
+        <div class="sp-publication-list">
+          {s.publications!.map((p) => (
+            <article class="sp-publication">
+              <span class="sp-period">{p.year}</span>
+              <div>
+                {p.topic && <p class="sp-eyebrow">{p.topic}</p>}
+                <h2>
+                  <a href={'https://doi.org/' + p.doi}>{p.title}</a>
+                </h2>
+                <p class="sp-authors">{p.authors}</p>
+                <p class="sp-meta">
+                  <em>{p.journal}</em> · {p.citation}
+                </p>
+              </div>
+              <a
+                class="sp-doi"
+                href={'https://doi.org/' + p.doi}
+                aria-label={'DOI: ' + p.title}
+              >
+                DOI ↗
+              </a>
+            </article>
+          ))}
+        </div>
+      )}
+      <Links links={s.links} base={base} />
+    </>
+  )}
+</section>

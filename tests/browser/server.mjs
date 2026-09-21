@@ -3,7 +3,10 @@ import { access, readFile, stat } from 'node:fs/promises';
 import { resolve, relative, isAbsolute, extname, join } from 'node:path';
 
 const [kind, portText] = process.argv.slice(2);
-if (!['group', 'individual'].includes(kind) || !/^\d+$/.test(portText ?? ''))
+if (
+  !['group', 'individual', 'lncc'].includes(kind) ||
+  !/^\d+$/.test(portText ?? '')
+)
   throw new Error(
     'Use: node tests/browser/server.mjs group|individual <porta>',
   );

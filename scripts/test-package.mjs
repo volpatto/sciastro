@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import {
   mkdtemp,
+  cp,
   mkdir,
   readFile,
   writeFile,
@@ -14,7 +15,7 @@ import assert from 'node:assert/strict';
 import { parse, stringify } from 'yaml';
 
 const root = resolve('.');
-const scratch = await mkdtemp(join(tmpdir(), 'scipages-package-'));
+const scratch = await mkdtemp(join(tmpdir(), 'sciastro-package-'));
 const pnpm = process.env.npm_execpath;
 assert(pnpm, 'Execute este teste com pnpm test:package.');
 const run = (args, cwd = root, extraEnv = {}) =>
@@ -88,21 +89,37 @@ try {
     ]);
     const packageFile = join(consumer, 'package.json');
     const pkg = JSON.parse(await readFile(packageFile, 'utf8'));
-    pkg.dependencies.scipages = `file:${tarball}`;
+    pkg.dependencies.sciastro = `file:${tarball}`;
     await writeFile(packageFile, JSON.stringify(pkg, null, 2));
     run(['install', '--no-frozen-lockfile'], consumer);
     assert.match(
-      run(['exec', 'scipages', 'check'], consumer),
+      run(['exec', 'sciastro', 'check'], consumer),
       /OK: [1-9]\d* páginas/,
     );
     const generated = join(scratch, `${kind}-from-installed-cli`);
     assert.match(
-      run(['exec', 'scipages', 'init', generated, '--kind', kind], consumer),
+      run(
+        [
+          'exec',
+          'sciastro',
+          'init',
+          generated,
+          '--kind',
+          kind,
+          '--theme',
+          'lncc',
+        ],
+        consumer,
+      ),
       /Projeto .* criado/,
     );
     assert.match(
-      await readFile(join(generated, 'scipages.yaml'), 'utf8'),
+      await readFile(join(generated, 'sciastro.yaml'), 'utf8'),
       new RegExp(`kind: ${kind}`),
+    );
+    assert.match(
+      await readFile(join(generated, 'sciastro.yaml'), 'utf8'),
+      /theme: lncc/,
     );
     const overrides =
       kind === 'group'
@@ -111,7 +128,7 @@ try {
     // Exercise customization in a real installed consumer, including assets
     // beneath a deployment base path. The individual keeps all defaults.
     if (kind === 'group') {
-      const configFile = join(consumer, 'scipages.yaml');
+      const configFile = join(consumer, 'sciastro.yaml');
       const config = parse(await readFile(configFile, 'utf8'));
       config.icons = {
         navigation: {
@@ -128,6 +145,33 @@ try {
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg>',
       );
     }
+    const smoke = join(consumer, 'dev-test.mjs');
+    await writeFile(
+      smoke,
+      `import assert from 'node:assert/strict';
+import { dev } from 'astro';
+import {readFile,writeFile} from 'node:fs/promises';
+const server = await dev({root:process.cwd(), server:{host:'127.0.0.1',port:0}, logLevel:'error'});
+try {
+  const url='http://127.0.0.1:'+server.address.port+'/';
+  const response=await fetch(url); assert.equal(response.status,200); assert.match(await response.text(),/<h1/);
+  const original=await readFile('sciastro.yaml','utf8');
+  await writeFile('sciastro.yaml',original.replace(/^name:.*$/m,'name: Updated Regression Site'));
+  let updated=false;
+  for(let attempt=0;attempt<50&&!updated;attempt++) {
+    await new Promise(resolve=>setTimeout(resolve,100));
+    try {const response=await fetch(url,{signal:AbortSignal.timeout(1000)});updated=response.status===200&&(await response.text()).includes('Updated Regression Site');} catch {}
+  }
+  await writeFile('sciastro.yaml',original);
+  assert(updated,'YAML edit must refresh the installed-consumer preview');
+}
+finally { await server.stop(); }`,
+    );
+    execFileSync(process.execPath, [smoke], {
+      cwd: consumer,
+      stdio: 'pipe',
+      timeout: 60000,
+    });
     run(['build'], consumer, overrides);
     const count = await audit(join(consumer, 'dist'), overrides.BASE_PATH);
     const home = await readFile(join(consumer, 'dist/index.html'), 'utf8');
@@ -181,6 +225,96 @@ try {
     console.log(
       `OK: pacote instalado isoladamente (${kind}), ${count} páginas e todos os links/âncoras locais; base=${overrides.BASE_PATH}`,
     );
+    if (kind === 'individual') {
+      for (const path of ['content', 'src', 'public']) {
+        await rm(join(consumer, path), { recursive: true, force: true });
+        await cp(join(root, 'examples/lncc', path), join(consumer, path), {
+          recursive: true,
+        });
+      }
+      for (const path of ['sciastro.yaml', 'astro.config.mjs'])
+        await cp(join(root, 'examples/lncc', path), join(consumer, path));
+      const base = '/institute/lab/';
+      run(['build'], consumer, {
+        SITE_URL: 'https://institute.example.org',
+        BASE_PATH: base,
+      });
+      const count = await audit(join(consumer, 'dist'), base);
+      const home = await readFile(join(consumer, 'dist/index.html'), 'utf8');
+      assert.match(home, /data-design="lncc"/);
+      assert.match(home, /data-custom-component="project-note"/);
+      assert(
+        (
+          await readFile(join(consumer, 'dist/linhas/index.html'), 'utf8')
+        ).includes('href="/institute/lab/en/topics/"'),
+        'language switch preserves custom route under base',
+      );
+      execFileSync(process.execPath, [smoke], {
+        cwd: consumer,
+        stdio: 'pipe',
+        timeout: 60000,
+      });
+      // Exercise public renderer/layout overrides through the installed exports.
+      await writeFile(
+        join(consumer, 'src/components/LocalLayout.astro'),
+        `---
+import Base from 'sciastro/components/Layout.astro';
+---
+<Base {...Astro.props}><div data-local-layout><slot/></div></Base>`,
+      );
+      await writeFile(
+        join(consumer, 'src/components/LocalProse.astro'),
+        `---
+import Base from 'sciastro/components/Section.astro';
+---
+<div data-local-prose><Base {...Astro.props}/></div>`,
+      );
+      const originalConfig = await readFile(
+        join(consumer, 'astro.config.mjs'),
+        'utf8',
+      );
+      await writeFile(
+        join(consumer, 'astro.config.mjs'),
+        originalConfig
+          .replace(
+            'components: { sections:',
+            "components: { layout: './src/components/LocalLayout.astro', sections:",
+          )
+          .replace(
+            "'project-note':",
+            "prose: './src/components/LocalProse.astro', 'project-note':",
+          ),
+      );
+      run(['build'], consumer);
+      assert(
+        (await readFile(join(consumer, 'dist/404.html'), 'utf8')).includes(
+          'data-local-layout',
+        ),
+      );
+      assert(
+        (
+          await readFile(join(consumer, 'dist/linhas/index.html'), 'utf8')
+        ).includes('data-local-prose'),
+      );
+      await writeFile(join(consumer, 'astro.config.mjs'), originalConfig);
+      // A missing registration is an actionable build error, never an empty section.
+      const config = await readFile(join(consumer, 'astro.config.mjs'), 'utf8');
+      await writeFile(
+        join(consumer, 'astro.config.mjs'),
+        "import {defineConfig} from 'astro/config'; import sciastro from 'sciastro'; export default defineConfig({integrations:[sciastro()]});",
+      );
+      assert.throws(
+        () => run(['build'], consumer),
+        (error) =>
+          /register components.sections.project-note/.test(
+            error.stdout?.toString() + error.stderr?.toString(),
+          ),
+      );
+      await writeFile(join(consumer, 'astro.config.mjs'), config);
+      console.log(
+        `OK: LNCC Theme Installed Package Tests, ${count} pages, custom components/CSS, development and subdirectory deployment.`,
+      );
+    }
   }
 } catch (error) {
   console.error(error.stdout?.toString() ?? '');

@@ -1,0 +1,42 @@
+---
+import { assetPath } from '../../i18n.js';
+import type { BuiltFigure } from '../../sections.js';
+import Links from './Links.astro';
+interface Props {
+  image: BuiltFigure;
+  base: string;
+  priority?: boolean;
+}
+const { image, base, priority = false } = Astro.props;
+const src = assetPath(base, image.src);
+const Tag = image.enlarge ? 'a' : 'div';
+---
+
+<figure class:list={['sp-figure', { 'sp-figure-cropped': image.viewBox }]}>
+  <Tag
+    href={image.enlarge ? src : undefined}
+    aria-label={image.enlarge ? image.alt : undefined}
+  >
+    {image.viewBox ? (
+      <svg viewBox={image.viewBox} role="img" aria-label={image.alt}>
+        <image href={src} width={image.width} height={image.height} />
+      </svg>
+    ) : (
+      <img
+        src={src}
+        alt={image.alt}
+        width={image.width}
+        height={image.height}
+        loading={priority ? 'eager' : 'lazy'}
+        fetchpriority={priority ? 'high' : undefined}
+        decoding="async"
+      />
+    )}
+  </Tag>
+  {(image.caption || image.links.length > 0) && (
+    <figcaption>
+      {image.caption}
+      <Links links={image.links} base={base} />
+    </figcaption>
+  )}
+</figure>

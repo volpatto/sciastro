@@ -1,0 +1,17 @@
+id: research
+title: { pt: Pesquisa, en: Research }
+paths: { pt: linhas/, en: en/topics/ }
+description: { pt: Linhas de pesquisa do exemplo., en: Example research topics. }
+sections:
+  - type: prose
+    id: simulation
+    title: { pt: Simulação científica, en: Scientific simulation }
+    text:
+      pt: 'As citações também funcionam em seções compostas: [@silva2025].'
+      en: 'Citations work inside composed sections too: [@silva2025].'
+  - type: timeline
+    title: { pt: Projetos, en: Projects }
+    items:
+      - period: '2026'
+        title: { pt: Projeto de demonstração, en: Demonstration project }
+        text: { pt: Dados fictícios para testar a apresentação., en: Fictional data for testing presentation. }

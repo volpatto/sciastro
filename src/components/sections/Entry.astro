@@ -1,0 +1,29 @@
+---
+import type { BuiltEntry } from '../../sections.js';
+import Links from './Links.astro';
+import Figure from './Figure.astro';
+interface Props {
+  item: BuiltEntry;
+  base: string;
+  heading?: 'h2' | 'h3';
+}
+const { item, base, heading: Heading = 'h3' } = Astro.props;
+---
+
+<article class="sp-entry" id={item.id}>
+  {item.images.length > 0 && (
+    <div class="sp-entry-images">
+      {item.images.map((image) => (
+        <Figure image={image} base={base} />
+      ))}
+    </div>
+  )}
+  <div class="sp-entry-copy">
+    {item.eyebrow && <p class="sp-eyebrow">{item.eyebrow}</p>}
+    <Heading>{item.title}</Heading>
+    {item.subtitle && <p class="sp-subtitle">{item.subtitle}</p>}
+    {item.meta && <p class="sp-meta">{item.meta}</p>}
+    {item.html && <div class="prose" set:html={item.html} />}
+    <Links links={item.links} base={base} />
+  </div>
+</article>

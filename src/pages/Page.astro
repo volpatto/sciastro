@@ -1,9 +1,13 @@
 ---
-import site from 'virtual:scipages';
+import site from 'virtual:sciastro';
 import type { BuiltPage } from '../content.js';
-import Layout from '../components/Layout.astro';
+import {
+  Layout,
+  sections as sectionComponents,
+} from 'virtual:sciastro/components';
+import Section from '../components/sections/Section.astro';
 import References from '../components/References.astro';
-import MemberCard from '../components/MemberCard.astro';
+import Team from '../components/Team.astro';
 import { labels, translate, routePath, assetPath } from '../i18n.js';
 export function getStaticPaths() {
   return site.pages.map((page) => ({
@@ -19,23 +23,28 @@ interface Props {
   page: BuiltPage;
 }
 const { page } = Astro.props;
-const { config, members } = site;
+const { config } = site;
 const l = labels[page.locale];
-const faculty = members.filter(
-  (person) => person.status === 'active' && person.role === 'faculty',
-);
-const researchers = members.filter(
-  (person) => person.status === 'active' && person.role === 'researcher',
-);
-const alumni = members.filter((person) => person.status === 'alumni');
-const groups = [
-  { id: 'faculty', title: l.faculty, members: faculty },
-  { id: 'researchers', title: l.researchers, members: researchers },
-];
 ---
 
 <Layout site={site} page={page}>
-  {page.id === 'home' ? (
+  {page.sections ? (
+    <>
+      {page.header && (
+        <header class="page-heading">
+          <h1>{page.heading ?? page.title}</h1>
+        </header>
+      )}
+      {page.html && <div class="prose content-page" set:html={page.html} />}
+      {page.sections.map((section) => {
+        const Component =
+          sectionComponents[
+            section.type === 'custom' ? section.component! : section.type
+          ] ?? Section;
+        return <Component section={section} site={site} page={page} />;
+      })}
+    </>
+  ) : page.id === 'home' ? (
     <>
       <section class="home-introduction">
         <div class="intro-copy">
@@ -144,71 +153,7 @@ const groups = [
           ))}
         </div>
       )}
-      {page.id === 'team' && (
-        <div class="team-sections">
-          {groups
-            .filter((group) => group.members.length)
-            .map((group) => (
-              <section id={group.id} class="team-section">
-                <h2>{group.title}</h2>
-                <div class="member-grid">
-                  {group.members.map((member) => (
-                    <MemberCard
-                      member={member}
-                      locale={page.locale}
-                      config={config}
-                    />
-                  ))}
-                </div>
-              </section>
-            ))}
-          {members.some(
-            (member) => member.role === 'student' && member.status === 'active',
-          ) && (
-            <section id="students" class="team-section">
-              <h2>{l.students}</h2>
-              {config.studentLevels.map((level) => {
-                const students = members.filter(
-                  (member) =>
-                    member.status === 'active' &&
-                    member.role === 'student' &&
-                    member.level === level.id,
-                );
-                return (
-                  students.length > 0 && (
-                    <section class="student-level" id={`level-${level.id}`}>
-                      <h3>{translate(level.label, page.locale)}</h3>
-                      <div class="member-grid">
-                        {students.map((member) => (
-                          <MemberCard
-                            member={member}
-                            locale={page.locale}
-                            config={config}
-                          />
-                        ))}
-                      </div>
-                    </section>
-                  )
-                );
-              })}
-            </section>
-          )}
-          {alumni.length > 0 && (
-            <section id="alumni" class="team-section">
-              <h2>{l.alumni}</h2>
-              <div class="member-grid">
-                {alumni.map((member) => (
-                  <MemberCard
-                    member={member}
-                    locale={page.locale}
-                    config={config}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
-        </div>
-      )}
+      {page.id === 'team' && <Team site={site} locale={page.locale} />}
       {page.html && <div class="prose content-page" set:html={page.html} />}
       {page.id === 'publications' && !page.references.length && (
         <p>{l.emptyReferences}</p>

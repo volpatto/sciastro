@@ -26,6 +26,7 @@ export const iconSchema = z.union([
   ),
   z
     .object({
+      monochrome: z.boolean().optional(),
       src: text.refine(
         (value) =>
           !/^(?:[a-z][a-z0-9+.-]*:|\/\/)/i.test(value) &&
@@ -72,12 +73,58 @@ export const configSchema = z
       .default('/'),
     locales: z.array(localeSchema).nonempty().default(['pt']),
     defaultLocale: localeSchema.default('pt'),
-    theme: z.enum(['classic', 'modern']).default('classic'),
+    theme: z.enum(['classic', 'modern', 'lncc']).default('classic'),
+    // Explicit pages replace automatic pages; their order is the menu order.
+    pageFiles: z.array(text).nonempty().optional(),
+    navigation: z.array(id).optional(),
+    routes: z
+      .record(
+        id,
+        z
+          .object({ pt: z.string().optional(), en: z.string().optional() })
+          .strict(),
+      )
+      .default({}),
+    structuredData: z.record(z.string(), z.unknown()).optional(),
+    ui: z.record(text, localizedSchema).default({}),
+    appearance: z
+      .object({
+        light: z
+          .partialRecord(
+            z.enum(['paper', 'surface', 'ink', 'muted', 'accent', 'line']),
+            text.regex(/^#[0-9a-fA-F]{6}$/),
+          )
+          .default({}),
+        dark: z
+          .partialRecord(
+            z.enum(['paper', 'surface', 'ink', 'muted', 'accent', 'line']),
+            text.regex(/^#[0-9a-fA-F]{6}$/),
+          )
+          .default({}),
+        contentWidth: z.number().min(720).max(1600).default(1160),
+        bodyFont: text.regex(/^[\w\s,'"-]+$/).optional(),
+        headingFont: text.regex(/^[\w\s,'"-]+$/).optional(),
+      })
+      .strict()
+      .optional(),
+    favicon: text.optional(),
+    themeStorageKey: text.default('sciastro-theme'),
+    copyright: localizedSchema.optional(),
+    footer: localizedSchema.optional(),
     icons: iconsSchema.default({ navigation: {}, languages: {} }),
     contentDir: text.default('content'),
-    logo: image.optional(),
+    logo: image
+      .extend({
+        viewBox: text
+          .regex(/^\d+(?:\.\d+)? \d+(?:\.\d+)? \d+(?:\.\d+)? \d+(?:\.\d+)?$/)
+          .optional(),
+        width: z.number().positive().optional(),
+        height: z.number().positive().optional(),
+        monochrome: z.boolean().default(false),
+      })
+      .optional(),
     notice: localizedSchema.optional(),
-    home: z.object({ body: localizedSchema }).strict(),
+    home: z.object({ body: localizedSchema }).strict().optional(),
     bibliography: z
       .object({
         file: text.default('references.bib'),
@@ -106,6 +153,12 @@ export const configSchema = z
   })
   .strict()
   .superRefine((config, ctx) => {
+    if (!config.home && !config.pageFiles)
+      ctx.addIssue({
+        code: 'custom',
+        path: ['home'],
+        message: 'Provide home.body or pageFiles.',
+      });
     if (!config.locales.includes(config.defaultLocale))
       ctx.addIssue({
         code: 'custom',

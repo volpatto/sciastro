@@ -1,59 +1,134 @@
 ---
+import '@fontsource-variable/manrope/index.css';
+import '@fontsource-variable/newsreader/index.css';
 import '../styles/site.css';
+import '../styles/sections.css';
+import '../styles/lncc.css';
 import Icon from './Icon.astro';
 import iconLicenses from '../../docs/icon-licenses.txt?raw';
+import fontLicenses from '../../docs/font-licenses.txt?raw';
 import type { BuiltSite, BuiltPage } from '../content.js';
-import { translate, labels, routePath, assetPath } from '../i18n.js';
+import {
+  translate,
+  labelsFor,
+  routePath,
+  assetPath,
+  linkPath,
+} from '../i18n.js';
 interface Props {
   site: BuiltSite;
-  page: Pick<BuiltPage, 'id' | 'locale' | 'path' | 'title'>;
+  page: Pick<BuiltPage, 'id' | 'locale' | 'path' | 'title' | 'description'>;
 }
 const { site, page } = Astro.props;
 const { config } = site;
-const l = labels[page.locale];
-const pages = site.pages.filter((item) => item.locale === page.locale);
+const l = labelsFor(config, page.locale);
+const pages = site.pages.filter(
+  (item) => item.locale === page.locale && item.navigation !== false,
+);
+const lncc = config.theme === 'lncc';
 const canonical = new URL(page.path, config.url);
+const title =
+  page.id === 'home' ? config.name : `${page.title} · ${config.name}`;
+const description =
+  page.description ?? translate(config.description, page.locale);
+const appearance = config.appearance;
+const tokens = (values: Record<string, string>) =>
+  Object.entries(values)
+    .map(([key, value]) => `--${key}:${value}`)
+    .join(';');
+const style = appearance
+  ? `:root:root[data-design] {--content-width:${appearance.contentWidth}px;${appearance.bodyFont ? `--body-font:${appearance.bodyFont};` : ''}${appearance.headingFont ? `--heading:${appearance.headingFont};` : ''}} :root:root[data-design]:not([data-theme="dark"]) {${tokens(appearance.light)}} :root:root[data-design][data-theme="dark"] {${tokens(appearance.dark)}} @media(prefers-color-scheme:dark){:root:root[data-design]:not([data-theme="light"]){${tokens(appearance.dark)}}}`
+  : '';
 ---
 
 <!doctype html>
-<html lang={page.locale === 'pt' ? 'pt-BR' : 'en'} data-design={config.theme}>
+<html
+  lang={page.locale === 'pt' ? 'pt-BR' : 'en'}
+  data-design={config.theme}
+  data-theme-key={config.themeStorageKey}
+>
   <head>
-    <Fragment set:html={`<!--\n${iconLicenses}\n-->`} />
+    <Fragment set:html={`<!--\n${iconLicenses}\n${fontLicenses}\n-->`} />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="light dark" />
-    <title>{page.id === 'home' ? config.name : `${page.title} · ${config.name}`}</title>
-    <meta
-      name="description"
-      content={translate(config.description, page.locale)}
-    />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {config.favicon && (
+      <link rel="icon" href={assetPath(config.base, config.favicon)} />
+    )}
     <link rel="canonical" href={canonical} />
     {page.id !== '404' &&
       config.locales.map((locale) => (
         <link
           rel="alternate"
-          hreflang={locale}
+          hreflang={locale === 'pt' ? 'pt-BR' : locale}
           href={new URL(routePath(config, page.id, locale), config.url)}
         />
       ))}
+    {page.id !== '404' && (
+      <link
+        rel="alternate"
+        hreflang="x-default"
+        href={
+          new URL(routePath(config, page.id, config.defaultLocale), config.url)
+        }
+      />
+    )}
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    {config.structuredData && (
+      <script
+        is:inline
+        type="application/ld+json"
+        set:html={JSON.stringify({
+          ...config.structuredData,
+          url: new URL(
+            routePath(config, 'home', config.defaultLocale),
+            config.url,
+          ).toString(),
+        }).replaceAll('<', '\\u003c')}
+      ></script>
+    )}
+    {style && <style is:inline set:html={style}></style>}
     <script is:inline>
       (() => {
         try {
-          const preference = localStorage.getItem('scipages-theme');
+          const preference = localStorage.getItem(
+            document.documentElement.dataset.themeKey || 'sciastro-theme',
+          );
           if (preference === 'dark' || preference === 'light')
             document.documentElement.dataset.theme = preference;
         } catch {}
       })();
     </script>
   </head>
-  <body>
+  <body data-page={page.id}>
     <a class="skip-link" href="#main">
       {l.skip}
     </a>
     <header class="site-header">
       <div class="container masthead">
         <a class="identity" href={routePath(config, 'home', page.locale)}>
-          {config.logo ? (
+          {config.logo?.viewBox ? (
+            <svg
+              class:list={[
+                'brand-logo',
+                { 'monochrome-logo': config.logo.monochrome },
+              ]}
+              viewBox={config.logo.viewBox}
+              role="img"
+              aria-label={translate(config.logo.alt, page.locale)}
+            >
+              <image
+                href={assetPath(config.base, config.logo.src)}
+                width={config.logo.width}
+                height={config.logo.height}
+              />
+            </svg>
+          ) : config.logo ? (
             <img
               class="brand-logo"
               src={assetPath(config.base, config.logo.src)}
@@ -139,7 +214,9 @@ const canonical = new URL(page.path, config.url);
           </button>
         </div>
       </div>
-      <div class="container">
+    </header>
+    <div class:list={['container site-shell', { 'lncc-shell': lncc }]}>
+      <aside class="site-navigation">
         <details class="navigation" open>
           <summary>
             {l.menu}
@@ -149,6 +226,7 @@ const canonical = new URL(page.path, config.url);
             {pages.map((item) => (
               <a
                 href={item.path}
+                data-page={item.id}
                 aria-current={item.id === page.id ? 'page' : undefined}
               >
                 <Icon icon={item.icon} base={config.base} />
@@ -157,54 +235,92 @@ const canonical = new URL(page.path, config.url);
             ))}
           </nav>
         </details>
-      </div>
-    </header>
-    <main id="main" class="container">
-      <slot />
-    </main>
+      </aside>
+      <main id="main">
+        <slot />
+      </main>
+    </div>
     <footer class="site-footer container">
-      <div>
-        <strong>{config.name}</strong>
-        {config.notice && <p>{translate(config.notice, page.locale)}</p>}
-      </div>
+      {site.copyright[page.locale] ? (
+        <div
+          class="footer-primary prose"
+          set:html={site.copyright[page.locale]}
+        />
+      ) : (
+        <div class="footer-primary">
+          <strong>{config.name}</strong>
+        </div>
+      )}
       <div class="footer-links">
         {config.links.map((link) => (
-          <a href={link.url}>
+          <a href={linkPath(config.base, link.url)}>
             {link.label}
-            <span aria-hidden="true"> ↗</span>
+            <span aria-hidden="true">↗</span>
           </a>
         ))}
         <a href="https://github.com/volpatto/scipages">{l.built}</a>
       </div>
+      {config.notice && (
+        <p class="footer-notice">{translate(config.notice, page.locale)}</p>
+      )}
+      {site.footer[page.locale] && (
+        <div class="footer-content prose" set:html={site.footer[page.locale]} />
+      )}
     </footer>
     <script>
       const root = document.documentElement;
+      const key = root.dataset.themeKey || 'sciastro-theme';
       const button = document.querySelector<HTMLButtonElement>('.theme-toggle');
       const system = matchMedia('(prefers-color-scheme: dark)');
       const isDark = () =>
         root.dataset.theme ? root.dataset.theme === 'dark' : system.matches;
+      const sync = () => button?.setAttribute('aria-pressed', String(isDark()));
       if (button) {
         button.hidden = false;
-        const sync = () =>
-          button.setAttribute('aria-pressed', String(isDark()));
         sync();
         system.addEventListener('change', sync);
         button.addEventListener('click', () => {
           root.dataset.theme = isDark() ? 'light' : 'dark';
           try {
-            localStorage.setItem('scipages-theme', root.dataset.theme);
+            localStorage.setItem(key, root.dataset.theme);
           } catch {}
           sync();
         });
       }
+      window.addEventListener('storage', (event) => {
+        if (event.key === key || event.key === null) {
+          if (event.newValue === 'dark' || event.newValue === 'light')
+            root.dataset.theme = event.newValue;
+          else delete root.dataset.theme;
+          sync();
+        }
+      });
       const menu = document.querySelector<HTMLDetailsElement>('.navigation');
-      const desktop = matchMedia('(min-width: 760px)');
+      const desktop = matchMedia(
+        root.dataset.design === 'lncc'
+          ? '(min-width: 851px)'
+          : '(min-width: 760px)',
+      );
       if (menu) {
         const syncMenu = () => {
           menu.open = desktop.matches;
         };
         syncMenu();
         desktop.addEventListener('change', syncMenu);
+        document.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape' && !desktop.matches && menu.open) {
+            menu.open = false;
+            menu.querySelector('summary')?.focus();
+          }
+        });
+      }
+      if (document.body.dataset.page === 'home' && location.hash) {
+        const oldSection = location.hash.slice(1);
+        const destination = [
+          ...document.querySelectorAll<HTMLAnchorElement>('.navigation a'),
+        ].find((link) => link.dataset.page === oldSection);
+        if (destination && oldSection !== 'home')
+          location.replace(destination.href);
       }
     </script>
   </body>

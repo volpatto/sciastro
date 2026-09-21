@@ -1,4 +1,4 @@
-name: Verify SciPages
+name: Tests
 on:
   push:
   pull_request:
@@ -9,8 +9,8 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  verify:
-    name: Package (${{ matrix.os }})
+  tests:
+    name: Package Tests (${{ matrix.os }})
     timeout-minutes: 15
     strategy:
       fail-fast: false
@@ -26,10 +26,18 @@ jobs:
           pixi-version: v0.72.2
           locked: true
           cache: true
-      - name: Types, tests, builds and installed consumers
-        run: pixi run --locked verify
+      - name: Install package dependencies
+        run: pixi run --locked setup
+      - name: Type checks
+        run: pixi run --locked pnpm check
+      - name: Build package and examples
+        run: pixi run --locked pnpm run build && pixi run --locked pnpm run build:examples
+      - name: Unit Tests
+        run: pixi run --locked pnpm test
+      - name: Installed Package Tests
+        run: pixi run --locked pnpm test:package
   browser:
-    name: Browser (Chromium)
+    name: Browser Tests (Chromium)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

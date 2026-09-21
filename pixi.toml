@@ -1,5 +1,5 @@
 [workspace]
-name = "scipages"
+name = "sciastro"
 channels = ["conda-forge"]
 platforms = ["osx-arm64", "osx-64", "linux-64", "win-64"]
 requires-pixi = ">=0.72.2"
@@ -15,7 +15,7 @@ description = "Install dependencies using the lockfile"
 [tasks.build]
 cmd = "pnpm build"
 depends-on = ["setup"]
-description = "Compile the SciPages package"
+description = "Compile the SciAstro package"
 
 [tasks.verify]
 cmd = "pnpm verify"
@@ -53,12 +53,12 @@ depends-on = ["build"]
 description = "Preview the individual website example"
 
 [tasks.dev-stop]
-cmd = "pnpm --filter scipages-example-group exec astro dev stop"
+cmd = "pnpm --filter sciastro-example-group exec astro dev stop"
 depends-on = ["setup"]
 description = "Stop the group preview"
 
 [tasks.dev-individual-stop]
-cmd = "pnpm --filter scipages-example-individual exec astro dev stop"
+cmd = "pnpm --filter sciastro-example-individual exec astro dev stop"
 depends-on = ["setup"]
 description = "Stop the individual preview"
 
@@ -66,3 +66,13 @@ description = "Stop the individual preview"
 cmd = "pnpm pack --pack-destination artifacts"
 depends-on = ["setup"]
 description = "Create an installable package without publishing to npm"
+
+[tasks.dev-lncc]
+cmd = "pnpm dev:lncc"
+depends-on = ["build"]
+description = "Preview the composed LNCC Theme example"
+
+[tasks.dev-lncc-stop]
+cmd = "pnpm --filter sciastro-example-lncc exec astro dev stop"
+depends-on = ["setup"]
+description = "Stop the LNCC Theme preview"

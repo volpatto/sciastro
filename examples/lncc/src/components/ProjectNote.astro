@@ -1,0 +1,9 @@
+---
+import type { BuiltSection } from 'sciastro';
+interface Props { section: BuiltSection }
+const { section } = Astro.props;
+---
+<aside class="project-note" id={section.id} data-custom-component="project-note">
+  <h2>{section.title}</h2>
+  <div class="prose" set:html={section.html}/>
+</aside>

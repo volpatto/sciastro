@@ -1,4 +1,4 @@
 import { defineConfig } from 'astro/config';
-import scipages from 'scipages';
+import sciastro from 'sciastro';
 
-export default defineConfig({ integrations: [scipages()] });
+export default defineConfig({ integrations: [sciastro()] });

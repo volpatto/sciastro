@@ -1,0 +1,21 @@
+---
+import Icon from '../Icon.astro';
+import { linkPath } from '../../i18n.js';
+import type { BuiltLink } from '../../sections.js';
+interface Props {
+  links: BuiltLink[];
+  base: string;
+}
+const { links, base } = Astro.props;
+---
+
+{links.length > 0 && (
+  <div class="sp-links">
+    {links.map((link) => (
+      <a href={linkPath(base, link.url)} download={link.download || undefined}>
+        <Icon icon={link.icon} base={base} />
+        <span>{link.label}</span>
+      </a>
+    ))}
+  </div>
+)}

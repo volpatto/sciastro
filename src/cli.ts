@@ -6,10 +6,10 @@ import { fileURLToPath } from 'node:url';
 import { realpathSync } from 'node:fs';
 import { loadSite } from './content.js';
 
-const usage = `SciPages — sites acadêmicos com YAML, Markdown e BibTeX
+const usage = `SciAstro — sites acadêmicos com YAML, Markdown e BibTeX
 
-  scipages init <pasta> --kind group|individual
-  scipages check [--config scipages.yaml]
+  sciastro init <pasta> --kind group|individual [--theme classic|modern|lncc]
+  sciastro check [--config sciastro.yaml]
 
 init cria um projeto em pasta nova ou vazia; não instala nem publica nada.
 check valida configuração, traduções, conteúdo e referências localmente.
@@ -21,7 +21,8 @@ export async function main(args = process.argv.slice(2)) {
     allowPositionals: true,
     options: {
       kind: { type: 'string', default: 'group' },
-      config: { type: 'string', default: 'scipages.yaml' },
+      theme: { type: 'string', default: 'classic' },
+      config: { type: 'string', default: 'sciastro.yaml' },
       help: { type: 'boolean', short: 'h' },
     },
   });
@@ -36,7 +37,13 @@ export async function main(args = process.argv.slice(2)) {
       base: process.env.BASE_PATH,
     });
     console.log(
-      `OK: ${site.pages.length} páginas, ${site.members.length} pessoas e ${site.bibliographyKeys.length} referências.`,
+      `OK: ${site.pages.length} páginas, ${site.members.length} pessoas e ${site.bibliographyKeys.length} referências BibTeX, ${site.pages
+        .filter((page) => page.locale === site.config.defaultLocale)
+        .flatMap((page) => page.sections ?? [])
+        .reduce(
+          (total, section) => total + (section.publications?.length ?? 0),
+          0,
+        )} publicações editoriais.`,
     );
     return;
   }
@@ -44,6 +51,8 @@ export async function main(args = process.argv.slice(2)) {
     throw new Error(usage);
   if (!['group', 'individual'].includes(values.kind))
     throw new Error('--kind deve ser group ou individual.');
+  if (!['classic', 'modern', 'lncc'].includes(values.theme))
+    throw new Error('--theme must be classic, modern or lncc.');
   const target = resolve(destination);
   let files: string[] = [];
   try {
@@ -63,12 +72,20 @@ export async function main(args = process.argv.slice(2)) {
   await cp(join(packageRoot, 'starters', values.kind), target, {
     recursive: true,
   });
+  const settingsFile = join(target, 'sciastro.yaml');
+  await writeFile(
+    settingsFile,
+    (await readFile(settingsFile, 'utf8')).replace(
+      /^theme:.*$/m,
+      `theme: ${values.theme}`,
+    ),
+  );
   await mkdir(join(target, 'public'), { recursive: true });
   await writeFile(
     join(target, 'package.json'),
     JSON.stringify(
       {
-        name: 'my-scipages-site',
+        name: 'my-sciastro-site',
         private: true,
         type: 'module',
         packageManager: pkg.packageManager,
@@ -79,9 +96,9 @@ export async function main(args = process.argv.slice(2)) {
           preview: 'astro preview --host 127.0.0.1',
           'dev:stop': 'astro dev stop',
           'preview:stop': 'astro preview stop',
-          check: 'scipages check',
+          check: 'sciastro check',
         },
-        dependencies: { scipages: pkg.version, astro: '7.3.3' },
+        dependencies: { sciastro: pkg.version, astro: '7.3.3' },
       },
       null,
       2,
@@ -97,11 +114,11 @@ export async function main(args = process.argv.slice(2)) {
   );
   await writeFile(
     join(target, 'pixi.toml'),
-    `[workspace]\nname = "my-scipages-site"\nchannels = ["conda-forge"]\nplatforms = ["osx-arm64", "osx-64", "linux-64", "win-64"]\n\n[dependencies]\nnodejs = "24.*"\npnpm = "==11.19.0"\n\n[tasks.setup]\ncmd = "pnpm install --frozen-lockfile"\n[tasks.dev]\ncmd = "pnpm dev"\ndepends-on = ["setup"]\n[tasks.build]\ncmd = "pnpm check && pnpm build"\ndepends-on = ["setup"]\n[tasks.dev-stop]\ncmd = "pnpm dev:stop"\ndepends-on = ["setup"]\n`,
+    `[workspace]\nname = "my-sciastro-site"\nchannels = ["conda-forge"]\nplatforms = ["osx-arm64", "osx-64", "linux-64", "win-64"]\n\n[dependencies]\nnodejs = "24.*"\npnpm = "==11.19.0"\n\n[tasks.setup]\ncmd = "pnpm install --frozen-lockfile"\n[tasks.dev]\ncmd = "pnpm dev"\ndepends-on = ["setup"]\n[tasks.build]\ncmd = "pnpm check && pnpm build"\ndepends-on = ["setup"]\n[tasks.dev-stop]\ncmd = "pnpm dev:stop"\ndepends-on = ["setup"]\n`,
   );
   await cp(join(packageRoot, 'docs/site-readme.md'), join(target, 'README.md'));
   console.log(
-    `Projeto ${values.kind} criado em ${target}. Edite scipages.yaml e content/. Consulte o README para instalar as dependências.`,
+    `Projeto ${values.kind} criado em ${target}. Edite sciastro.yaml e content/. Consulte o README para instalar as dependências.`,
   );
 }
 
@@ -111,7 +128,7 @@ if (
 ) {
   main().catch((error) => {
     console.error(
-      `SciPages: ${error instanceof Error ? error.message : error}`,
+      `SciAstro: ${error instanceof Error ? error.message : error}`,
     );
     process.exitCode = 1;
   });

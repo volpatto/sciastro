@@ -27,7 +27,7 @@ export const labels = {
     navigation: 'Navegação principal',
     menu: 'Menu',
     languages: 'Idiomas',
-    built: 'Feito com SciPages',
+    built: 'Feito com SciAstro',
     emptyReferences: 'Nenhuma referência cadastrada.',
     notFound: 'Página não encontrada',
     back: 'Voltar ao início',
@@ -52,7 +52,7 @@ export const labels = {
     navigation: 'Main navigation',
     menu: 'Menu',
     languages: 'Languages',
-    built: 'Built with SciPages',
+    built: 'Built with SciAstro',
     emptyReferences: 'No references yet.',
     notFound: 'Page not found',
     back: 'Back to home',
@@ -71,6 +71,8 @@ export function routePath(
     team: { pt: 'equipe', en: 'team' },
     publications: { pt: 'publicacoes', en: 'publications' },
   };
+  const configured = config.routes[page]?.[locale];
+  if (configured !== undefined) return `${config.base}${configured}`;
   const slug = names[page]?.[locale] ?? page;
   const prefix = locale === config.defaultLocale ? '' : `${locale}/`;
   return `${config.base}${prefix}${slug ? `${slug}/` : ''}`;
@@ -79,4 +81,22 @@ export function routePath(
 export function assetPath(base: string, value: string): string {
   if (/^https?:\/\//.test(value)) return value;
   return `${base}${value.replace(/^\//, '')}`;
+}
+
+export function labelsFor(config: SiteConfig, locale: Locale) {
+  return {
+    ...labels[locale],
+    ...Object.fromEntries(
+      Object.entries(config.ui).map(([key, value]) => [
+        key,
+        translate(value, locale),
+      ]),
+    ),
+  };
+}
+
+export function linkPath(base: string, value: string): string {
+  return value.startsWith('/') && !value.startsWith('//')
+    ? `${base}${value.slice(1)}`
+    : value;
 }
