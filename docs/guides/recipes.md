@@ -6,6 +6,28 @@ English-only for brevity; use `{ pt: ..., en: ... }` for bilingual text.
 Examples describe fictional work. Replace URLs, people, logos and publication
 metadata with your own material.
 
+## About page with a circular photograph
+
+Set the page's `header: false` because `profile` supplies its main heading.
+Save your photograph in `public/images/portrait.jpg` and add:
+
+```yaml
+- type: profile
+  title: Example Researcher
+  eyebrow: Scientific computing
+  text: I work on numerical methods and scientific software.
+  image:
+    src: /images/portrait.jpg
+    alt: Portrait of Example Researcher
+    shape: circle
+    position: [50, 35]
+    caption: Photograph by Example Photographer
+```
+
+Omit `shape` to preserve the original rectangular aspect ratio. See
+[profile photographs](../customization.md#profile-photographs) for automatic
+pages, bilingual descriptions and framing options.
+
 ## Publications selected from BibTeX
 
 ```yaml

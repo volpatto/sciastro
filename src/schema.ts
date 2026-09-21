@@ -17,6 +17,19 @@ const httpUrl = z
   .url()
   .refine((value) => /^https?:\/\//.test(value), 'Use http:// ou https://.');
 const image = z.object({ src: text, alt: localizedSchema }).strict();
+// Shared by automatic home portraits and composed-page figures.
+export const profilePhotoSchema = image.extend({
+  src: text.refine(
+    (value) => value.startsWith('/') && !value.startsWith('//'),
+    'Images must use /paths in public/.',
+  ),
+  width: z.number().int().positive().optional(),
+  height: z.number().int().positive().optional(),
+  shape: z.enum(['rectangle', 'circle']).default('rectangle'),
+  position: z
+    .tuple([z.number().min(0).max(100), z.number().min(0).max(100)])
+    .optional(),
+});
 // A separate symbol avoids reusing a header wordmark as a person's portrait.
 const avatarFallback = image
   .extend({
@@ -160,7 +173,10 @@ export const configSchema = z
       .strict()
       .optional(),
     notice: localizedSchema.optional(),
-    home: z.object({ body: localizedSchema }).strict().optional(),
+    home: z
+      .object({ body: localizedSchema, photo: profilePhotoSchema.optional() })
+      .strict()
+      .optional(),
     bibliography: z
       .object({
         file: text.default('references.bib'),

@@ -10,15 +10,28 @@ interface Props {
 const { image, base, priority = false } = Astro.props;
 const src = assetPath(base, image.src);
 const Tag = image.enlarge ? 'a' : 'div';
+const circular = image.shape === 'circle';
+const position = image.position ?? [50, 50];
 ---
 
-<figure class:list={['sp-figure', { 'sp-figure-cropped': image.viewBox }]}>
+<figure
+  class:list={[
+    'sp-figure',
+    { 'sp-figure-cropped': image.viewBox, 'sp-figure-circle': circular },
+  ]}
+>
   <Tag
+    class="sp-figure-media"
     href={image.enlarge ? src : undefined}
     aria-label={image.enlarge ? image.alt : undefined}
   >
     {image.viewBox ? (
-      <svg viewBox={image.viewBox} role="img" aria-label={image.alt}>
+      <svg
+        viewBox={image.viewBox}
+        role="img"
+        aria-label={image.alt}
+        preserveAspectRatio={circular ? 'xMidYMid slice' : undefined}
+      >
         <image href={src} width={image.width} height={image.height} />
       </svg>
     ) : (
@@ -30,6 +43,11 @@ const Tag = image.enlarge ? 'a' : 'div';
         loading={priority ? 'eager' : 'lazy'}
         fetchpriority={priority ? 'high' : undefined}
         decoding="async"
+        style={
+          circular
+            ? `object-position: ${position[0]}% ${position[1]}%`
+            : undefined
+        }
       />
     )}
   </Tag>

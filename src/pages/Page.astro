@@ -8,6 +8,7 @@ import {
 import Section from '../components/sections/Section.astro';
 import References from '../components/References.astro';
 import Team from '../components/Team.astro';
+import Figure from '../components/sections/Figure.astro';
 import { labels, translate, routePath, assetPath } from '../i18n.js';
 export function getStaticPaths() {
   return site.pages.map((page) => ({
@@ -62,39 +63,52 @@ const l = labels[page.locale];
           <p class="standfirst">{translate(config.description, page.locale)}</p>
           <div class="prose overview" set:html={page.html} />
         </div>
-        <aside class="research-note" aria-label={l.areas}>
-          <svg viewBox="0 0 240 170" fill="none" aria-hidden="true">
-            <g stroke="currentColor" opacity=".2">
-              <path d="M20 30h200M20 65h200M20 100h200M20 135h200M50 15v140M85 15v140M120 15v140M155 15v140M190 15v140" />
-            </g>
-            <g stroke="currentColor" stroke-width="1.5">
-              <ellipse
-                cx="120"
-                cy="85"
-                rx="80"
-                ry="27"
-                transform="rotate(-25 120 85)"
-              />
-              <ellipse
-                cx="120"
-                cy="85"
-                rx="80"
-                ry="27"
-                transform="rotate(25 120 85)"
-              />
-              <circle cx="120" cy="85" r="5" fill="currentColor" />
-            </g>
-          </svg>
-          <p>
-            {config.kind === 'group'
-              ? page.locale === 'pt'
-                ? 'Pesquisa, formação e colaboração.'
-                : 'Research, education and collaboration.'
-              : page.locale === 'pt'
-                ? 'Pesquisa e formação acadêmica.'
-                : 'Research and academic education.'}
-          </p>
-        </aside>
+        {config.home?.photo ? (
+          <Figure
+            image={{
+              ...config.home.photo,
+              alt: translate(config.home.photo.alt, page.locale),
+              links: [],
+              enlarge: false,
+            }}
+            base={config.base}
+            priority
+          />
+        ) : (
+          <aside class="research-note" aria-label={l.areas}>
+            <svg viewBox="0 0 240 170" fill="none" aria-hidden="true">
+              <g stroke="currentColor" opacity=".2">
+                <path d="M20 30h200M20 65h200M20 100h200M20 135h200M50 15v140M85 15v140M120 15v140M155 15v140M190 15v140" />
+              </g>
+              <g stroke="currentColor" stroke-width="1.5">
+                <ellipse
+                  cx="120"
+                  cy="85"
+                  rx="80"
+                  ry="27"
+                  transform="rotate(-25 120 85)"
+                />
+                <ellipse
+                  cx="120"
+                  cy="85"
+                  rx="80"
+                  ry="27"
+                  transform="rotate(25 120 85)"
+                />
+                <circle cx="120" cy="85" r="5" fill="currentColor" />
+              </g>
+            </svg>
+            <p>
+              {config.kind === 'group'
+                ? page.locale === 'pt'
+                  ? 'Pesquisa, formação e colaboração.'
+                  : 'Research, education and collaboration.'
+                : page.locale === 'pt'
+                  ? 'Pesquisa e formação acadêmica.'
+                  : 'Research and academic education.'}
+            </p>
+          </aside>
+        )}
       </section>
       {page.areas.length > 0 && (
         <section class="areas-section" aria-labelledby="areas-title">
