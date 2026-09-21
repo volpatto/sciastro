@@ -1,5 +1,54 @@
 import { test, expect } from '@playwright/test';
 
+test('BibTeX files and keys render publication cards with DOI, URL and unlinked titles', async ({
+  page,
+}) => {
+  for (const path of ['/linhas/', '/en/topics/']) {
+    await page.goto(path);
+    const cards = page.locator('#selected-publications .sp-publication');
+    await expect(cards).toHaveCount(4);
+    await expect(cards.nth(0).locator('h2')).toHaveText(
+      'An illustrative hybrid numerical model',
+    );
+    await expect(cards.nth(0).locator('.sp-period')).toHaveText('2026');
+    await expect(cards.nth(0).locator('.sp-eyebrow')).toHaveText(
+      path.startsWith('/en/') ? 'Geochemistry' : 'Geoquímica',
+    );
+    await expect(cards.nth(0).locator('.sp-authors')).toHaveText(
+      'Marina Silva; Lucas Costa',
+    );
+    await expect(cards.nth(0).locator('.sp-meta')).toHaveText(
+      'Fictional Journal of Scientific Computing · 3(2), 10–20',
+    );
+    await expect(
+      cards.nth(0).getByRole('link', { name: /^DOI:/ }),
+    ).toHaveAttribute('href', 'https://doi.org/10.1234/sciastro-example');
+    await expect(cards.nth(1).locator('h2 a')).toHaveAttribute(
+      'href',
+      'https://example.org/methods',
+    );
+    await expect(cards.nth(1).locator('.sp-doi')).toHaveText('Link ↗');
+    await expect(cards.nth(2).locator('h2')).toHaveText(
+      'A fictional handbook of numerical methods',
+    );
+    await expect(cards.nth(2).locator('a')).toHaveCount(0);
+    await expect(cards.nth(2).locator('.sp-meta')).toHaveText(
+      'Fictional Press',
+    );
+    await expect(cards.nth(3).locator('h2')).toHaveText(
+      'Um exemplo de verificação de métodos numéricos',
+    );
+    await expect(cards.nth(3).locator('.sp-meta')).toHaveText(
+      'Revista Fictícia de Computação Científica · 1, 1–12',
+    );
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+  }
+});
+
 test('LNCC Theme composes a profile, cards, local extension and sidebar', async ({
   page,
 }, info) => {

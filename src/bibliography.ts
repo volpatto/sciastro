@@ -11,6 +11,38 @@ export interface Reference {
   doi?: string;
   url?: string;
 }
+/** Plain-text metadata for a publication card; absent source fields stay absent. */
+export interface PublicationMetadata {
+  title?: string;
+  authors?: string;
+  year?: string;
+  journal?: string;
+  citation?: string;
+  doi?: string;
+  url?: string;
+}
+const record = (value: unknown): Record<string, unknown> =>
+  value !== null && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+const field = (value: unknown): string | undefined =>
+  typeof value === 'string' || typeof value === 'number'
+    ? String(value).trim() || undefined
+    : undefined;
+const authorName = (value: unknown): string => {
+  const author = record(value);
+  if (field(author.literal)) return field(author.literal)!;
+  const name = [
+    author.given,
+    author['dropping-particle'],
+    author['non-dropping-particle'],
+    author.family,
+  ]
+    .map(field)
+    .filter(Boolean)
+    .join(' ');
+  return [name, field(author.suffix)].filter(Boolean).join(', ');
+};
 export const referenceId = (key: string) =>
   `ref-${Buffer.from(key).toString('hex')}`;
 const escape = (value: string) =>
@@ -52,6 +84,44 @@ export class Bibliography {
   }
   has(key: string): boolean {
     return this.entries.has(key);
+  }
+  publication(key: string): PublicationMetadata {
+    const entry = this.entries.get(key);
+    if (!entry)
+      throw new Error(
+        `Referência '${key}' não encontrada no arquivo BibTeX. Confira bibliography.file e a chave da publicação.`,
+      );
+    const dates = record(entry.issued)['date-parts'];
+    const year =
+      Array.isArray(dates) && Array.isArray(dates[0])
+        ? field(dates[0][0])
+        : undefined;
+    const volume = field(entry.volume);
+    const issue = field(entry.issue);
+    const pages = field(entry.page)?.replace(/--?/g, '–');
+    const doi = field(entry.DOI)?.replace(
+      /^(?:https?:\/\/(?:dx\.)?doi\.org\/|doi:\s*)/i,
+      '',
+    );
+    const url = field(entry.URL);
+    return {
+      title: field(entry.title),
+      authors: Array.isArray(entry.author)
+        ? entry.author.map(authorName).filter(Boolean).join('; ') || undefined
+        : undefined,
+      year,
+      journal: field(entry['container-title']) ?? field(entry.publisher),
+      citation:
+        [
+          (volume ?? '') + (issue ? `(${issue})` : ''),
+          pages ?? field(entry.number),
+        ]
+          .filter(Boolean)
+          .join(', ') || undefined,
+      doi,
+      // Unsafe or non-web URL schemes never become publication links.
+      url: url && /^https?:\/\//i.test(url) ? url : undefined,
+    };
   }
   citation(keys: string[], locale: Locale): string {
     const parts = keys.map((key) => {

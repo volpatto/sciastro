@@ -476,6 +476,25 @@ async function loadComposed(
       : '',
     config.bibliography?.style,
   );
+  // Parse each selected file once, even when several cards/languages reuse it.
+  const publicationLibraries = new Map<string, Bibliography>();
+  if (config.bibliography)
+    publicationLibraries.set(
+      within(dir, config.bibliography.file),
+      bibliography,
+    );
+  for (const page of entries)
+    for (const section of page.sections)
+      if (section.type === 'publications')
+        for (const item of section.items)
+          if ('bibtex' in item && typeof item.bibtex !== 'string') {
+            const file = within(dir, item.bibtex.file);
+            if (!publicationLibraries.has(file))
+              publicationLibraries.set(
+                file,
+                new Bibliography(await read(file)),
+              );
+          }
   const pages: BuiltPage[] = [];
   for (const locale of config.locales)
     for (const entry of entries) {
@@ -484,7 +503,18 @@ async function loadComposed(
         ? context.render(await read(within(dir, translate(entry.body, locale))))
         : '';
       const sections = entry.sections.map((section) =>
-        buildSection(section, locale, context),
+        buildSection(section, locale, context, (source) => {
+          if (typeof source === 'string')
+            return bibliography.publication(source);
+          const file = within(dir, source.file);
+          try {
+            return publicationLibraries.get(file)!.publication(source.key);
+          } catch (error) {
+            throw new Error(
+              `${source.file}: ${error instanceof Error ? error.message : error}`,
+            );
+          }
+        }),
       );
       pages.push({
         id: entry.id,

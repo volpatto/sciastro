@@ -111,7 +111,7 @@ same page. `text` is inline YAML content; use page `body` for a Markdown file.
 | `list` | Required `items`; optional `collapsible: true` and `open: true/false` |
 | `timeline` | Required `items`, each with `period` |
 | `logos` | Required `items`, each with an `image` and optional `link` |
-| `publications` | Editorial records with `title`, `authors`, `year`, `journal`, `citation`, `doi`, optional `topic` |
+| `publications` | `items` with `bibtex: { file, key }` to fill metadata automatically, or full manual records; optional `topic` category |
 | `team` | Reads validated `team.yaml`; separates faculty, researchers, active student levels and alumni |
 | `custom` | Required `component`; optional `props`; requires a registered local Astro component |
 
@@ -134,9 +134,11 @@ contain links or use `enlarge`.
 
 Markdown citations such as `[@key]` work in section text and page bodies. Cited
 references and explicitly listed page `references` share one deduplicated
-bibliography. `publications` sections also support manually curated records when
-preserving an existing site's author spelling and citation wording is preferable.
-They do not automatically create BibTeX keys.
+bibliography. `publications` sections support [automatic cards selected by BibTeX
+file and key](referencias.md#publication-cards-from-a-file-and-key). A `topic`
+category can be added without repeating any bibliographic fields. Fully manual
+records still use `title`, `authors`, `year`, `journal`, `citation` and `doi`;
+they do not automatically create BibTeX keys.
 
 ## LNCC Theme
 

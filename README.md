@@ -64,6 +64,8 @@ visitors' saved theme preferences across the rename.
 - **Research:** short card summaries and detailed Markdown, with optional figures.
 - **References:** local BibTeX files, `[@key]` citations, per-page bibliographies,
   and an explicitly selected list of the site's own publications.
+- **Publication cards:** select a BibTeX file and key to fill the bibliographic
+  fields automatically; optionally add your own category through `topic`.
 - **Additional pages:** software, teaching, projects, CV and contact, defined in YAML.
 - **Themes:** `classic`, `modern`, and **LNCC Theme** (`lncc`, sidebar and academic typography),
   with light/dark modes and responsive layouts.

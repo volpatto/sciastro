@@ -15,3 +15,12 @@ sections:
       - period: '2026'
         title: { pt: Projeto de demonstração, en: Demonstration project }
         text: { pt: Dados fictícios para testar a apresentação., en: Fictional data for testing presentation. }
+  - type: publications
+    id: selected-publications
+    title: { pt: Publicações selecionadas, en: Selected publications }
+    items:
+      - bibtex: { file: publications.bib, key: hybrid2026 }
+        topic: { pt: Geoquímica, en: Geochemistry }
+      - bibtex: { file: publications.bib, key: notes2026 }
+      - bibtex: { file: publications.bib, key: handbook2024 }
+      - bibtex: silva2025

@@ -21,6 +21,85 @@ other authors' work cited in your text; adding an entry does not automatically
 claim it as your own publication. Omit `publications` or use `[]` to hide that
 page while keeping citations available.
 
+## Publication cards from a file and key
+
+In a [composed page](customization.md), a `publications` section can select a work
+using **only its BibTeX file and key**. Add this under the page's `sections`:
+
+```yaml
+- type: publications
+  title:
+    pt: Publicações selecionadas
+    en: Selected publications
+  items:
+    - bibtex:
+        file: references.bib
+        key: silva2025
+    - bibtex:
+        file: thermodynamics.bib
+        key: costa2024
+      topic:
+        pt: Geoquímica
+        en: Geochemistry
+```
+
+Both files are relative to `contentDir` (normally `content/`). There is no need to
+repeat the title, authors, year, journal, citation details or DOI in YAML. SciAstro
+reads the selected records and generates those fields in the rendered HTML.
+`topic` is an optional, freely chosen category; use a plain string or translations
+as above. It does not change the imported bibliographic metadata.
+
+An explicit `file`/`key` selection works without a `bibliography` setting in
+`sciastro.yaml`. Multiple files may contain the same key: each card uses its own
+selected file. Cards keep the order of `items`; other entries in those files are
+not added automatically. Each file is parsed once per site load and reused across
+cards and languages.
+
+If `bibliography.file` is already configured, the shorter form selects from that
+library:
+
+```yaml
+- type: publications
+  items:
+    - bibtex: silva2025
+      topic: Numerical methods
+```
+
+### Imported fields
+
+| Card field | BibTeX metadata |
+| --- | --- |
+| `title` | Work title; required after import |
+| `authors` | Author names in source order, preserving particles, suffixes and institutional names |
+| `year` | Publication year parsed by Citation.js |
+| `journal` | Journal or proceedings title; publisher when no container title is present |
+| `citation` | Volume, issue and pages, for example `42(2), 10–20`; article number when pages are absent |
+| `doi` | DOI identifier; `doi:` and DOI resolver URL prefixes are removed |
+| `url` | HTTP(S) URL, used as the publication link when no DOI is available |
+
+DOI links take precedence over URL links. A record with neither renders a plain
+title. Missing authors, dates, venue or citation details are omitted rather than
+invented; an editor is not silently presented as an author. Names use the spelling
+provided by the parser, separated by semicolons. Titles and other metadata are
+rendered as text. These cards do not depend on the APA/Vancouver citation style.
+
+All manual publication records remain supported and may be mixed with BibTeX
+selections. Optional fields alongside `bibtex`, such as `title` or `authors`,
+override imported values for that card only; they are **not required**. The source
+`.bib` file and other cards using the same key remain unchanged. `topic` belongs
+to the card, not to the reference library.
+
+Missing files, unknown/case-mismatched keys, duplicate keys within a file, missing
+titles and malformed DOI or HTTP(S) URL metadata fail validation. File paths must
+stay inside `contentDir`. Non-web URL schemes are omitted, and no DOI lookup or
+other network request is made.
+
+Selecting a publication card does not add a duplicate entry to the page's reference
+list. Inline `[@key]` citations and page `references` continue to use the library
+configured by `bibliography.file`; selecting another file for a card does not merge
+that file into the citation library. The existing `bibliography.publications`
+setting controls the built-in Publications page when `pageFiles` is not used.
+
 ## Cite in Markdown
 
 ```markdown
