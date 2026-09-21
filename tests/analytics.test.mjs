@@ -228,13 +228,24 @@ test('integration includes analytics only for enabled builds, including the emer
   assert.deepEqual(await injected('build'), []);
 });
 
-test('documented analytics configurations and links validate against the shipped schemas', async () => {
-  const source = await readFile(resolve('docs/guides/analytics.md'), 'utf8');
-  const blocks = [...source.matchAll(/```yaml\n([\s\S]*?)\n```/g)];
-  assert(blocks.length >= 4);
-  for (const [, yaml] of blocks) {
-    const data = parse(yaml);
-    if ('analytics' in data) configSchema.parse({ ...baseConfig, ...data });
-    else for (const link of data.links) sectionLinkSchema.parse(link);
-  }
-});
+for (const [format, newline] of [
+  ['LF', '\n'],
+  ['CRLF', '\r\n'],
+]) {
+  test(`documented analytics configurations and links validate against the shipped schemas (${format})`, async () => {
+    // Exercise both checkout formats on every OS, including local macOS runs.
+    const source = (
+      await readFile(resolve('docs/guides/analytics.md'), 'utf8')
+    ).replace(/\r?\n/g, newline);
+    const blocks = [...source.matchAll(/```yaml\r?\n([\s\S]*?)\r?\n```/g)];
+    assert(
+      blocks.length >= 4,
+      `Expected the documented YAML examples (${format}).`,
+    );
+    for (const [, yaml] of blocks) {
+      const data = parse(yaml);
+      if ('analytics' in data) configSchema.parse({ ...baseConfig, ...data });
+      else for (const link of data.links) sectionLinkSchema.parse(link);
+    }
+  });
+}
