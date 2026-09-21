@@ -150,7 +150,7 @@ your own authorized logo through `logo: { src: /images/logo.svg, alt: Institutio
 The logo supports `viewBox`, original `width`/`height`, and `monochrome: true` for
 white rendering in dark mode. `favicon` is configured separately.
 
-The fictional [LNCC example](../examples/lncc/) includes page composition, custom
+The fictional [LNCC example](https://github.com/volpatto/sciastro/tree/main/examples/lncc) includes page composition, custom
 routes, a custom section and CSS. Preview it from the source checkout:
 
 ```sh

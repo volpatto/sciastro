@@ -1,29 +1,55 @@
 # SciAstro
 
-[![Tests](https://github.com/volpatto/scipages/actions/workflows/ci.yml/badge.svg)](https://github.com/volpatto/scipages/actions/workflows/ci.yml)
+[![Tests](https://github.com/volpatto/sciastro/actions/workflows/ci.yml/badge.svg)](https://github.com/volpatto/sciastro/actions/workflows/ci.yml)
 [![Astro](https://img.shields.io/badge/Astro-BC52EE?logo=astro&logoColor=white)](https://astro.build/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Pixi](https://img.shields.io/badge/Pixi-41B3A3)](https://pixi.sh/)
 
-Academic websites for researchers and research groups, maintained through **YAML,
-Markdown and BibTeX**. SciAstro supplies the pages, themes and validation as a
-package; each website owns its content and public assets. The output is a static
-site suitable for GitHub Pages or any static web server.
+**Academic websites as easy as Markdown and YAML.**
 
-**Current version: `0.1.0-alpha.1`.** The package can be built and installed locally
-as a `.tgz` archive. It has not been published to npm. Configuration may change
+SciAstro is a package for individual researchers and research groups, **built on
+[Astro](https://astro.build/)**. Maintain content through Markdown, YAML and BibTeX;
+SciAstro supplies the pages, themes and validation. Each website owns its content
+and public assets. Astro generates a static site suitable for GitHub Pages or any
+static web server.
+
+**Alpha software.** The package can be built and installed locally
+as a `.tgz` archive. Until the first npm publication, use that local installation
+path. Configuration may change
 during the alpha period; incompatible changes should include migration instructions.
 
 The package documentation is in English. The example websites intentionally keep
 Portuguese as their default language and include English translations. You can
 build a Portuguese-only, English-only or bilingual site.
 
+## Documentation
+
+The documentation covers [installation](docs/getting-started.md), complete tutorials
+for [individual researchers](docs/tutorials/individual.md) and
+[research groups](docs/tutorials/group.md), [section recipes](docs/guides/recipes.md),
+[deployment](docs/guides/deployment.md), [configuration](docs/reference/configuration.md)
+and the [public API](docs/reference/api.md).
+
+Preview it with its **dedicated Pixi environment**, from this repository:
+
+```sh
+pixi install --locked -e docs
+pixi run --locked -e docs docs-serve
+```
+
+Open `http://127.0.0.1:8000/`. Use `pixi run --locked -e docs docs-build` for a strict
+production build in `site/`. The environment supplies Python, MkDocs and Material;
+it is separate from the Node.js/pnpm package-development environment. See
+[documentation maintenance](docs/development/documentation.md).
+
+The documentation URL is [volpatto.github.io/sciastro](https://volpatto.github.io/sciastro/),
+available after the first successful release deployment. CI builds docs on every
+push/PR; only releases update the public site.
+
 See [Pages, themes and extensions](docs/customization.md) for complete page composition,
 LNCC Theme settings, custom CSS and component overrides.
 
 The package and CLI are named `sciastro`; configuration lives in `sciastro.yaml`.
-The GitHub source repository still uses the `scipages` URL;
-source links and the Tests badge intentionally point there until it is renamed.
 Existing alpha consumers should rename their configuration file and update their
 package dependency and imports. Keep a custom `themeStorageKey` to preserve
 visitors' saved theme preferences across the rename.
@@ -72,7 +98,7 @@ powershell -ExecutionPolicy Bypass -c "irm -useb https://pixi.sh/install.ps1 | i
 Reopen your terminal and check `pixi --version`. If you have not cloned the repository:
 
 ```sh
-git clone https://github.com/volpatto/scipages.git sciastro
+git clone https://github.com/volpatto/sciastro.git sciastro
 cd sciastro
 ```
 
@@ -138,11 +164,12 @@ In the generated project:
 ```sh
 cd ../my-group
 pixi install
-pixi run pnpm add sciastro@file:../sciastro/artifacts/sciastro-0.1.0-alpha.1.tgz --save-exact
+pixi run pnpm add sciastro@file:../sciastro/artifacts/sciastro-VERSION.tgz --save-exact
 pixi run dev
 ```
 
-The archive path assumes `sciastro` and `my-group` are sibling directories. Adjust
+Replace `VERSION` with the archive version printed by `pack`. The archive path
+assumes `sciastro` and `my-group` are sibling directories. Adjust
 it to match your filesystem. The generated site consumes the packaged artifact;
 it does not depend on the SciAstro source checkout.
 
@@ -255,8 +282,8 @@ Configure directory requests to serve `index.html`, and missing URLs to serve
 the homepage for every unknown URL.
 
 For GitHub Pages, select **Settings → Pages → Source → GitHub Actions**, build your
-consumer website and deploy its `dist/`. This repository's workflow checks the
-**package**; it does not deploy the examples or publish to npm.
+consumer website and deploy its `dist/`. This repository checks the **package** on pushes/PRs and publishes npm releases
+and MkDocs documentation on validated `v*` tags. It does not deploy the example websites.
 
 **There are two different `dist/` directories:** at the SciAstro root it contains
 the compiled package; inside a consumer or `examples/group/` it contains the
@@ -296,7 +323,8 @@ static sites on ports `4360` and `4361`; it does not use or stop the previews on
 
 [GitHub Actions](.github/workflows/ci.yml) runs on pushes, pull requests and manual
 dispatch. It performs package verification on Linux, macOS and Windows, plus
-browser verification on Linux. Failures fail the corresponding job. The
+browser tests and a strict MkDocs build on Linux. Version consistency and documentation
+tutorial tests are included. Failures fail the corresponding job. The
 `browser-test-report` artifact contains an HTML report, JUnit results and traces /
 screenshots for failed browser tests. The README badge reflects this workflow.
 
@@ -326,3 +354,30 @@ their licenses: [Astro](https://astro.build/), [Citation.js](https://citation.js
 [Zod](https://zod.dev/), [sanitize-html](https://github.com/apostrophecms/sanitize-html),
 the [icon collections](docs/icon-licenses.txt), and the [font notices](docs/font-licenses.txt). Browser testing uses
 [Playwright](https://playwright.dev/).
+
+## Releases and version maintenance
+
+Publishing to npm is prepared in [release.yml](.github/workflows/release.yml).
+A pushed tag such as `vVERSION` triggers publication only if it matches the
+package version, points to a commit included in `main`, and passes all tests and
+checks. The workflow tests the actual archive, publishes it, creates a GitHub release
+and deploys docs from that same commit. Prereleases use npm's `next` channel;
+stable releases use `latest`.
+
+```sh
+pixi run --locked version-set VERSION
+# Complete the new CHANGELOG.md entry.
+pixi run --locked version-check
+```
+
+Replace `VERSION` with the intended new release version. The update task changes
+`package.json` and starts its changelog entry; the docs and generated consumer
+metadata obtain the version from the package.
+The checker runs in CI and also checks the release tag, packaged manifest and
+built docs during publication. It leaves dependency versions and the content
+schema version independent. Neither task creates a commit/tag or publishes anything.
+
+Follow the [release guide](docs/development/releases.md) for npm account setup,
+first-publication bootstrap, OIDC trusted publishing, GitHub Pages settings, tag
+creation and recovery. Those account settings must be configured before automatic
+publication can succeed; no publication is performed by ordinary builds.

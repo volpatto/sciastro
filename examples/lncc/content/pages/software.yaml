@@ -15,5 +15,5 @@ sections:
         text: { pt: Software fictício para demonstração., en: Fictional demonstration software. }
         links:
           - label: GitHub
-            url: https://github.com/volpatto/scipages
+            url: https://github.com/volpatto/sciastro
             icon: lucide:code-xml

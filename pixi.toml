@@ -8,9 +8,35 @@ requires-pixi = ">=0.72.2"
 nodejs = "24.*"
 pnpm = "==11.19.0"
 
+# Documentation is isolated from the JavaScript development environment.
+[feature.docs.dependencies]
+python = "3.12.*"
+mkdocs = ">=1.6,<2"
+mkdocs-material = ">=9.6,<10"
+
+[feature.docs.tasks.docs-build]
+cmd = "mkdocs build --strict"
+description = "Build the documentation and check internal links"
+
+[feature.docs.tasks.docs-serve]
+cmd = "mkdocs serve --dev-addr 127.0.0.1:8000"
+description = "Preview the documentation locally"
+
+[environments]
+default = { features = [] }
+docs = { features = ["docs"], no-default-feature = true }
+
 [tasks.setup]
 cmd = "pnpm install --frozen-lockfile"
 description = "Install dependencies using the lockfile"
+
+[tasks.version-check]
+cmd = "node scripts/version.mjs check"
+description = "Check package/changelog versions and prevent hardcoded docs versions"
+
+[tasks.version-set]
+cmd = "node scripts/version.mjs set"
+description = "Update the package version and start its changelog entry; pass the new version"
 
 [tasks.build]
 cmd = "pnpm build"
@@ -63,7 +89,7 @@ depends-on = ["setup"]
 description = "Stop the individual preview"
 
 [tasks.pack]
-cmd = "pnpm pack --pack-destination artifacts"
+cmd = "pnpm pack --skip-manifest-obfuscation --pack-destination artifacts"
 depends-on = ["setup"]
 description = "Create an installable package without publishing to npm"
 

@@ -1,13 +1,20 @@
 name: Tests
 on:
   push:
+    branches: ['**']
   pull_request:
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      ref:
+        description: Exact commit to test for a release
+        type: string
+        required: true
 permissions:
   contents: read
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: tests-${{ github.workflow }}-${{ inputs.ref || github.ref }}
+  cancel-in-progress: ${{ github.workflow != 'Release' }}
 jobs:
   tests:
     name: Package Tests (${{ matrix.os }})
@@ -20,6 +27,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
       - name: Install locked Pixi environment
         uses: prefix-dev/setup-pixi@v0.10.2
         with:
@@ -30,6 +39,8 @@ jobs:
         run: pixi run --locked setup
       - name: Type checks
         run: pixi run --locked pnpm check
+      - name: Version consistency checks
+        run: pixi run --locked version-check
       - name: Build package and examples
         run: pixi run --locked pnpm run build && pixi run --locked pnpm run build:examples
       - name: Unit Tests
@@ -43,6 +54,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
       - name: Install locked Pixi environment
         uses: prefix-dev/setup-pixi@v0.10.2
         with:
@@ -64,3 +77,27 @@ jobs:
           include-hidden-files: true
           retention-days: 14
           if-no-files-found: ignore
+  docs:
+    name: Documentation build and link checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      DOCS_COMMIT: ${{ inputs.ref || github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+      - uses: prefix-dev/setup-pixi@v0.10.2
+        with:
+          pixi-version: v0.72.2
+          environments: docs
+          locked: true
+          cache: true
+      - run: pixi run --locked -e docs docs-build
+      - name: Save documentation preview without deploying
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs-preview
+          path: site/
+          if-no-files-found: error
+          retention-days: 7

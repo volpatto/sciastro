@@ -1,0 +1,139 @@
+name: Release
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: read
+# Never interrupt publication or Pages deployment. Push one release tag at a time.
+concurrency:
+  group: sciastro-release
+  cancel-in-progress: false
+jobs:
+  validate:
+    name: Validate release tag and versions
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      commit: ${{ steps.release.outputs.commit }}
+      version: ${{ steps.release.outputs.version }}
+      tag: ${{ steps.release.outputs.tag }}
+      prerelease: ${{ steps.release.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: prefix-dev/setup-pixi@v0.10.2
+        with:
+          pixi-version: v0.72.2
+          locked: true
+          cache: false
+      - name: Check version, changelog and membership in main
+        id: release
+        run: pixi run --locked node scripts/release.mjs check
+  tests:
+    name: Release Tests
+    needs: validate
+    uses: ./.github/workflows/ci.yml
+    with:
+      ref: ${{ needs.validate.outputs.commit }}
+  artifacts:
+    name: Build and test release artifacts
+    needs: [validate, tests]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DOCS_COMMIT: ${{ needs.validate.outputs.commit }}
+      SCIASTRO_TEST_ARCHIVE: artifacts/sciastro-${{ needs.validate.outputs.version }}.tgz
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate.outputs.commit }}
+          fetch-depth: 0
+      - uses: prefix-dev/setup-pixi@v0.10.2
+        with:
+          pixi-version: v0.72.2
+          environments: default docs
+          locked: true
+          cache: false
+      - run: pixi run --locked setup
+      - run: pixi run --locked pack
+      - name: Installed Package Tests against the release archive
+        run: pixi run --locked pnpm test:package
+      - run: pixi run --locked -e docs docs-build
+      - name: Check archive and docs versions; record integrity
+        run: pixi run --locked node scripts/release.mjs artifacts
+      - name: Validate the npm publication command without publishing
+        run: pixi run --locked node scripts/publish.mjs --dry-run
+      - uses: actions/upload-artifact@v4
+        with:
+          name: npm-release
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 30
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/
+  publish:
+    name: Publish npm package
+    needs: [validate, artifacts]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+    environment: npm
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate.outputs.commit }}
+      - uses: prefix-dev/setup-pixi@v0.10.2
+        with:
+          pixi-version: v0.72.2
+          locked: true
+          cache: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: npm-release
+          path: artifacts/
+      - name: Publish the tested archive with npm OIDC
+        run: pixi run --locked node scripts/publish.mjs
+  github-release:
+    name: Create GitHub release
+    needs: [validate, publish]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      RELEASE_TAG: ${{ needs.validate.outputs.tag }}
+      PRERELEASE: ${{ needs.validate.outputs.prerelease }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: npm-release
+          path: artifacts/
+      - name: Create release with changelog and archive
+        shell: bash
+        run: |
+          if ! gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            flags=()
+            if [ "$PRERELEASE" = 'true' ]; then flags+=(--prerelease); fi
+            gh release create "$RELEASE_TAG" --verify-tag --title "$RELEASE_TAG" --notes-file artifacts/release-notes.md "${flags[@]}"
+          fi
+          gh release upload "$RELEASE_TAG" artifacts/*.tgz artifacts/release.json --clobber
+  docs:
+    name: Deploy release documentation
+    needs: [publish, github-release]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

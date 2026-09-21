@@ -1,0 +1,92 @@
+site_name: SciAstro
+site_description: Academic websites as easy as Markdown and YAML, built on Astro
+site_url: https://volpatto.github.io/sciastro/
+repo_url: https://github.com/volpatto/sciastro
+repo_name: volpatto/sciastro
+edit_uri: edit/main/docs/
+strict: true
+exclude_docs: |
+  site-readme.md
+  hooks.py
+hooks:
+  - docs/hooks.py
+theme:
+  name: material
+  language: en
+  font: false
+  icon:
+    logo: material/book-open-page-variant-outline
+    repo: fontawesome/brands/github
+  palette:
+    - media: '(prefers-color-scheme: light)'
+      scheme: default
+      primary: blue grey
+      accent: blue
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: '(prefers-color-scheme: dark)'
+      scheme: slate
+      primary: blue grey
+      accent: blue
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+plugins:
+  - search
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.tabbed:
+      alternate_style: true
+  - toc:
+      permalink: true
+validation:
+  nav:
+    omitted_files: warn
+  links:
+    not_found: warn
+    anchors: warn
+    unrecognized_links: warn
+extra_css:
+  - stylesheets/docs.css
+copyright: SciAstro contributors · MIT license
+nav:
+  - Overview: index.md
+  - Get started:
+      - Installation: getting-started.md
+      - Individual website: tutorials/individual.md
+      - Research-group website: tutorials/group.md
+  - Guides:
+      - Content and people: conteudo.md
+      - Pages, themes and extensions: customization.md
+      - Section recipes: guides/recipes.md
+      - Languages and navigation: guides/languages.md
+      - Icons: icones.md
+      - BibTeX and citations: referencias.md
+      - Deploy a website: guides/deployment.md
+      - Troubleshooting: guides/troubleshooting.md
+  - Reference:
+      - Configuration: reference/configuration.md
+      - CLI: reference/cli.md
+      - API: reference/api.md
+  - Development:
+      - Architecture: arquitetura.md
+      - Tests and contributing: testing.md
+      - Documentation: development/documentation.md
+      - Releases and npm: development/releases.md

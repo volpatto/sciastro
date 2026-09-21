@@ -91,7 +91,7 @@ rejects committed `test.only` calls instead of silently skipping other tests.
 
 ## Continuous integration
 
-[The workflow](../.github/workflows/ci.yml) runs on pushes to every branch, pull
+[The workflow](https://github.com/volpatto/sciastro/blob/main/.github/workflows/ci.yml) runs on pushes to every branch, pull
 requests and manual dispatch:
 
 1. **Package Tests (Linux/macOS/Windows)** installs the locked Pixi environment and runs
@@ -141,3 +141,16 @@ The **Tests** badge and workflow explicitly identify software tests. `verify` an
 builds. Installed Package Tests launch real development servers to detect errors
 that static builds cannot reveal, including stylesheet externalization. They also
 build the composed LNCC example with local extensions under a nested base path.
+
+## Documentation and release tests
+
+The unit suite also validates the complete file snippets from the individual and
+group documentation tutorials, section recipes and public API export coverage.
+Release regression tests cover version synchronization, invalid tags, hardcoded README/docs versions and mismatched
+changelog versions, commits outside `main`, immutable tag checkouts,
+registry errors and retries against an already published archive.
+
+Run `pixi run --locked version-check` for version consistency and
+`pixi run --locked -e docs docs-build` for a strict documentation build. Both are
+required in CI. The [release workflow](development/releases.md) reuses the full
+cross-platform suite and tests the exact archive before publishing it.

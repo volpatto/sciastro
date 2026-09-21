@@ -19,11 +19,11 @@ pixi install
 running the normal installation. Assuming sibling `sciastro` and website directories:
 
 ```sh
-pixi run pnpm add sciastro@file:../sciastro/artifacts/sciastro-0.1.0-alpha.1.tgz --save-exact
+pixi run pnpm add sciastro@file:../sciastro/artifacts/sciastro-VERSION.tgz --save-exact
 ```
 
 The archive is created with `pixi run --locked pack` in the SciAstro repository.
-Adjust its path and version to your installation. If you have a version already
+Replace `VERSION` with the archive version printed by `pack` and adjust the path. If you have a version already
 published to npm, use `pixi run pnpm install` instead.
 
 Start the preview:
@@ -79,4 +79,4 @@ static files, including `index.html` for directories and `404.html` with HTTP 40
 for missing pages. No Node.js process is needed on the hosting server.
 
 For package development, installation details and configuration guides, see the
-[SciAstro README](https://github.com/volpatto/scipages#readme).
+[SciAstro README](https://github.com/volpatto/sciastro#readme).

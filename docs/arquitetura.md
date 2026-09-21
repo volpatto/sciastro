@@ -49,7 +49,9 @@ TypeScript compiles to JavaScript and type declarations. Astro components and CS
 are copied into `dist/` and compiled by the consumer's Astro build. The package
 includes `starters/` and documentation. The small LNCC example is included as a customization reference; other development examples and tests are not shipped.
 
-`pnpm pack` builds before creating the `.tgz`. Distribution tests install that
+`pixi run --locked pack` builds before creating the `.tgz`. It passes
+`--skip-manifest-obfuscation` to pnpm to retain `packageManager`, which the CLI
+uses when creating consumer projects. Distribution tests install that
 archive in temporary directories outside the workspace and build both site kinds.
 This detects missing package files and dependencies that only work because they
 happen to be present in the development checkout.

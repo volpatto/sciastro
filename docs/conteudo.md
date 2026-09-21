@@ -135,7 +135,7 @@ rendered as text rather than executed.
 
 ## Themes, logo and profile links
 
-Choose `theme: classic` or `theme: modern`. Visitors can switch between light and
+Choose `theme: classic`, `theme: modern` or `theme: lncc`. Visitors can switch between light and
 dark modes. The initial choice follows the system; an explicit choice is saved
 in the browser.
 

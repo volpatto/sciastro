@@ -15,6 +15,9 @@ import assert from 'node:assert/strict';
 import { parse, stringify } from 'yaml';
 
 const root = resolve('.');
+const sourcePackage = JSON.parse(
+  await readFile(join(root, 'package.json'), 'utf8'),
+);
 const scratch = await mkdtemp(join(tmpdir(), 'sciastro-package-'));
 const pnpm = process.env.npm_execpath;
 assert(pnpm, 'Execute este teste com pnpm test:package.');
@@ -73,11 +76,16 @@ async function audit(directory, base) {
 }
 
 try {
-  run(['pack', '--pack-destination', scratch]);
-  const tarball = join(
-    scratch,
-    (await readdir(scratch)).find((name) => name.endsWith('.tgz')),
-  );
+  // Releases exercise the exact archive subsequently uploaded to npm.
+  let tarball = process.env.SCIASTRO_TEST_ARCHIVE;
+  if (tarball) tarball = resolve(tarball);
+  else {
+    run(['pack', '--skip-manifest-obfuscation', '--pack-destination', scratch]);
+    tarball = join(
+      scratch,
+      (await readdir(scratch)).find((name) => name.endsWith('.tgz')),
+    );
+  }
   for (const kind of ['group', 'individual']) {
     const consumer = join(scratch, kind);
     execFileSync(process.execPath, [
@@ -120,6 +128,16 @@ try {
     assert.match(
       await readFile(join(generated, 'sciastro.yaml'), 'utf8'),
       /theme: lncc/,
+    );
+    const generatedPackage = JSON.parse(
+      await readFile(join(generated, 'package.json'), 'utf8'),
+    );
+    assert.equal(generatedPackage.dependencies.sciastro, sourcePackage.version);
+    assert.equal(generatedPackage.packageManager, sourcePackage.packageManager);
+    assert.deepEqual(generatedPackage.engines, sourcePackage.engines);
+    assert.equal(
+      generatedPackage.dependencies.astro,
+      sourcePackage.devDependencies.astro,
     );
     const overrides =
       kind === 'group'

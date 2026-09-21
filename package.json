@@ -7,7 +7,7 @@
   "author": "Diego Tavares Volpatto",
   "repository": {
     "type": "git",
-    "url": "https://github.com/volpatto/scipages.git"
+    "url": "https://github.com/volpatto/sciastro.git"
   },
   "engines": {
     "node": ">=24"
@@ -18,12 +18,15 @@
     "starters",
     "README.md",
     "LICENSE",
-    "docs",
     "examples/lncc/content",
     "examples/lncc/src",
     "examples/lncc/sciastro.yaml",
     "examples/lncc/astro.config.mjs",
-    "examples/lncc/package.json"
+    "examples/lncc/package.json",
+    "docs/site-readme.md",
+    "docs/icon-licenses.txt",
+    "docs/font-licenses.txt",
+    "CHANGELOG.md"
   ],
   "exports": {
     ".": {
@@ -63,10 +66,12 @@
     "build:examples": "pnpm --filter sciastro-example-group build && pnpm --filter sciastro-example-individual build && pnpm --filter sciastro-example-lncc build",
     "dev": "pnpm --filter sciastro-example-group dev",
     "dev:individual": "pnpm --filter sciastro-example-individual dev",
-    "verify": "pnpm check && pnpm build && pnpm test && pnpm build:examples && pnpm test:package",
+    "verify": "pnpm version:check && pnpm check && pnpm build && pnpm test && pnpm build:examples && pnpm test:package",
     "prepack": "pnpm build",
     "format": "prettier --write src scripts tests .github package.json tsconfig*.json",
-    "dev:lncc": "pnpm --filter sciastro-example-lncc dev"
+    "dev:lncc": "pnpm --filter sciastro-example-lncc dev",
+    "version:check": "node scripts/version.mjs check",
+    "version:set": "node scripts/version.mjs set"
   },
   "peerDependencies": {
     "astro": "^7.3.3"
@@ -95,5 +100,20 @@
     "prettier": "^3.9.8",
     "prettier-plugin-astro": "^1.0.1",
     "typescript": "^5.9.3"
+  },
+  "homepage": "https://volpatto.github.io/sciastro/",
+  "bugs": {
+    "url": "https://github.com/volpatto/sciastro/issues"
+  },
+  "keywords": [
+    "astro",
+    "academic",
+    "research",
+    "website",
+    "bibtex"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }

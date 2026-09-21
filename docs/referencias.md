@@ -58,5 +58,5 @@ LaTeX `\cite{...}` commands and external CSL styles do not yet have a configurat
 interface. A valid citation key does not establish the accuracy of its metadata
 or the claim it supports.
 
-See the fictional [example bibliography](../starters/group/content/references.bib)
+See the fictional [example bibliography](https://github.com/volpatto/sciastro/blob/main/starters/group/content/references.bib)
 and the [Citation.js documentation](https://citation.js.org/).
