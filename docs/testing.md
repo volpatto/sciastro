@@ -1,5 +1,12 @@
 # Testing and contributing
 
+Analytics tests cover disabled defaults, provider-specific validation, production
+origin/base restrictions, Do Not Track and event precedence. Browser Tests build
+isolated sites with simulated providers, including a custom layout, and check
+PT/EN navigation, event counts, opt-outs, downloads and tracker failures. No real
+analytics service or credentials are used. These tests run in the existing Unit
+Tests and Browser Tests jobs, including release validation.
+
 Run these commands from the SciAstro repository, not from a generated website.
 Install [Pixi](https://pixi.prefix.dev/latest/installation/) first, then run
 `pixi install --locked`. The tasks install the pnpm dependencies using the lockfile.

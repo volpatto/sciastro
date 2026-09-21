@@ -6,6 +6,8 @@ description:
   en: Fictional academic website demonstrating the LNCC Theme.
 affiliation: Instituto Exemplo
 url: https://example.org
+# Optional analytics: see the Analytics guide for Cloudflare or Umami.
+analytics: false
 locales: [pt, en]
 defaultLocale: pt
 theme: lncc

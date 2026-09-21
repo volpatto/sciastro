@@ -79,6 +79,7 @@ nav:
       - Languages and navigation: guides/languages.md
       - Icons: icones.md
       - BibTeX and citations: referencias.md
+      - Analytics: guides/analytics.md
       - Deploy a website: guides/deployment.md
       - Troubleshooting: guides/troubleshooting.md
   - Reference:

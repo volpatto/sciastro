@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { analyticsEventSchema } from './analytics.js';
 import { localizedSchema as localized, iconSchema } from './schema.js';
 import type { Locale } from './schema.js';
 import { translate } from './i18n.js';
@@ -24,6 +25,7 @@ export const sectionLinkSchema = z
     ]),
     icon: iconSchema.optional(),
     download: z.boolean().optional(),
+    analyticsEvent: analyticsEventSchema.optional(),
   })
   .strict();
 export const figureSchema = z
@@ -193,6 +195,7 @@ export interface BuiltLink {
   url: string;
   icon: BuiltIcon;
   download?: boolean;
+  analyticsEvent?: string | false;
 }
 export interface BuiltFigure {
   src: string;

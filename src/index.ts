@@ -19,7 +19,13 @@ export default function sciastro(
   return {
     name: 'sciastro',
     hooks: {
-      'astro:config:setup': async ({ config, updateConfig, injectRoute }) => {
+      'astro:config:setup': async ({
+        config,
+        updateConfig,
+        injectRoute,
+        injectScript,
+        command,
+      }) => {
         const root = fileURLToPath(config.root);
         const configFile = resolve(root, options.configFile ?? 'sciastro.yaml');
         const overrides = {
@@ -28,6 +34,19 @@ export default function sciastro(
         };
         const initial = await loadSite(configFile, overrides);
         const { config: settings } = initial;
+        if (
+          command === 'build' &&
+          settings.analytics &&
+          process.env.SCIASTRO_ANALYTICS !== 'false'
+        ) {
+          const runtime = fileURLToPath(
+            new URL('./analytics-client.js', import.meta.url),
+          ).replaceAll('\\', '/');
+          injectScript(
+            'page',
+            `import { startAnalytics } from ${JSON.stringify(runtime)};\nstartAnalytics(${JSON.stringify({ analytics: settings.analytics, url: settings.url, base: settings.base })});`,
+          );
+        }
         const components = options.components?.sections ?? {};
         for (const page of initial.pages)
           for (const section of page.sections ?? [])
@@ -141,6 +160,8 @@ export default function sciastro(
   };
 }
 export { loadSite } from './content.js';
+export { analyticsSchema, analyticsEventSchema } from './analytics.js';
+export type { AnalyticsConfig } from './analytics.js';
 export {
   configSchema,
   researchSchema,

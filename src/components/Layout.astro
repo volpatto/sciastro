@@ -253,7 +253,14 @@ const style = appearance
       )}
       <div class="footer-links">
         {config.links.map((link) => (
-          <a href={linkPath(config.base, link.url)}>
+          <a
+            href={linkPath(config.base, link.url)}
+            data-sciastro-event={
+              link.analyticsEvent === undefined
+                ? undefined
+                : String(link.analyticsEvent)
+            }
+          >
             {link.label}
             <span aria-hidden="true">↗</span>
           </a>

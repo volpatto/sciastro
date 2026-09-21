@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { analyticsSchema, analyticsEventSchema } from './analytics.js';
 
 export const localeSchema = z.enum(['pt', 'en']);
 export type Locale = z.infer<typeof localeSchema>;
@@ -139,6 +140,7 @@ export const configSchema = z
     footer: localizedSchema.optional(),
     icons: iconsSchema.default({ navigation: {}, languages: {} }),
     contentDir: text.default('content'),
+    analytics: analyticsSchema.default(false),
     logo: image
       .extend({
         viewBox: text
@@ -168,7 +170,15 @@ export const configSchema = z
       .strict()
       .optional(),
     links: z
-      .array(z.object({ label: text, url: httpUrl }).strict())
+      .array(
+        z
+          .object({
+            label: text,
+            url: httpUrl,
+            analyticsEvent: analyticsEventSchema.optional(),
+          })
+          .strict(),
+      )
       .default([]),
     studentLevels: z
       .array(z.object({ id, label: localizedSchema }).strict())
