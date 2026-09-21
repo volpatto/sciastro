@@ -71,7 +71,9 @@
     "format": "prettier --write src scripts tests .github package.json tsconfig*.json",
     "dev:lncc": "pnpm --filter sciastro-example-lncc dev",
     "version:check": "node scripts/version.mjs check",
-    "version:set": "node scripts/version.mjs set"
+    "version:set": "node scripts/changelog.mjs prepare",
+    "changelog:preview": "node scripts/changelog.mjs preview",
+    "release:prepare": "node scripts/changelog.mjs prepare"
   },
   "peerDependencies": {
     "astro": "^7.3.3"

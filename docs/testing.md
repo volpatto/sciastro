@@ -12,6 +12,7 @@ Install [Pixi](https://pixi.prefix.dev/latest/installation/) first, then run
 | Composition and themes | `tests/composition.test.mjs` | Explicit routes, menu order, assets, strict fields, translations, tokens and section citations |
 | Content and bibliography | `tests/*.test.mjs` | Translation requirements, routes, optional sections, team levels, BibTeX parsing, citation links and errors |
 | Icons | `tests/icons.test.mjs` | Defaults, overrides, disabling, aliases, SVG IDs, invalid names and local files |
+| Release preparation | `tests/changelog.test.mjs` | Actual git-cliff generation, main-only commit ranges, squash merges, regeneration and preservation of reviewed notes |
 | Installed package | `scripts/test-package.mjs` | Actual archive installation, CLI entry points, generated sites, root/subdirectory deployment, links/assets/anchors and grouping |
 | Browser interactions | `tests/browser/*.spec.mjs` | All three themes and both site kinds at desktop/mobile widths, navigation, languages, theme persistence, icons, citations, team sections, 404 and no-JavaScript behavior |
 
@@ -149,6 +150,21 @@ group documentation tutorials, section recipes and public API export coverage.
 Release regression tests cover version synchronization, invalid tags, hardcoded README/docs versions and mismatched
 changelog versions, commits outside `main`, immutable tag checkouts,
 registry errors and retries against an already published archive.
+
+Changelog tests create temporary Git repositories and invoke the real git-cliff
+binary from the locked Pixi environment. They cover arbitrary preparation-branch
+names, excluded local commits, unrelated tags, annotated/lightweight tags,
+prerelease ordering, main advancing during preparation, the next release after a
+squash merge, repeatable generation and preservation of historical/manual notes.
+Invalid versions, missing history and git-cliff failures must leave release files
+unchanged. These tests run in the existing Unit Tests job on all three CI platforms;
+their history is self-contained and needs no network or repository credentials.
+
+To run only these tests:
+
+```sh
+pixi run --locked node --test tests/changelog.test.mjs
+```
 
 Run `pixi run --locked version-check` for version consistency and
 `pixi run --locked -e docs docs-build` for a strict documentation build. Both are

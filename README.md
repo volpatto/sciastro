@@ -99,8 +99,9 @@ The development environment below is for working on SciAstro itself.
 
 ## Install the development environment
 
-Install Git and **Pixi 0.72.2 or newer**. The project environment supplies Node.js 24
-and pnpm 11.19.0, so neither needs to be installed globally.
+Install Git and **Pixi 0.72.2 or newer**. The project environment supplies Node.js 24,
+pnpm 11.19.0 and [git-cliff](https://git-cliff.org/) for release notes, so these tools
+do not need to be installed globally.
 
 - [Download Pixi](https://github.com/prefix-dev/pixi/releases).
 - [Official Pixi installation instructions](https://pixi.prefix.dev/latest/installation/).
@@ -164,6 +165,10 @@ means its preview server is not running.
 | `pixi run --locked dev` | Preview the group example |
 | `pixi run --locked dev-individual` | Preview the individual example |
 | `pixi run --locked pack` | Create an installable `.tgz` archive in `artifacts/` |
+| `pixi run --locked release-fetch` | Fetch `origin/main` and tags without changing the working branch |
+| `pixi run --locked changelog-preview` | Preview release notes from the last release tag through `origin/main` |
+| `pixi run --locked release-prepare VERSION` | Update the package version and generate its changelog entry |
+| `pixi run --locked version-check` | Check version and changelog consistency |
 
 The Pixi lockfile covers Linux x86-64, Windows x86-64, and Intel/Apple Silicon macOS.
 Package CI targets Linux, macOS and Windows; browser CI runs Chromium on Linux.
@@ -346,8 +351,9 @@ static sites on ports `4360` and `4361`; it does not use or stop the previews on
 
 [GitHub Actions](.github/workflows/ci.yml) runs on pushes, pull requests and manual
 dispatch. It performs package verification on Linux, macOS and Windows, plus
-browser tests and a strict MkDocs build on Linux. Version consistency and documentation
-tutorial tests are included. Failures fail the corresponding job. The
+browser tests and a strict MkDocs build on Linux. Version consistency, documentation
+tutorial tests and changelog tests using real temporary Git repositories and git-cliff
+are included. Failures fail the corresponding job. The
 `browser-test-report` artifact contains an HTML report, JUnit results and traces /
 screenshots for failed browser tests. The README badge reflects this workflow.
 
@@ -387,18 +393,35 @@ checks. The workflow tests the actual archive, publishes it, creates a GitHub re
 and deploys docs from that same commit. Prereleases use npm's `next` channel;
 stable releases use `latest`.
 
+Create a preparation branch from the latest `main`, then run:
+
 ```sh
-pixi run --locked version-set VERSION
-# Complete the new CHANGELOG.md entry.
+pixi run --locked release-fetch
+pixi run --locked changelog-preview
+pixi run --locked release-prepare VERSION
+# Review CHANGELOG.md; add migration instructions outside its generated block.
 pixi run --locked version-check
 ```
 
-Replace `VERSION` with the intended new release version. The update task changes
-`package.json` and starts its changelog entry; the docs and generated consumer
-metadata obtain the version from the package.
+Replace `VERSION` with the intended new release version, without the leading `v`.
+The preparation task updates `package.json` and uses git-cliff to generate the new
+`CHANGELOG.md` entry from **the last release tag on `origin/main` through
+`origin/main`**. Commits exclusive to the preparation branch are excluded regardless
+of its name. With squash merges, each merged PR contributes one commit. Optional
+Conventional Commit prefixes organize the notes; other messages are retained.
+
+`version-set VERSION` is an alias for `release-prepare VERSION`. Regenerating the
+same version replaces only its marked generated block, preserving handwritten
+notes outside it and previous releases. If `main` advances, fetch and merge/rebase
+it into the preparation branch, then regenerate before merging the PR. After the
+preparation PR is merged and tested, synchronize local `main` and push its version
+tag as described in the release guide. The merge itself does not publish anything.
+
+The docs and generated consumer metadata obtain the version from the package.
 The checker runs in CI and also checks the release tag, packaged manifest and
 built docs during publication. It leaves dependency versions and the content
-schema version independent. Neither task creates a commit/tag or publishes anything.
+schema version independent. Preparation and checking do not create commits/tags
+or publish anything.
 
 Follow the [release guide](docs/development/releases.md) for npm account setup,
 first-publication bootstrap, OIDC trusted publishing, GitHub Pages settings, tag

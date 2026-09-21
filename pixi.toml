@@ -7,6 +7,7 @@ requires-pixi = ">=0.72.2"
 [dependencies]
 nodejs = "24.*"
 pnpm = "==11.19.0"
+git-cliff = "==2.13.1"
 
 # Documentation is isolated from the JavaScript development environment.
 [feature.docs.dependencies]
@@ -35,8 +36,20 @@ cmd = "node scripts/version.mjs check"
 description = "Check package/changelog versions and prevent hardcoded docs versions"
 
 [tasks.version-set]
-cmd = "node scripts/version.mjs set"
-description = "Update the package version and start its changelog entry; pass the new version"
+cmd = "node scripts/changelog.mjs prepare"
+description = "Alias for release-prepare: update the version and generate notes from origin/main"
+
+[tasks.release-fetch]
+cmd = "git fetch origin main --tags"
+description = "Refresh origin/main and release tags without changing the working branch"
+
+[tasks.changelog-preview]
+cmd = "node scripts/changelog.mjs preview"
+description = "Preview changes after the last release on origin/main; exclude preparation-branch commits"
+
+[tasks.release-prepare]
+cmd = "node scripts/changelog.mjs prepare"
+description = "Update package.json and CHANGELOG.md from origin/main; pass the new version"
 
 [tasks.build]
 cmd = "pnpm build"
