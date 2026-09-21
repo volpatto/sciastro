@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { cp, mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
+import { parse, stringify } from 'yaml';
 import { loadSite, within } from '../dist/content.js';
 import { configSchema, teamSchema } from '../dist/schema.js';
 
@@ -88,34 +89,40 @@ test('student levels and periods must be consistent', () => {
   );
 });
 
-test('missing translations and unknown student levels include actionable errors', async (t) => {
-  const folder = await mkdtemp(join(tmpdir(), 'sciastro-content-'));
-  t.after(() => rm(folder, { recursive: true, force: true }));
-  await cp('starters/group', folder, { recursive: true });
-  const configFile = join(folder, 'sciastro.yaml');
-  const config = await readFile(configFile, 'utf8');
-  await writeFile(
-    configFile,
-    config.replace(
-      '  en: Mathematical modeling and scientific computing.\n',
-      '',
-    ),
-  );
-  await assert.rejects(
-    loadSite(configFile),
-    /description.*tradução 'en' ausente/,
-  );
-  await writeFile(configFile, config);
-  const teamFile = join(folder, 'content/team.yaml');
-  await writeFile(
-    teamFile,
-    (await readFile(teamFile, 'utf8')).replace(
-      'level: masters',
-      'level: unknown',
-    ),
-  );
-  await assert.rejects(loadSite(configFile), /unknown.*não cadastrado/);
-});
+for (const [lineEnding, eol] of [
+  ['LF', '\n'],
+  ['CRLF', '\r\n'],
+]) {
+  test(`missing translations and unknown student levels include actionable errors (${lineEnding})`, async (t) => {
+    const folder = await mkdtemp(join(tmpdir(), 'sciastro-content-'));
+    t.after(() => rm(folder, { recursive: true, force: true }));
+    await cp('starters/group', folder, { recursive: true });
+    const configFile = join(folder, 'sciastro.yaml');
+    const config = (await readFile(configFile, 'utf8')).replace(/\r?\n/g, eol);
+    // Edit the YAML value rather than matching a platform-specific text line.
+    const missingTranslation = parse(config);
+    assert.equal(typeof missingTranslation.description.en, 'string');
+    delete missingTranslation.description.en;
+    await writeFile(
+      configFile,
+      stringify(missingTranslation).replace(/\r?\n/g, eol),
+    );
+    await assert.rejects(
+      loadSite(configFile),
+      /description.*tradução 'en' ausente/,
+    );
+    await writeFile(configFile, config);
+    const teamFile = join(folder, 'content/team.yaml');
+    await writeFile(
+      teamFile,
+      (await readFile(teamFile, 'utf8')).replace(
+        'level: masters',
+        'level: unknown',
+      ),
+    );
+    await assert.rejects(loadSite(configFile), /unknown.*não cadastrado/);
+  });
+}
 
 test('content paths cannot escape their directory', () => {
   assert.throws(

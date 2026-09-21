@@ -227,8 +227,22 @@ finally { await server.stop(); }`,
     );
     if (kind === 'individual') {
       for (const path of ['content', 'src', 'public']) {
-        await rm(join(consumer, path), { recursive: true, force: true });
-        await cp(join(root, 'examples/lncc', path), join(consumer, path), {
+        const source = join(root, 'examples/lncc', path);
+        const destination = join(consumer, path);
+        await rm(destination, { recursive: true, force: true });
+        if (path === 'public') {
+          // The asset-free example has no tracked public/ directory. Git does
+          // not preserve empty directories, so a fresh checkout may omit it.
+          const assets = await stat(source).catch((error) => {
+            if (error.code !== 'ENOENT') throw error;
+            return undefined;
+          });
+          if (!assets) {
+            await mkdir(destination, { recursive: true });
+            continue;
+          }
+        }
+        await cp(source, destination, {
           recursive: true,
         });
       }

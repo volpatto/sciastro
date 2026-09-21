@@ -118,6 +118,13 @@ GitHub branch protection or a ruleset; merely defining CI does not enforce that.
   exercise the installed-consumer checks.
 - Keep fixtures fictional and self-contained. Do not add credentials or rely on
   third-party websites for a test to pass.
+- Tests must work from a fresh Git checkout: an empty `public/` directory is
+  optional, because Git does not track empty directories. Installed Package Tests
+  create it when the LNCC example has no assets; required fixture directories still
+  fail if missing.
+- Modify YAML fixtures as parsed data instead of matching lines that assume Unix
+  line endings. Translation validation is exercised with both LF and CRLF files
+  on every platform, including when tests run outside Windows.
 - Update both starters and examples when changing their shared configuration.
 - Keep documentation in English. Portuguese and English example content can
   remain bilingual, with Portuguese as the default.
