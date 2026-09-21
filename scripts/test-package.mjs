@@ -156,7 +156,21 @@ try {
         },
         languages: { pt: false, en: 'lucide:languages' },
       };
+      config.people = {
+        avatarFallback: {
+          src: '/icons/custom.svg',
+          alt: {
+            pt: 'Símbolo do instituto fictício',
+            en: 'Fictional institute symbol',
+          },
+        },
+      };
       await writeFile(configFile, stringify(config));
+      const teamFile = join(consumer, 'content/team.yaml');
+      const members = parse(await readFile(teamFile, 'utf8'));
+      members.find((member) => member.id === 'clara-santos').avatarFallback =
+        config.people.avatarFallback;
+      await writeFile(teamFile, stringify(members));
       await mkdir(join(consumer, 'public/icons'), { recursive: true });
       await writeFile(
         join(consumer, 'public/icons/custom.svg'),
@@ -226,6 +240,33 @@ finally { await server.stop(); }`,
       'Alumni leaked into active students',
     );
     assert.match(team.slice(team.indexOf('id="alumni"')), /Rafael Alves/);
+    const member = (id) =>
+      team.match(
+        new RegExp(`<article[^>]*id="member-${id}"[^>]*>[\\s\\S]*?</article>`),
+      )?.[0];
+    const photo = member('clara-santos');
+    assert(photo, 'The installed package must render the student portrait');
+    assert(
+      photo.includes(
+        `src="${overrides.BASE_PATH}images/fictional-portrait.svg"`,
+      ),
+    );
+    assert.match(photo, /object-position: 50% 35%/);
+    assert.doesNotMatch(photo, /avatar-fallback/);
+    const custom = member('beatriz-souza');
+    assert.match(custom, /viewBox="5 5 54 54"/);
+    assert(
+      custom.includes(
+        `href="${overrides.BASE_PATH}images/academic-symbol.svg"`,
+      ),
+    );
+    if (kind === 'group') {
+      assert.match(member('pedro-lima'), /src="\/lab\/icons\/custom.svg"/);
+    } else {
+      assert.match(member('pedro-lima'), /avatar-fallback/);
+      assert.match(member('pedro-lima'), /viewBox="0 0 64 64"/);
+      assert.doesNotMatch(member('pedro-lima'), /<img|initials/);
+    }
     const research = await readFile(
       join(consumer, 'dist/pesquisa/index.html'),
       'utf8',
@@ -266,6 +307,18 @@ finally { await server.stop(); }`,
       }
       for (const path of ['sciastro.yaml', 'astro.config.mjs'])
         await cp(join(root, 'examples/lncc', path), join(consumer, path));
+      // A real installed LNCC consumer also composes the shared team renderer.
+      await cp(join(root, 'starters/group/public'), join(consumer, 'public'), {
+        recursive: true,
+      });
+      await cp(
+        join(root, 'starters/group/content/team.yaml'),
+        join(consumer, 'content/team.yaml'),
+      );
+      const aboutFile = join(consumer, 'content/pages/about.yaml');
+      const about = parse(await readFile(aboutFile, 'utf8'));
+      about.sections.push({ type: 'team', id: 'people' });
+      await writeFile(aboutFile, stringify(about));
       const base = '/institute/lab/';
       run(['build'], consumer, {
         SITE_URL: 'https://institute.example.org',
@@ -275,6 +328,16 @@ finally { await server.stop(); }`,
       const home = await readFile(join(consumer, 'dist/index.html'), 'utf8');
       assert.match(home, /data-design="lncc"/);
       assert.match(home, /data-custom-component="project-note"/);
+      assert.match(home, /id="people"/);
+      assert.match(
+        home,
+        /src="\/institute\/lab\/images\/fictional-portrait.svg"/,
+      );
+      assert.match(
+        home,
+        /href="\/institute\/lab\/images\/academic-symbol.svg"/,
+      );
+      assert.match(home, /avatar-fallback/);
       assert(
         (
           await readFile(join(consumer, 'dist/linhas/index.html'), 'utf8')

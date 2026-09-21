@@ -77,7 +77,8 @@ Each person has one record:
 | `level` | Required for students; must match a configured level |
 | `startYear`, `endYear` | Optional; active members must not have an end year |
 | `affiliation`, `topic` | Optional shared or translated text |
-| `photo` | Optional `src` and `alt`, as for research figures |
+| `photo` | Optional `src`, localized `alt` and `position: [x, y]`; displayed in a circle |
+| `avatarFallback` | Optional symbol for this person when `photo` is omitted; overrides the site's fallback |
 | `links` | Optional list of objects with `label` and `url` |
 
 Active faculty appear first, followed by active researchers and active students
@@ -105,6 +106,82 @@ studentLevels:
 Use `role: researcher` for postdoctoral researchers if that fits your group;
 the schema does not require treating them as students. Person, research-area and
 level identifiers must be unique within their respective lists.
+
+### Portraits and fallback symbols
+
+All people cards use a circular image: faculty, researchers, active students and
+alumni. This applies to both site kinds, automatic pages and composed `type: team`
+sections. Add a photo to a person's entry in `content/team.yaml`:
+
+```yaml
+- id: maria-example
+  name: Maria Example
+  role: student
+  status: active
+  level: masters
+  photo:
+    src: /images/maria.jpg
+    alt: { pt: Retrato de Maria Example, en: Portrait of Maria Example }
+    position: [50, 35]
+```
+
+Put the file in `public/images/maria.jpg`. Photos fill the circle with a centered
+crop by default, preserving their aspect ratio. `position` adjusts the crop using
+horizontal and vertical percentages from 0 to 100; `[50, 50]` is centered and
+`[50, 35]` moves the framing toward the top. The original file is unchanged.
+Use a shared `alt` string or provide it in every enabled language.
+
+Set a shared institution **symbol without lettering** in `sciastro.yaml`:
+
+```yaml
+people:
+  avatarFallback:
+    src: /images/institution-symbol.svg
+    alt: { pt: Símbolo da instituição, en: Institution symbol }
+```
+
+The resolution order is:
+
+1. The person's `photo`.
+2. The person's `avatarFallback` in `team.yaml`.
+3. `people.avatarFallback` in `sciastro.yaml`.
+4. SciAstro's built-in fictional academic symbol, with no letters or affiliation
+   to an actual institution. It adapts to the theme and requires no image file.
+
+For a multi-institution group, add `avatarFallback` to individual records with the
+same fields as the shared setting. The header `logo` is independent: it may include
+an institution's full name and is deliberately not reused for people.
+
+If the only available logo includes a wordmark, prepare a symbol-only image or
+define a crop. For example, for a 400 × 160 image whose symbol occupies the leftmost
+160 × 160 pixels:
+
+```yaml
+people:
+  avatarFallback:
+    src: /images/institution-logo.png
+    alt: Institution symbol
+    width: 400
+    height: 160
+    viewBox: 0 0 160 160
+```
+
+`width` and `height` are the **original image dimensions**, required when `viewBox`
+is set. `viewBox` is `x y width height` for the visible region; adjust it to your
+file. Fallback symbols fit inside the circle with padding instead of being stretched
+or cropped like portraits. The crop settings work for individual fallbacks too.
+SciAstro does not automatically detect or remove lettering from images.
+
+Local paths are relative to `public/` and automatically respect the deployment
+`base`. HTTP(S) images are also accepted, but their availability is not checked at
+build time. Fallback selection happens when `photo` is **omitted**; a declared local
+file that is missing fails validation, and an unavailable remote photo is not
+replaced automatically. Portraits and symbols render without browser JavaScript.
+
+The starter sites include an original fictional symbol and an illustrated portrait
+as editable examples under `public/images/`, distributed under the project's MIT
+license. Replace them with your own authorized images. Existing sites do not need
+new fields: people without photos now show the built-in symbol instead of initials.
 
 ## Additional pages
 

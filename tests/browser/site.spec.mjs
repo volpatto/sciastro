@@ -173,6 +173,92 @@ test('missing routes show a useful 404 with a working home link', async ({
   await expect(page.locator('.home-introduction')).toBeVisible();
 });
 
+test('people use circular portraits, per-person symbols and site or built-in fallbacks', async ({
+  page,
+}, testInfo) => {
+  const group = testInfo.project.metadata.kind === 'group';
+  await page.goto('/equipe/');
+  const portrait = page.locator('#member-clara-santos .avatar-photo');
+  await expect(portrait).toHaveCSS('border-radius', '50%');
+  await expect(portrait).toHaveCSS('overflow', 'hidden');
+  const photo = portrait.locator('img');
+  await expect(photo).toHaveAttribute('src', '/images/fictional-portrait.svg');
+  await expect(photo).toHaveAttribute(
+    'alt',
+    'Ilustração fictícia de Clara Santos',
+  );
+  await expect(photo).toHaveCSS('object-fit', 'cover');
+  await expect(photo).toHaveCSS('object-position', '50% 35%');
+  await expect
+    .poll(() => photo.evaluate((image) => image.naturalWidth))
+    .toBeGreaterThan(0);
+  const size = await portrait.boundingBox();
+  expect(size.width).toBe(size.height);
+
+  // This member overrides the shared fallback, including a symbol-only crop.
+  const personal = page.locator('#member-beatriz-souza .avatar-fallback');
+  await personal.scrollIntoViewIfNeeded();
+  await expect(personal.locator('svg')).toHaveAttribute('viewBox', '5 5 54 54');
+  await expect(personal.locator('svg image')).toHaveAttribute(
+    'href',
+    '/images/academic-symbol.svg',
+  );
+  await expect(personal.locator('svg')).toHaveAttribute(
+    'aria-label',
+    'Símbolo acadêmico fictício',
+  );
+
+  // Both active and former students, as well as faculty, use the same renderer.
+  for (const id of [
+    'pedro-lima',
+    'rafael-alves',
+    ...(group ? ['ana-silva', 'lucas-costa'] : []),
+  ]) {
+    const fallback = page.locator(`#member-${id} .avatar-fallback`);
+    await fallback.scrollIntoViewIfNeeded();
+    await expect(fallback).toHaveCSS('border-radius', '50%');
+    await expect(fallback).toHaveText('');
+    if (group) {
+      await expect(fallback.locator('img')).toHaveAttribute(
+        'src',
+        '/images/academic-symbol.svg',
+      );
+      await expect(fallback.locator('img')).toHaveCSS('object-fit', 'contain');
+      await expect(fallback.locator('img')).toHaveJSProperty('complete', true);
+      expect(
+        await fallback.locator('img').evaluate((image) => image.naturalWidth),
+      ).toBeGreaterThan(0);
+    } else {
+      await expect(fallback.locator('svg')).toHaveAttribute(
+        'aria-hidden',
+        'true',
+      );
+      await expect(fallback.locator('svg text, img')).toHaveCount(0);
+    }
+  }
+  await page
+    .getByRole('button', { name: 'Alternar modo claro e escuro' })
+    .click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await expect(
+    page.locator('#member-rafael-alves .avatar-fallback'),
+  ).toBeVisible();
+  expect(
+    await page.evaluate(
+      () =>
+        document.documentElement.scrollWidth <=
+        document.documentElement.clientWidth,
+    ),
+  ).toBe(true);
+  await page.goto('/en/team/');
+  await expect(
+    page.locator('#member-clara-santos .avatar-photo img'),
+  ).toHaveAttribute('alt', 'Fictional illustration of Clara Santos');
+  await expect(
+    page.locator('#member-beatriz-souza .avatar-fallback svg'),
+  ).toHaveAttribute('aria-label', 'Fictional academic symbol');
+});
+
 test.describe('without JavaScript', () => {
   test.use({ javaScriptEnabled: false });
   test('navigation, icons, citations and language links remain usable', async ({
@@ -199,5 +285,24 @@ test.describe('without JavaScript', () => {
         .getByRole('link', { name: 'English', exact: true })
         .locator('.ui-icon'),
     ).toBeVisible();
+  });
+
+  test('portraits and fallback symbols render without JavaScript', async ({
+    page,
+  }, testInfo) => {
+    await page.goto('/equipe/');
+    const portrait = page.locator('#member-clara-santos .avatar-photo img');
+    await expect(portrait).toBeVisible();
+    await expect
+      .poll(() => portrait.evaluate((image) => image.naturalWidth))
+      .toBeGreaterThan(0);
+    const fallback = page.locator('#member-pedro-lima .avatar-fallback');
+    await fallback.scrollIntoViewIfNeeded();
+    await expect(
+      fallback.locator(
+        testInfo.project.metadata.kind === 'group' ? 'img' : 'svg',
+      ),
+    ).toBeVisible();
+    await expect(fallback).toHaveText('');
   });
 });

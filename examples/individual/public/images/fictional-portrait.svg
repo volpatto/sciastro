@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 300">
+  <!-- Original illustration of a fictional person for SciAstro examples. MIT. -->
+  <path fill="#e3e9f0" d="M0 0h240v300H0z"/>
+  <circle cx="180" cy="64" r="90" fill="#d2dcdf"/>
+  <path fill="#293849" d="M50 140c0-66 26-94 70-94s70 28 70 94v68H50z"/>
+  <path fill="#537184" d="M15 300v-38c0-54 42-79 105-79s105 25 105 79v38z"/>
+  <path fill="#c78e70" d="M97 158h46v47c-10 16-36 16-46 0z"/>
+  <path fill="#dda789" d="M72 108c0-46 96-46 96 0v24c0 39-23 58-48 58s-48-19-48-58z"/>
+  <path fill="#293849" d="M65 115c-2-48 24-69 55-69 41 0 63 24 55 68-18-7-35-22-47-42-14 22-35 36-63 43z"/>
+  <path stroke="#765346" stroke-width="3" stroke-linecap="round" d="M91 128h8m42 0h8m-38 27q9 7 18 0" fill="none"/>
+  <path fill="#dbe4e7" d="m83 201 37 30 37-30-12-10-25 15-25-15z"/>
+</svg>

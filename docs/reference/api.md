@@ -83,6 +83,14 @@ The root type exports are `SciAstroOptions`, `SiteConfig`, `Member`, `ResearchAr
 including defaults, so an authored YAML object may have fewer fields. `Locale` is
 `'pt' | 'en'`. `Section` is a discriminated union; narrow by `section.type`.
 
+`Member.photo` accepts `{ src, alt, position? }`, where `position` is a pair of
+horizontal/vertical percentages in `[0, 100]`. `Member.avatarFallback` and
+`SiteConfig.people?.avatarFallback` accept `{ src, alt, viewBox?, width?, height? }`;
+cropping requires positive original image dimensions. `alt` is localized. These
+fields remain available in `BuiltSite.members` and `BuiltSite.config`; the shared
+team renderer selects the photo, then the member fallback, then the site fallback,
+then the built-in fictional symbol. See the [people guide](../conteudo.md#portraits-and-fallback-symbols).
+
 ### Prepared data
 
 | Type | Main fields |

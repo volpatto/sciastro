@@ -61,6 +61,8 @@ visitors' saved theme preferences across the rename.
   to the corresponding sections on the Research page.
 - **Individual researchers:** an About page and a Supervision page.
 - **People:** faculty, researchers, active students grouped by level, and alumni.
+  Circular portraits with adjustable framing, configurable institution symbols
+  and a fictional built-in fallback; see [photo settings](docs/conteudo.md#portraits-and-fallback-symbols).
 - **Research:** short card summaries and detailed Markdown, with optional figures.
 - **References:** local BibTeX files, `[@key]` citations, per-page bibliographies,
   and an explicitly selected list of the site's own publications.

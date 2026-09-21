@@ -144,6 +144,10 @@ The Team page separates faculty, researchers, active students by level, and alum
 Unused categories are omitted. Default student levels are undergraduate research,
 master's, doctorate and postdoctoral research; [customize them](../conteudo.md#team-and-supervision)
 when needed. A postdoctoral member can instead use `role: researcher`.
+Every person can have a circular portrait. Configure a shared institution symbol
+for people without photos, with per-person overrides for other institutions;
+the default is a fictional, letter-free symbol. See
+[portraits and fallback symbols](../conteudo.md#portraits-and-fallback-symbols).
 
 To keep this first site to its three main pages, replace `content/pages.yaml`:
 

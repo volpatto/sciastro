@@ -24,6 +24,7 @@ icons:
     pt: circle-flags:br
     en: circle-flags:gb
 contentDir: content
+# Sem people.avatarFallback, utiliza o símbolo fictício embutido no SciAstro.
 notice:
   pt: Site de demonstração. Pessoas, instituições e publicações são fictícias.
   en: Demonstration website. People, institutions and publications are fictional.
