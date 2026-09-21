@@ -4,7 +4,8 @@ SciAstro provides two authoring modes. Existing `home`, `research.yaml`,
 `team.yaml` and `pages.yaml` configurations continue to work. For complete control
 over a site's pages, set `pageFiles`. This explicitly lists **all** page files and
 replaces automatic page generation. Do not maintain both sets of page definitions.
-`team.yaml` and the BibTeX library remain reusable data sources in either mode.
+`team.yaml` (or the file selected by `people.file`) and the BibTeX library remain
+reusable data sources in either mode.
 
 ## A composed site
 
@@ -112,7 +113,7 @@ same page. `text` is inline YAML content; use page `body` for a Markdown file.
 | `timeline` | Required `items`, each with `period` |
 | `logos` | Required `items`, each with an `image` and optional `link` |
 | `publications` | `items` with `bibtex: { file, key }` to fill metadata automatically, or full manual records; optional `topic` category |
-| `team` | Reads validated `team.yaml`; separates faculty, researchers, active student levels and alumni |
+| `team` | Reads validated `people.file` (default `team.yaml`); separates faculty, researchers, active student levels and alumni |
 | `custom` | Required `component`; optional `props`; requires a registered local Astro component |
 
 Cards, lists and timelines share the same item fields: required `title`, optional

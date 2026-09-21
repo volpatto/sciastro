@@ -59,6 +59,7 @@ and [theme customization](../customization.md#colors-typography-and-width).
 | `bibliography.style` | `apa` | `apa` or `vancouver` |
 | `bibliography.publications` | `[]` | Keys explicitly selected as the site's publications |
 | `studentLevels` | Undergraduate, masters, phd, postdoc | Ordered objects with `id` and localized `label`; replaces the whole list |
+| `people.file` | `team.yaml` | People records, relative to `contentDir`; an explicitly configured file must exist |
 | `people.avatarFallback` | Built-in fictional symbol | Shared fallback for people without a photo: `src`, localized `alt`, optional `viewBox`, `width`, `height`; separate from the header `logo` |
 | `links` | `[]` | Profile links with string `label` and HTTP(S) `url` |
 

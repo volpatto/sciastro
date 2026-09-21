@@ -154,7 +154,12 @@ export async function loadSite(
   const dir = within(root, config.contentDir);
   if (config.pageFiles) return loadComposed(root, dir, config);
   const research = await yaml(join(dir, 'research.yaml'), researchSchema, true);
-  const members = await yaml(join(dir, 'team.yaml'), teamSchema, true);
+  const members = await yaml(
+    within(dir, config.people?.file ?? 'team.yaml'),
+    teamSchema,
+    // Explicit sources must exist; a missing default file still means no people.
+    config.people?.file === undefined,
+  );
   const custom = await yaml(join(dir, 'pages.yaml'), pagesSchema, true);
   unique(
     research.map((area) => area.id),
@@ -381,7 +386,11 @@ async function loadComposed(
   dir: string,
   config: SiteConfig,
 ): Promise<BuiltSite> {
-  const members = await yaml(join(dir, 'team.yaml'), teamSchema, true);
+  const members = await yaml(
+    within(dir, config.people?.file ?? 'team.yaml'),
+    teamSchema,
+    config.people?.file === undefined,
+  );
   unique(
     members.map((member) => member.id),
     'Team',

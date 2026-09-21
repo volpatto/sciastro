@@ -150,7 +150,11 @@ export const configSchema = z
       })
       .optional(),
     people: z
-      .object({ avatarFallback: avatarFallback.optional() })
+      .object({
+        /** Relative to contentDir; omitted sites continue to use team.yaml. */
+        file: text.optional(),
+        avatarFallback: avatarFallback.optional(),
+      })
       .strict()
       .optional(),
     notice: localizedSchema.optional(),

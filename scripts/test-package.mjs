@@ -6,6 +6,7 @@ import {
   readFile,
   writeFile,
   readdir,
+  rename,
   rm,
   stat,
 } from 'node:fs/promises';
@@ -100,6 +101,16 @@ try {
     pkg.dependencies.sciastro = `file:${tarball}`;
     await writeFile(packageFile, JSON.stringify(pkg, null, 2));
     run(['install', '--no-frozen-lockfile'], consumer);
+    if (kind === 'individual') {
+      const configPath = join(consumer, 'sciastro.yaml');
+      const config = parse(await readFile(configPath, 'utf8'));
+      config.people = { ...config.people, file: 'orientacoes.yaml' };
+      await rename(
+        join(consumer, 'content/team.yaml'),
+        join(consumer, 'content/orientacoes.yaml'),
+      );
+      await writeFile(configPath, stringify(config));
+    }
     assert.match(
       run(['exec', 'sciastro', 'check'], consumer),
       /OK: [1-9]\d* páginas/,
@@ -144,7 +155,7 @@ try {
         ? { SITE_URL: 'https://example.org', BASE_PATH: '/lab/' }
         : { SITE_URL: 'https://example.org', BASE_PATH: '/' };
     // Exercise customization in a real installed consumer, including assets
-    // beneath a deployment base path. The individual keeps all defaults.
+    // beneath a deployment base path. The individual changes only its people file.
     if (kind === 'group') {
       const configFile = join(consumer, 'sciastro.yaml');
       const config = parse(await readFile(configFile, 'utf8'));
