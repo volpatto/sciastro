@@ -16,6 +16,32 @@ const httpUrl = z
   .url()
   .refine((value) => /^https?:\/\//.test(value), 'Use http:// ou https://.');
 const image = z.object({ src: text, alt: localizedSchema }).strict();
+// A separate symbol avoids reusing a header wordmark as a person's portrait.
+const avatarFallback = image
+  .extend({
+    viewBox: text
+      .regex(/^\d+(?:\.\d+)? \d+(?:\.\d+)? \d+(?:\.\d+)? \d+(?:\.\d+)?$/)
+      .refine(
+        (value) =>
+          value
+            .split(' ')
+            .slice(2)
+            .every((part) => Number(part) > 0),
+        'The crop width and height must be positive.',
+      )
+      .optional(),
+    width: z.number().positive().optional(),
+    height: z.number().positive().optional(),
+  })
+  .superRefine((value, ctx) => {
+    if (value.viewBox && (!value.width || !value.height))
+      ctx.addIssue({
+        code: 'custom',
+        path: ['viewBox'],
+        message:
+          'Provide the original image width and height when using viewBox.',
+      });
+  });
 
 /** Catalog name, a file in public/, or false to hide the decorative icon. */
 export const iconSchema = z.union([
@@ -123,6 +149,10 @@ export const configSchema = z
         monochrome: z.boolean().default(false),
       })
       .optional(),
+    people: z
+      .object({ avatarFallback: avatarFallback.optional() })
+      .strict()
+      .optional(),
     notice: localizedSchema.optional(),
     home: z.object({ body: localizedSchema }).strict().optional(),
     bibliography: z
@@ -199,7 +229,15 @@ export const teamSchema = z.array(
       topic: localizedSchema.optional(),
       startYear: z.number().int().min(1900).optional(),
       endYear: z.number().int().min(1900).optional(),
-      photo: image.optional(),
+      photo: image
+        .extend({
+          // Horizontal/vertical percentages: [50, 50] centers the circular crop.
+          position: z
+            .tuple([z.number().min(0).max(100), z.number().min(0).max(100)])
+            .optional(),
+        })
+        .optional(),
+      avatarFallback: avatarFallback.optional(),
       links: z
         .array(z.object({ label: text, url: httpUrl }).strict())
         .default([]),

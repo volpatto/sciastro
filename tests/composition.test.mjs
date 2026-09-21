@@ -65,6 +65,10 @@ for (const kind of ['individual', 'lncc']) {
       recursive: true,
     });
     await cp(`examples/${kind}/sciastro.yaml`, join(root, 'sciastro.yaml'));
+    if (kind === 'individual')
+      await cp(`examples/${kind}/public`, join(root, 'public'), {
+        recursive: true,
+      });
     const config = join(root, 'sciastro.yaml');
     await edit(config, (data) => {
       data.copyright = {
@@ -212,6 +216,9 @@ test('composed pages reuse the structured team and explicitly selected BibTeX en
     'starters/group/content/team.yaml',
     join(f.root, 'content/team.yaml'),
   );
+  await cp('starters/group/public', join(f.root, 'public'), {
+    recursive: true,
+  });
   await edit(f.page, (data) => {
     data.sections.push({ type: 'team' });
     data.references = ['silva2025', 'costa2024'];

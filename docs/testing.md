@@ -13,6 +13,7 @@ Install [Pixi](https://pixi.prefix.dev/latest/installation/) first, then run
 | Content and bibliography | `tests/*.test.mjs` | Translation requirements, routes, optional sections, team levels, BibTeX parsing, citation links and errors |
 | Icons | `tests/icons.test.mjs` | Defaults, overrides, disabling, aliases, SVG IDs, invalid names and local files |
 | Release preparation | `tests/changelog.test.mjs` | Actual git-cliff generation, main-only commit ranges, squash merges, regeneration and preservation of reviewed notes |
+| People images | `tests/people.test.mjs` | Portrait/fallback fields, framing, symbol crops, translations and local assets in both site kinds and composition modes |
 | Installed package | `scripts/test-package.mjs` | Actual archive installation, CLI entry points, generated sites, root/subdirectory deployment, links/assets/anchors and grouping |
 | Browser interactions | `tests/browser/*.spec.mjs` | All three themes and both site kinds at desktop/mobile widths, navigation, languages, theme persistence, icons, citations, team sections, 404 and no-JavaScript behavior |
 
@@ -20,6 +21,10 @@ The browser tests use **Chromium**. Mobile tests use a 390 × 844 viewport; they
 not emulate a physical device or establish compatibility with Safari or Firefox.
 The desktop viewport is 1280 × 800. Each test gets a fresh context, with no saved
 preferences from another test. Unhandled page JavaScript exceptions fail the test.
+People-image browser tests cover circular clipping, photo framing, individual/site
+fallbacks, the built-in symbol, translations and rendering without JavaScript.
+Installed Package Tests also exercise these assets under deployment subdirectories
+and in a composed LNCC Theme page.
 
 ## Run checks locally
 

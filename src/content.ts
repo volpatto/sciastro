@@ -241,6 +241,8 @@ export async function loadSite(
     config.locales.map((locale) => [locale, languageIcon(config, locale)]),
   );
   if (config.logo) await checkImage(root, config.logo.src);
+  if (config.people?.avatarFallback)
+    await checkImage(root, config.people.avatarFallback.src);
   for (const area of research) {
     for (const locale of config.locales)
       if (translate(area.summary, locale).length > 240)
@@ -249,8 +251,11 @@ export async function loadSite(
         );
     if (area.image) await checkImage(root, area.image.src);
   }
-  for (const person of members)
+  for (const person of members) {
     if (person.photo) await checkImage(root, person.photo.src);
+    if (person.avatarFallback)
+      await checkImage(root, person.avatarFallback.src);
+  }
   const bibliography = new Bibliography(
     config.bibliography
       ? await read(within(dir, config.bibliography.file))
@@ -467,8 +472,6 @@ async function loadComposed(
       if (key !== 'props' && key !== 'structuredData') await assets(child);
   }
   await assets([config, entries, members]);
-  for (const member of members)
-    if (member.photo) await checkImage(root, member.photo.src);
   if (config.favicon) await checkImage(root, config.favicon);
   const bibliography = new Bibliography(
     config.bibliography

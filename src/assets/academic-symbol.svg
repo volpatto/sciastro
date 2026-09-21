@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" aria-hidden="true" focusable="false">
+  <!-- Original fictional academic symbol for SciAstro. No institutional affiliation. MIT. -->
+  <g stroke="currentColor" stroke-width="3.5" stroke-linejoin="round">
+    <path d="M32 7 46 21 32 35 18 21Z"/>
+    <path d="m32 29 14 14-14 14-14-14Z"/>
+    <path d="M7 32 21 18l14 14-14 14Z" opacity=".55"/>
+    <path d="m29 32 14-14 14 14-14 14Z" opacity=".55"/>
+  </g>
+  <circle cx="32" cy="32" r="4" fill="currentColor"/>
+</svg>

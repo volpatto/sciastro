@@ -22,6 +22,11 @@
     en: Thermodynamics and mixture models
 - id: clara-santos
   name: Clara Santos
+  # Ilustração fictícia: substitua pela foto autorizada da pessoa.
+  photo:
+    src: /images/fictional-portrait.svg
+    alt: { pt: Ilustração fictícia de Clara Santos, en: Fictional illustration of Clara Santos }
+    position: [50, 35]
   role: student
   status: active
   level: undergraduate
@@ -40,6 +45,13 @@
     en: Phase equilibria
 - id: beatriz-souza
   name: Beatriz Souza
+  # Símbolo específico desta pessoa; tem prioridade sobre o padrão do site.
+  avatarFallback:
+    src: /images/academic-symbol.svg
+    alt: { pt: Símbolo acadêmico fictício, en: Fictional academic symbol }
+    viewBox: 5 5 54 54
+    width: 64
+    height: 64
   role: student
   status: active
   level: phd

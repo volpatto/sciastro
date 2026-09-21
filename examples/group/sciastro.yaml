@@ -24,6 +24,11 @@ icons:
     pt: circle-flags:br
     en: circle-flags:gb
 contentDir: content
+# Símbolo sem texto para pessoas sem foto. Não é o logo do cabeçalho.
+people:
+  avatarFallback:
+    src: /images/academic-symbol.svg
+    alt: { pt: Símbolo acadêmico fictício, en: Fictional academic symbol }
 notice:
   pt: Site de demonstração. Pessoas, instituições e publicações são fictícias.
   en: Demonstration website. People, institutions and publications are fictional.

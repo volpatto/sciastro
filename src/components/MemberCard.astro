@@ -1,34 +1,57 @@
 ---
 import type { Member, Locale, SiteConfig } from '../schema.js';
 import { assetPath, translate, labels } from '../i18n.js';
+import academicSymbol from '../assets/academic-symbol.svg?raw';
 interface Props {
   member: Member;
   locale: Locale;
   config: SiteConfig;
 }
 const { member, locale, config } = Astro.props;
-const initials = member.name
-  .split(/\s+/)
-  .filter(Boolean)
-  .map((part) => part[0])
-  .slice(0, 2)
-  .join('');
+const fallback = member.avatarFallback ?? config.people?.avatarFallback;
+const position = member.photo?.position ?? [50, 50];
 const level = config.studentLevels.find((entry) => entry.id === member.level);
 ---
 
 <article class="member-card" id={`member-${member.id}`}>
   {member.photo ? (
-    <img
-      class="avatar"
-      src={assetPath(config.base, member.photo.src)}
-      alt={translate(member.photo.alt, locale)}
-      width="60"
-      height="60"
-      loading="lazy"
-    />
+    <span class="avatar avatar-photo">
+      <img
+        src={assetPath(config.base, member.photo.src)}
+        alt={translate(member.photo.alt, locale)}
+        style={`object-position: ${position[0]}% ${position[1]}%`}
+        width="72"
+        height="72"
+        loading="lazy"
+        decoding="async"
+      />
+    </span>
   ) : (
-    <span class="avatar initials" aria-hidden="true">
-      {initials}
+    <span class="avatar avatar-fallback">
+      {fallback?.viewBox ? (
+        <svg
+          viewBox={fallback.viewBox}
+          role="img"
+          aria-label={translate(fallback.alt, locale)}
+        >
+          <image
+            href={assetPath(config.base, fallback.src)}
+            width={fallback.width}
+            height={fallback.height}
+          />
+        </svg>
+      ) : fallback ? (
+        <img
+          src={assetPath(config.base, fallback.src)}
+          alt={translate(fallback.alt, locale)}
+          width="72"
+          height="72"
+          loading="lazy"
+          decoding="async"
+        />
+      ) : (
+        <Fragment set:html={academicSymbol} />
+      )}
     </span>
   )}
   <div class="member-description">

@@ -89,6 +89,10 @@ Replace `content/team.yaml`:
 For individual sites, the page is titled **Supervision**. `level` must match one
 of the configured [student levels](../conteudo.md#team-and-supervision). When a
 student graduates, change `status: alumni` and add `endYear`.
+Each student can have a circular photo and custom framing. Without a photo,
+SciAstro uses a configurable institution symbol or its built-in fictional mark.
+See [portraits and fallback symbols](../conteudo.md#portraits-and-fallback-symbols)
+to configure the shared default or override it for one student.
 
 ## 6. Add teaching and contact pages
 

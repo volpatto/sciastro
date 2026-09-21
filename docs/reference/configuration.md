@@ -59,11 +59,14 @@ and [theme customization](../customization.md#colors-typography-and-width).
 | `bibliography.style` | `apa` | `apa` or `vancouver` |
 | `bibliography.publications` | `[]` | Keys explicitly selected as the site's publications |
 | `studentLevels` | Undergraduate, masters, phd, postdoc | Ordered objects with `id` and localized `label`; replaces the whole list |
+| `people.avatarFallback` | Built-in fictional symbol | Shared fallback for people without a photo: `src`, localized `alt`, optional `viewBox`, `width`, `height`; separate from the header `logo` |
 | `links` | `[]` | Profile links with string `label` and HTTP(S) `url` |
 
 The [content guide](../conteudo.md) covers `research.yaml`, `team.yaml` and
 `pages.yaml`. The [composition guide](../customization.md#page-fields) specifies
 page fields, all ten section types and shared item/image/link contracts.
+See [portraits and fallback symbols](../conteudo.md#portraits-and-fallback-symbols)
+for per-person overrides, circular photo framing and cropping the lettering out of a logo.
 
 ## Interface labels
 
