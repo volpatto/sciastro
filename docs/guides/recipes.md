@@ -6,6 +6,25 @@ English-only for brevity; use `{ pt: ..., en: ... }` for bilingual text.
 Examples describe fictional work. Replace URLs, people, logos and publication
 metadata with your own material.
 
+## Publications selected from BibTeX
+
+```yaml
+- type: publications
+  title: Selected publications
+  items:
+    - bibtex:
+        file: references.bib
+        key: silva2025
+      topic:
+        pt: Geoquímica
+        en: Geochemistry
+```
+
+The file path is relative to `contentDir`. Only the file and key are required:
+the title, authors, year, venue and available links are generated from the record.
+`topic` is an optional editorial category. See [BibTeX publication cards](../referencias.md#publication-cards-from-a-file-and-key)
+for multiple libraries, missing fields and manual entries.
+
 ## Software with distribution and reproducibility
 
 ```yaml

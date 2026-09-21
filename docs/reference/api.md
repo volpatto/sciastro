@@ -120,6 +120,7 @@ const bib = new Bibliography(`@book{example,
 }`, 'apa');
 const inlineHtml = bib.citation(['example'], 'en');
 const references = bib.references(['example'], 'en');
+const metadata = bib.publication('example');
 const anchor = referenceId('example');
 ```
 
@@ -129,11 +130,17 @@ const anchor = referenceId('example');
 | `.keys: string[]` | Keys in library order; treat as read-only |
 | `.style` | Selected readonly style |
 | `.has(key: string): boolean` | Whether the library contains the exact key |
+| `.publication(key: string): PublicationMetadata` | Plain-text card metadata from the selected record; unknown keys throw; each call returns a new object |
 | `.citation(keys: string[], locale: Locale): string` | Linked citation HTML; unknown keys throw |
 | `.references(keys: string[], locale: Locale): Reference[]` | Deduplicated formatted references in requested order |
 | `referenceId(key: string): string` | Stable page-anchor identifier |
 
 `Reference` has `key`, `id`, sanitized `html` and optional `doi`/`url`.
+`PublicationMetadata` has optional `title`, `authors`, `year`, `journal`, `citation`,
+`doi` and `url` strings. Missing values stay absent. The method normalizes DOI
+prefixes and discards non-HTTP(S) URLs; `loadSite` additionally validates the resolved
+card's title, DOI and URL. Cards add an optional editorial `topic` and retain their
+`bibtex` selector. See the [field mapping](../referencias.md#imported-fields).
 Vancouver numbering follows global BibTeX order; APA disambiguation considers the
 complete library. See [citation limitations](../referencias.md#formatting).
 
@@ -141,10 +148,16 @@ complete library. See [citation limitations](../referencias.md#formatting).
 
 Exports `sectionLinkSchema`, `figureSchema`, `sectionSchema`, `composedPageSchema`,
 `buildSection`, and the types `Section`, `ComposedPage`, `BuiltLink`, `BuiltFigure`,
-`BuiltEntry`, `BuiltSection`.
+`BuiltEntry`, `BuiltSection`, and `BibtexSource` (`string` or `{ file: string; key: string }`).
 
-`buildSection(section, locale, context): BuiltSection` resolves text, Markdown,
-icons and figures. Its context is the package's internal Markdown context; most
+`buildSection(section, locale, context, resolvePublication?): BuiltSection` resolves
+text, Markdown, icons and figures. The optional fourth argument has type
+`(source: BibtexSource) => PublicationMetadata`; it is required only for BibTeX
+publication items. `loadSite` supplies it automatically, loading selected files
+relative to `contentDir` and reusing each parsed library. Existing three-argument
+calls continue to work for manual publications and other sections.
+
+Its context is the package's internal Markdown context; most
 consumers should obtain prepared sections through `loadSite`, which also validates
 cross-file constraints. No supported public context factory is currently exported.
 

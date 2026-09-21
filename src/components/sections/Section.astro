@@ -101,20 +101,32 @@ const heading = s.title ? 'h3' : 'h2';
               <div>
                 {p.topic && <p class="sp-eyebrow">{p.topic}</p>}
                 <h2>
-                  <a href={'https://doi.org/' + p.doi}>{p.title}</a>
+                  {p.doi || p.url ? (
+                    <a href={p.doi ? 'https://doi.org/' + p.doi : p.url}>
+                      {p.title}
+                    </a>
+                  ) : (
+                    p.title
+                  )}
                 </h2>
-                <p class="sp-authors">{p.authors}</p>
-                <p class="sp-meta">
-                  <em>{p.journal}</em> · {p.citation}
-                </p>
+                {p.authors && <p class="sp-authors">{p.authors}</p>}
+                {(p.journal || p.citation) && (
+                  <p class="sp-meta">
+                    {p.journal && <em>{p.journal}</em>}
+                    {p.journal && p.citation && ' · '}
+                    {p.citation}
+                  </p>
+                )}
               </div>
-              <a
-                class="sp-doi"
-                href={'https://doi.org/' + p.doi}
-                aria-label={'DOI: ' + p.title}
-              >
-                DOI ↗
-              </a>
+              {(p.doi || p.url) && (
+                <a
+                  class="sp-doi"
+                  href={p.doi ? 'https://doi.org/' + p.doi : p.url}
+                  aria-label={(p.doi ? 'DOI: ' : 'Link: ') + p.title}
+                >
+                  {p.doi ? 'DOI' : 'Link'} ↗
+                </a>
+              )}
             </article>
           ))}
         </div>

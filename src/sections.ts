@@ -4,6 +4,7 @@ import type { Locale } from './schema.js';
 import { translate } from './i18n.js';
 import { resolveIcon, type BuiltIcon } from './icons.js';
 import type { markdownContext } from './markdown.js';
+import type { PublicationMetadata } from './bibliography.js';
 
 const text = z.string().trim().min(1);
 const id = text.regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
@@ -61,6 +62,36 @@ const entry = z
     links: z.array(sectionLinkSchema).default([]),
   })
   .strict();
+const publicationFields = {
+  title: text,
+  authors: text,
+  year: z.union([text, z.number().int()]).transform(String),
+  journal: text,
+  citation: text,
+  doi: text.regex(/^10\.\d{4,9}\/\S+$/),
+  url: z
+    .url()
+    .refine(
+      (value) => /^https?:\/\//i.test(value),
+      'Use an http(s) publication URL.',
+    )
+    .optional(),
+  topic: localized.optional(),
+};
+const manualPublication = z.object(publicationFields).strict();
+const bibtexSource = z.union([
+  text,
+  z.object({ file: text, key: text }).strict(),
+]);
+export type BibtexSource = z.infer<typeof bibtexSource>;
+const bibtexPublication = manualPublication
+  .partial()
+  .extend({ bibtex: bibtexSource });
+// A BibTeX record can legitimately lack a date, journal or DOI (e.g. a preprint).
+const resolvedPublication = manualPublication.partial().extend({
+  title: text,
+  bibtex: bibtexSource.optional(),
+});
 export const sectionSchema = z.discriminatedUnion('type', [
   z.object({ ...common, type: z.literal('team') }).strict(),
   z
@@ -124,19 +155,7 @@ export const sectionSchema = z.discriminatedUnion('type', [
       ...common,
       type: z.literal('publications'),
       items: z
-        .array(
-          z
-            .object({
-              title: text,
-              authors: text,
-              year: z.union([text, z.number().int()]).transform(String),
-              journal: text,
-              citation: text,
-              doi: text.regex(/^10\.\d{4,9}\/\S+$/),
-              topic: localized.optional(),
-            })
-            .strict(),
-        )
+        .array(z.union([bibtexPublication, manualPublication]))
         .nonempty(),
     })
     .strict(),
@@ -212,11 +231,13 @@ export interface BuiltSection {
   logos?: { image: BuiltFigure; link?: BuiltLink }[];
   publications?: {
     title: string;
-    authors: string;
-    year: string;
-    journal: string;
-    citation: string;
-    doi: string;
+    authors?: string;
+    year?: string;
+    journal?: string;
+    citation?: string;
+    doi?: string;
+    url?: string;
+    bibtex?: BibtexSource;
     topic?: string;
   }[];
   component?: string;
@@ -227,6 +248,7 @@ export function buildSection(
   section: Section,
   locale: Locale,
   context: ReturnType<typeof markdownContext>,
+  resolvePublication?: (source: BibtexSource) => PublicationMetadata,
 ): BuiltSection {
   const local = (value: z.infer<typeof localized> | undefined) =>
     value === undefined ? undefined : translate(value, locale);
@@ -305,10 +327,23 @@ export function buildSection(
     case 'publications':
       return {
         ...built,
-        publications: section.items.map((value) => ({
-          ...value,
-          topic: local(value.topic),
-        })),
+        publications: section.items.map((value) => {
+          if (!('bibtex' in value))
+            return { ...value, topic: local(value.topic) };
+          const key =
+            typeof value.bibtex === 'string' ? value.bibtex : value.bibtex.key;
+          if (!resolvePublication)
+            throw new Error(
+              `Publication '${key}' requires a BibTeX resolver; use loadSite to resolve files automatically.`,
+            );
+          const parsed = resolvedPublication.safeParse({
+            ...resolvePublication(value.bibtex),
+            ...value,
+          });
+          if (!parsed.success)
+            throw new Error(`Publication '${key}': ${parsed.error.message}`);
+          return { ...parsed.data, topic: local(parsed.data.topic) };
+        }),
       };
     case 'custom':
       return { ...built, component: section.component, props: section.props };
