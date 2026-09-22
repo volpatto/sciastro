@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.1
+
+<!-- sciastro:generated:start -->
+<!-- Source: v1.0.0..966e24cfe889dfe7ef3d9e4689dd255954648840 -->
+
+### Features
+
+- add caption alignment options for figures and tables (#21) ([966e24c](https://github.com/volpatto/sciastro/commit/966e24cfe889dfe7ef3d9e4689dd255954648840))
+
+<!-- sciastro:generated:end -->
+
 ## 1.0.0
 
 <!-- sciastro:generated:start -->
