@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, readFile, writeFile, rm } from 'node:fs/promises';
+import { cp, mkdtemp, mkdir, readFile, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import ts from 'typescript';
@@ -81,6 +81,58 @@ test('documented sharing examples satisfy the configuration schema', async () =>
       home: { body: 'home.md' },
       ...parse(yaml),
     });
+});
+
+test('the scientific writing guide builds its Markdown and notebook pages', async (t) => {
+  const root = await mkdtemp(join(tmpdir(), 'sciastro-writing-guide-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const source = (await readFile('docs/guides/writing.md', 'utf8')).replaceAll(
+    '\r\n',
+    '\n',
+  );
+  const blocks = [
+    ...source.matchAll(
+      /^(`{3,4})(?:yaml|markdown) title="([^"]+)"\n([\s\S]*?)\n\1$/gm,
+    ),
+  ];
+  assert.equal(blocks.length, 4);
+  for (const [, , filename, content] of blocks) {
+    const target = join(root, filename);
+    await mkdir(dirname(target), { recursive: true });
+    await writeFile(target, content + '\n');
+  }
+  await writeFile(
+    join(root, 'content/pages/home.yaml'),
+    'id: home\ntitle: Home\npaths: {en: ""}\n',
+  );
+  await mkdir(join(root, 'content/notebooks'), { recursive: true });
+  await cp(
+    'examples/writing/content/notebooks/quadratura.ipynb',
+    join(root, 'content/notebooks/quadrature.ipynb'),
+  );
+  await writeFile(
+    join(root, 'sciastro.yaml'),
+    `schemaVersion: 1
+kind: group
+name: Guide example
+description: Scientific writing
+url: https://example.org
+locales: [en]
+defaultLocale: en
+pageFiles: [pages/home.yaml, pages/news.yaml, pages/first-note.md, pages/notebook.yaml]
+navigation: [home, news]
+`,
+  );
+  const site = await loadSite(join(root, 'sciastro.yaml'));
+  assert.equal(site.pages.length, 4);
+  assert.match(
+    site.pages.find((p) => p.id === 'first-note').html,
+    /mjx-container/,
+  );
+  assert.match(
+    site.pages.find((p) => p.id === 'quadrature').html,
+    /notebook-output/,
+  );
 });
 
 test('API page covers all public entry points, runtime exports and root types', async () => {

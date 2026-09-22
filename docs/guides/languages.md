@@ -33,10 +33,16 @@ For automatic pages, built-in identifiers are `home`, `research`, `team` and
 navigation: [home, research, software, team, contact]
 ```
 
-This selects and orders **existing** pages; it does not create a page. Omit the
+This selects and orders **existing top-level** pages; it does not create a page. Omit the
 array for the normal automatic order or `pageFiles` order. In a composed page,
 `navigation: false` hides it even when its ID is in the site-wide list. This is
 useful for credits or detailed project pages linked from content.
+
+Set a page's `parent` to create a nested menu. The root `navigationDepth` controls
+how many levels are displayed (default `2`); deeper pages remain available through
+their URLs, breadcrumbs and `layout: listing` indexes. Hidden parents hide their
+menu branch, while `draft: true` excludes a page entirely. See
+[Articles, Markdown and notebooks](writing.md#hierarchy-and-menu-depth).
 
 ## Preserve URLs
 

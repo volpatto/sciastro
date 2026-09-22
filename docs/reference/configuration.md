@@ -23,8 +23,9 @@ a value for every enabled locale: `{ pt: Pesquisa, en: Research }`.
 | `contentDir` | `content` | Directory inside the website root |
 | `home.body` | Required in automatic mode | Localized Markdown filename relative to `contentDir` |
 | `home.photo` | No portrait | Optional automatic About/Home image: `src`, localized `alt`, `shape: rectangle` (default) or `circle`, optional `position: [x, y]` percentages and original `width`/`height`. For composed pages, use `profile.image`; see [profile photographs](../customization.md#profile-photographs) |
-| `pageFiles` | Optional nonempty list | YAML page files relative to `contentDir`; replaces automatic pages |
-| `navigation` | Optional list | Existing page IDs, in menu order |
+| `pageFiles` | Optional nonempty list | YAML pages or Markdown pages with YAML front matter, relative to `contentDir`; replaces automatic pages |
+| `navigation` | Optional list | Existing top-level page IDs, in menu order; descendants retain their own order |
+| `navigationDepth` | `2` | Menu levels displayed, from `1` to `10`; deeper pages retain their routes and index links |
 | `routes` | `{}` | Automatic-page ID → localized path overrides |
 | `notice` | Optional, localized | Short site notice |
 | `structuredData` | Optional object | Additional JSON-LD fields; author is responsible for correctness |

@@ -133,6 +133,8 @@ export const configSchema = z
     // Explicit pages replace automatic pages; their order is the menu order.
     pageFiles: z.array(text).nonempty().optional(),
     navigation: z.array(id).optional(),
+    /** Number of levels displayed in the menu; deeper pages keep their URLs. */
+    navigationDepth: z.number().int().min(1).max(10).default(2),
     routes: z
       .record(
         id,
@@ -325,14 +327,56 @@ export const teamSchema = z.array(
 );
 export type Member = z.infer<typeof teamSchema>[number];
 
+/** Shared by automatic pages and explicit YAML/Markdown pages. */
+export const pagePresentationFields = {
+  layout: z.enum(['page', 'article', 'listing']).default('page'),
+  parent: id.optional(),
+  date: text
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD.')
+    .refine((value) => {
+      const parsed = new Date(`${value}T00:00:00Z`);
+      return (
+        Number.isFinite(parsed.getTime()) &&
+        parsed.toISOString().slice(0, 10) === value
+      );
+    }, 'Use a valid calendar date.')
+    .optional(),
+  authors: z.array(text).default([]),
+  tags: z.array(text).default([]),
+  toc: z.boolean().default(true),
+  draft: z.boolean().default(false),
+  notebook: z
+    .object({
+      showCode: z.boolean().default(true),
+      collapseCode: z.boolean().default(false),
+    })
+    .strict()
+    .optional(),
+};
+
 export const pagesSchema = z.array(
   z
     .object({
+      ...pagePresentationFields,
       slug: id,
       title: localizedSchema,
       icon: iconSchema.optional(),
-      body: localizedSchema,
+      body: localizedSchema.optional(),
+      description: localizedSchema.optional(),
+      navigation: z.boolean().default(true),
+      paths: z
+        .object({ pt: text.optional(), en: text.optional() })
+        .strict()
+        .optional(),
     })
-    .strict(),
+    .strict()
+    .superRefine((page, ctx) => {
+      if (!page.body && page.layout !== 'listing')
+        ctx.addIssue({
+          code: 'custom',
+          path: ['body'],
+          message: 'Provide body, or use layout: listing.',
+        });
+    }),
 );
 export type ContentPage = z.infer<typeof pagesSchema>[number];

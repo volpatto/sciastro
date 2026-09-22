@@ -1,0 +1,7 @@
+id: tutorials
+title: Tutoriais
+description: Exemplos executáveis e explicações passo a passo.
+icon: lucide:book-open
+paths: {pt: noticias/tutoriais/}
+parent: news
+layout: listing

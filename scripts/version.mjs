@@ -77,7 +77,7 @@ export async function checkVersions(root, { tag, archive, docs } = {}) {
       );
     }
   }
-  for (const name of ['group', 'individual', 'lncc']) {
+  for (const name of ['group', 'individual', 'lncc', 'writing']) {
     const example = JSON.parse(
       await readFile(join(root, 'examples', name, 'package.json'), 'utf8'),
     );

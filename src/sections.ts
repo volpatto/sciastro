@@ -4,6 +4,7 @@ import {
   localizedSchema as localized,
   iconSchema,
   profilePhotoSchema,
+  pagePresentationFields,
 } from './schema.js';
 import type { Locale } from './schema.js';
 import { translate } from './i18n.js';
@@ -16,9 +17,10 @@ const id = text.regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
 // Root-relative links are portable across deployment base paths.
 const href = text.refine(
   (value) =>
-    /^(https?:\/\/|mailto:|tel:|\/(?!\/)|#)/.test(value) &&
-    !/[\s<>]/.test(value),
-  'Use http(s), mailto, tel, #anchor or /local/path.',
+    /^(https?:\/\/|mailto:|tel:|page:[a-z0-9-]+(?:#|$)|\/(?!\/)|#)/.test(
+      value,
+    ) && !/[\s<>]/.test(value),
+  'Use http(s), mailto, tel, page:id#anchor, #anchor or /local/path.',
 );
 export const sectionLinkSchema = z
   .object({
@@ -169,6 +171,7 @@ export const sectionSchema = z.discriminatedUnion('type', [
 ]);
 export const composedPageSchema = z
   .object({
+    ...pagePresentationFields,
     id,
     title: localized,
     // Paths include the language prefix; do not include the deployment base.
@@ -251,15 +254,23 @@ export function buildSection(
   locale: Locale,
   context: ReturnType<typeof markdownContext>,
   resolvePublication?: (source: BibtexSource) => PublicationMetadata,
+  resolveLink?: (target: string) => string,
 ): BuiltSection {
   const local = (value: z.infer<typeof localized> | undefined) =>
     value === undefined ? undefined : translate(value, locale);
-  const link = (value: z.infer<typeof sectionLinkSchema>): BuiltLink => ({
-    ...value,
-    label: translate(value.label, locale),
-    url: translate(value.url, locale),
-    icon: resolveIcon(value.icon ?? false, 'section.link.icon'),
-  });
+  const link = (value: z.infer<typeof sectionLinkSchema>): BuiltLink => {
+    const url = translate(value.url, locale);
+    if (url.startsWith('page:') && !resolveLink)
+      throw new Error(
+        `Page link '${url}' requires a page resolver; use loadSite.`,
+      );
+    return {
+      ...value,
+      label: translate(value.label, locale),
+      url: url.startsWith('page:') ? resolveLink!(url) : url,
+      icon: resolveIcon(value.icon ?? false, 'section.link.icon'),
+    };
+  };
   const figure = (value: z.infer<typeof figureSchema>): BuiltFigure => ({
     ...value,
     alt: translate(value.alt, locale),

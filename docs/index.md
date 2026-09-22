@@ -58,6 +58,8 @@ so unreleased changes on `main` appear only in local previews and CI artifacts.
 | --- | --- |
 | Academic structure | Automatic Home/About, Research, Team/Supervision and selected Publications pages |
 | Additional content | Markdown pages or explicit pages composed from ten section types |
+| Scientific writing | [Markdown articles and saved notebooks](guides/writing.md), highlighted code, callouts, numbered equations, figures and tables |
+| Page hierarchy | Nested menus, configurable depth, breadcrumbs, automatic article indexes and links by page identifier |
 | Presentation | `classic`, `modern`, `lncc`; responsive navigation; persistent light/dark preference |
 | Languages | Portuguese and English, individually or together; translated content is checked |
 | People | Faculty, researchers, students by configurable level, separate alumni |
@@ -105,6 +107,7 @@ Third-party dependencies and bundled resources retain their own licenses:
 | Lucide icons | ISC, with MIT notices for icons derived from Feather; see [icon notices](icon-licenses.txt) |
 | Circle Flags | MIT; see [icon notices](icon-licenses.txt) |
 | Manrope and Newsreader fonts; STIX Two Math outlines in the SciAstro identity | SIL Open Font License 1.1; see [font notices](font-licenses.txt) |
+| MathJax rendering code and New Computer Modern equation glyphs | Apache-2.0 (code); GUST Font License (glyphs); see [notices](font-licenses.txt) |
 
 Your website's texts, photographs, publications, institutional logos and other
 supplied materials retain their own licensing conditions. Using SciAstro does

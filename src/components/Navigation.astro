@@ -1,0 +1,72 @@
+---
+import Icon from './Icon.astro';
+import type { BuiltPage } from '../content.js';
+import type { NavigationNode } from '../navigation.js';
+interface Props {
+  nodes: NavigationNode<BuiltPage>[];
+  base: string;
+  locale: string;
+  nested?: boolean;
+  expandActive?: boolean;
+}
+const {
+  nodes,
+  base,
+  locale,
+  nested = false,
+  expandActive = false,
+} = Astro.props;
+---
+
+<ul class={nested ? 'navigation-children' : 'navigation-tree'}>
+  {nodes.map((node) => (
+    <li
+      class:list={[
+        'navigation-item',
+        {
+          'navigation-parent': node.children.length,
+          'navigation-ancestor': node.activeAncestor,
+        },
+      ]}
+    >
+      <a
+        href={node.page.path}
+        data-page={node.page.id}
+        aria-current={node.current ? 'page' : undefined}
+        data-active-ancestor={node.activeAncestor ? 'true' : undefined}
+      >
+        <Icon icon={node.page.icon} base={base} />
+        <span>{node.page.title}</span>
+      </a>
+      {node.children.length > 0 && (
+        <details
+          class="navigation-branch"
+          open={expandActive && (node.activeAncestor || node.current)}
+        >
+          <summary
+            aria-label={`${locale === 'pt' ? 'Subpáginas de' : 'Subpages of'} ${node.page.title}`}
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              aria-hidden="true"
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </summary>
+          <Astro.self
+            nodes={node.children}
+            base={base}
+            locale={locale}
+            expandActive={expandActive}
+            nested
+          />
+        </details>
+      )}
+    </li>
+  ))}
+</ul>

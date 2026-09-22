@@ -7,6 +7,7 @@ export function markdownContext(
   bibliography: Bibliography,
   locale: Locale,
   base = '/',
+  resolveLink?: (target: string) => string,
 ) {
   const cited = new Set<string>();
   const md = new MarkdownIt({ html: false, linkify: true });
@@ -43,7 +44,16 @@ export function markdownContext(
       self.renderToken(tokens, index, options));
   md.renderer.rules.link_open = (tokens, index, options, env, self) => {
     const href = tokens[index].attrGet('href');
-    if (
+    if (typeof href === 'string' && href.startsWith('page:')) {
+      if (!resolveLink)
+        throw new Error(
+          `Page link '${href}' needs a site link resolver. Use page:id#anchor in a SciAstro page, or configure resolveLink when rendering Markdown directly.`,
+        );
+      const resolved = resolveLink(href);
+      if (!md.validateLink(resolved))
+        throw new Error(`The resolved page link '${href}' is not a safe URL.`);
+      tokens[index].attrSet('href', resolved);
+    } else if (
       typeof href === 'string' &&
       href.startsWith('/') &&
       !href.startsWith('//')
@@ -59,6 +69,8 @@ export function markdownContext(
     return imageRule(tokens, index, options, env, self);
   };
   return {
+    /** Shared parser for opt-in document features; legacy render stays unchanged. */
+    markdown: md,
     render: (source: string) => md.render(source),
     references: () => bibliography.references([...cited], locale),
   };

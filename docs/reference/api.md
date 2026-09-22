@@ -121,7 +121,7 @@ page and render these fields as meta tags. See [link previews](../guides/sharing
 | --- | --- |
 | `BuiltSite` | `config`, `pages`, `members`, `bibliographyKeys`, `languageIcons`, `copyright`, `footer`; optional `socialImage` |
 | `BuiltSocialImage` | Absolute `url`, localized `alt`, MIME `type`; optional original `width`/`height` |
-| `BuiltPage` | `id`, resolved `icon`, `locale`, base-aware `path`, `title`, `html`, `references`, `areas`; optional `sections`, `heading`, `description`, `navigation`, `header` |
+| `BuiltPage` | `id`, resolved `icon`, `locale`, base-aware `path`, `title`, `html`, `references`, `areas`; optional `sections`, `heading`, `description`, `navigation`, `header`, `layout`, `parent`, `date`, `authors`, `tags`, `toc`, `headings` |
 | `BuiltSection` | `type`, optional `id`, `title`, sanitized `html`, `links`, and type-specific fields such as `items`, `image`, `logos`, `publications`, `component`, `props` |
 | `BuiltEntry` | `title`, optional `id`, `eyebrow`, `subtitle`, `html`, `meta`, `period`; `images` and `links` |
 | `BuiltFigure` | `src`, translated `alt`, `links`, `enlarge`; optional dimensions, `caption`, `viewBox`, `shape`, `position` |
@@ -131,6 +131,13 @@ page and render these fields as meta tags. See [link previews](../guides/sharing
 renderers can forward `BuiltLink.analyticsEvent` as `data-sciastro-event`
 (stringify boolean false). The runtime is internal, not a public event API.
 See the [analytics guide](../guides/analytics.md).
+
+`BuiltPage.layout` is `page`, `article` or `listing`; optional `headings` contains
+`{id, text, depth}` entries from the rendered document. `parent` is another page
+identifier; `date` is a validated `YYYY-MM-DD` string. `loadSite` omits draft pages,
+validates the hierarchy and renders Markdown/notebook bodies before returning.
+The renderer and notebook helpers are internal; configure these capabilities in
+YAML rather than depending on their implementation. See [Scientific writing](../guides/writing.md).
 
 Page paths already include `base`; prepared section image and link paths are
 resolved by the rendering components. Do not prefix paths twice. A custom
@@ -188,12 +195,17 @@ Exports `sectionLinkSchema`, `figureSchema`, `sectionSchema`, `composedPageSchem
 `buildSection`, and the types `Section`, `ComposedPage`, `BuiltLink`, `BuiltFigure`,
 `BuiltEntry`, `BuiltSection`, and `BibtexSource` (`string` or `{ file: string; key: string }`).
 
-`buildSection(section, locale, context, resolvePublication?): BuiltSection` resolves
+`buildSection(section, locale, context, resolvePublication?, resolveLink?): BuiltSection` resolves
 text, Markdown, icons and figures. The optional fourth argument has type
 `(source: BibtexSource) => PublicationMetadata`; it is required only for BibTeX
 publication items. `loadSite` supplies it automatically, loading selected files
 relative to `contentDir` and reusing each parsed library. Existing three-argument
 calls continue to work for manual publications and other sections.
+
+The optional fifth argument resolves `page:id#anchor` URLs in YAML links, returning
+a site-root-relative path without the deployment base. It is required only when
+these links are present. `loadSite` supplies both resolvers, validates target pages
+and known section anchors, and handles translations and deployment paths.
 
 Its context is the package's internal Markdown context; most
 consumers should obtain prepared sections through `loadSite`, which also validates

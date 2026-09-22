@@ -103,6 +103,55 @@ try {
     await writeFile(packageFile, JSON.stringify(pkg, null, 2));
     run(['install', '--no-frozen-lockfile'], consumer);
     await writeFile(join(consumer, 'public/sharing.png'), png);
+    // Exercise scientific writing through the installed archive for both kinds.
+    const pagesFile = join(consumer, 'content/pages.yaml');
+    const writingPages = parse(await readFile(pagesFile, 'utf8'));
+    writingPages.push(
+      {
+        slug: 'writing-news',
+        title: 'News',
+        layout: 'listing',
+        paths: { pt: 'notes/', en: 'en/notes/' },
+      },
+      {
+        slug: 'writing-post',
+        title: 'Research note',
+        parent: 'writing-news',
+        layout: 'article',
+        date: '2026-09-22',
+        body: 'writing.md',
+        paths: { pt: 'notes/post/', en: 'en/notes/post/' },
+      },
+      {
+        slug: 'writing-notebook',
+        title: 'Notebook',
+        parent: 'writing-news',
+        layout: 'article',
+        body: 'writing.ipynb',
+        paths: { pt: 'notes/notebook/', en: 'en/notes/notebook/' },
+      },
+    );
+    await writeFile(pagesFile, stringify(writingPages));
+    await writeFile(
+      join(consumer, 'content/writing.md'),
+      String.raw`## Model
+
+Equation $\eqref{eq:model}$:
+
+\begin{equation}
+x^2 = 1.\label{eq:model}
+\end{equation}
+
+::: note title="Saved result"
+This page is built from the installed package.
+:::
+
+` + '```python filename="model.py"\nprint(1)\n```\n',
+    );
+    await cp(
+      join(root, 'examples/writing/content/notebooks/quadratura.ipynb'),
+      join(consumer, 'content/writing.ipynb'),
+    );
     if (kind === 'individual') {
       const configPath = join(consumer, 'sciastro.yaml');
       const config = parse(await readFile(configPath, 'utf8'));
@@ -229,6 +278,21 @@ finally { await server.stop(); }`,
     });
     run(['build'], consumer, overrides);
     const count = await audit(join(consumer, 'dist'), overrides.BASE_PATH);
+    const article = await readFile(
+      join(consumer, 'dist/notes/post/index.html'),
+      'utf8',
+    );
+    assert.match(article, /mjx-container/);
+    assert.match(article, /class="document-code"/);
+    assert.match(article, /class="document-callout document-callout-note"/);
+    assert.match(article, /property="og:type" content="article"/);
+    const notebookPage = await readFile(
+      join(consumer, 'dist/notes/notebook/index.html'),
+      'utf8',
+    );
+    assert.match(notebookPage, /notebook-cell/);
+    assert.match(notebookPage, /Integral exata/);
+    assert.match(notebookPage, /data:image\/svg\+xml;base64/);
     const home = await readFile(join(consumer, 'dist/index.html'), 'utf8');
     assert(
       home.includes(

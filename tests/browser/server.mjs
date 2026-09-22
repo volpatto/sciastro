@@ -4,13 +4,14 @@ import { resolve, relative, isAbsolute, extname, join } from 'node:path';
 
 const [kind, portText] = process.argv.slice(2);
 if (
-  !['group', 'individual', 'lncc'].includes(kind) ||
+  !['group', 'individual', 'lncc', 'writing'].includes(kind) ||
   !/^\d+$/.test(portText ?? '')
 )
   throw new Error(
-    'Use: node tests/browser/server.mjs group|individual <porta>',
+    'Use: node tests/browser/server.mjs group|individual|lncc|writing <porta>',
   );
 const root = resolve('examples', kind, 'dist');
+const base = kind === 'writing' ? '/caderno/' : '/';
 await access(join(root, 'index.html')); // Fail clearly if the build was omitted.
 const mime = {
   '.html': 'text/html; charset=utf-8',
@@ -26,9 +27,14 @@ const mime = {
 
 const server = createServer(async (request, response) => {
   try {
-    const pathname = decodeURIComponent(
+    let pathname = decodeURIComponent(
       new URL(request.url, 'http://localhost').pathname,
     );
+    if (!pathname.startsWith(base)) {
+      response.writeHead(404).end();
+      return;
+    }
+    pathname = `/${pathname.slice(base.length)}`;
     let file = resolve(root, `.${pathname}`);
     const delta = relative(root, file);
     if (

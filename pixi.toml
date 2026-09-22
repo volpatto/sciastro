@@ -115,3 +115,13 @@ description = "Preview the composed LNCC Theme example"
 cmd = "pnpm --filter sciastro-example-lncc exec astro dev stop"
 depends-on = ["setup"]
 description = "Stop the LNCC Theme preview"
+
+[tasks.dev-writing]
+cmd = "pnpm dev:writing"
+depends-on = ["build"]
+description = "Preview scientific Markdown and notebook articles"
+
+[tasks.dev-writing-stop]
+cmd = "pnpm --filter sciastro-example-writing exec astro dev stop"
+depends-on = ["setup"]
+description = "Stop the scientific writing preview"

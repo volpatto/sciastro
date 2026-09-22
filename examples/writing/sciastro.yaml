@@ -1,0 +1,21 @@
+schemaVersion: 1
+# These same pages also work with kind: group.
+kind: individual
+name: Caderno de pesquisa
+description: Notas de métodos numéricos, resultados e material de ensino.
+url: https://example.org
+base: /caderno/
+locales: [pt]
+defaultLocale: pt
+theme: lncc
+contentDir: content
+navigation: [home, news]
+navigationDepth: 2
+pageFiles:
+  - pages/home.md
+  - pages/news.yaml
+  - pages/markdown.md
+  - pages/tutorials.yaml
+  - pages/notebook.yaml
+bibliography:
+  file: references.bib
