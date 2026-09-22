@@ -112,8 +112,14 @@ rejects committed `test.only` calls instead of silently skipping other tests.
 
 ## Continuous integration
 
-[The workflow](https://github.com/volpatto/sciastro/blob/main/.github/workflows/ci.yml) runs on pushes to every branch, pull
-requests and manual dispatch:
+[The workflow](https://github.com/volpatto/sciastro/blob/main/.github/workflows/ci.yml)
+runs on pushes to `main`, pull requests targeting `main`, and manual dispatch.
+Work branches are tested when their PR is opened or updated, including draft PRs;
+their pushes do not start a duplicate run. Use manual dispatch to test a branch
+before opening a PR. The release workflow also calls this workflow to test the
+exact release commit.
+
+The workflow includes:
 
 1. **Package Tests (Linux/macOS/Windows)** installs the locked Pixi environment and runs
    separate type checks, builds, Unit Tests and Installed Package Tests on each platform.

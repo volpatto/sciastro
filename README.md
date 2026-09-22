@@ -48,7 +48,7 @@ it is separate from the Node.js/pnpm package-development environment. See
 
 Read the published documentation at
 [volpatto.github.io/sciastro](https://volpatto.github.io/sciastro/). CI builds docs
-on every push/PR; only releases update the public site.
+on pushes to `main` and PRs targeting `main`; only releases update the public site.
 
 See [Pages, themes and extensions](docs/customization.md) for complete page composition,
 LNCC Theme settings, custom CSS and component overrides.
@@ -328,7 +328,7 @@ Configure directory requests to serve `index.html`, and missing URLs to serve
 the homepage for every unknown URL.
 
 For GitHub Pages, select **Settings → Pages → Source → GitHub Actions**, build your
-consumer website and deploy its `dist/`. This repository checks the **package** on pushes/PRs and publishes npm releases
+consumer website and deploy its `dist/`. This repository checks the **package** on pushes to `main` and PRs targeting `main`, and publishes npm releases
 and MkDocs documentation on validated `v*` tags. It does not deploy the example websites.
 
 **There are two different `dist/` directories:** at the SciAstro root it contains
@@ -367,8 +367,11 @@ language switching, persistent themes, research/citation anchors, team sections,
 static sites on ports `4360` and `4361`; it does not use or stop the previews on
 `4340`/`4341`. Browser binaries are needed only for testing, not for building or hosting.
 
-[GitHub Actions](.github/workflows/ci.yml) runs on pushes, pull requests and manual
-dispatch. It performs package verification on Linux, macOS and Windows, plus
+[GitHub Actions](.github/workflows/ci.yml) runs on pushes to `main`, pull requests
+targeting `main` and manual dispatch. Work branches run CI through their PR
+(including draft PRs), avoiding duplicate push/PR runs. Before opening a PR, use
+manual dispatch to test a work branch. Releases reuse the same workflow.
+It performs package verification on Linux, macOS and Windows, plus
 browser tests and a strict MkDocs build on Linux. Version consistency, documentation
 tutorial tests and changelog tests using real temporary Git repositories and git-cliff
 are included. Failures fail the corresponding job. The
