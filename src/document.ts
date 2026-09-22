@@ -14,7 +14,7 @@ import '@mathjax/src/js/input/tex/ams/AmsConfiguration.js';
 import '@mathjax/src/js/input/tex/newcommand/NewcommandConfiguration.js';
 import '@mathjax/src/js/input/tex/boldsymbol/BoldsymbolConfiguration.js';
 import type { Bibliography, Reference } from './bibliography.js';
-import type { Locale } from './schema.js';
+import type { CaptionAlignment, Locale } from './schema.js';
 import { markdownContext } from './markdown.js';
 
 export interface DocumentHeading {
@@ -27,6 +27,8 @@ export interface DocumentFigureOptions {
   label?: string;
   numbered?: boolean;
   align?: 'left' | 'center' | 'right';
+  /** Text alignment of the caption; independent of the figure's placement. */
+  captionAlign?: CaptionAlignment;
   width?: string;
 }
 export interface DocumentOptions {
@@ -118,8 +120,10 @@ function figureOptions(values: Record<string, string>): DocumentFigureOptions {
     !['true', 'false'].includes(values.numbered)
   )
     throw new Error('Figure/table numbered must be true or false.');
+  const { 'caption-align': captionAlign, ...rest } = values;
   return {
-    ...values,
+    ...rest,
+    captionAlign,
     numbered:
       values.numbered === undefined ? undefined : values.numbered === 'true',
   } as DocumentFigureOptions;
@@ -131,6 +135,13 @@ function validateFigure(options: DocumentFigureOptions) {
     );
   if (options.align && !['left', 'center', 'right'].includes(options.align))
     throw new Error(`Invalid figure alignment '${options.align}'.`);
+  if (
+    options.captionAlign !== undefined &&
+    !['left', 'center', 'right', 'justify'].includes(options.captionAlign)
+  )
+    throw new Error(
+      `Invalid caption alignment '${options.captionAlign}'. Use left, center, right or justify.`,
+    );
   if (
     options.width &&
     !/^(?:(?:[1-9]\d?|100)%|(?:[1-9]\d{0,3})(?:px|rem))$/.test(options.width)
@@ -236,8 +247,11 @@ export async function createDocumentContext(
         throw new Error(`Repeated document label '${options.label}'.`);
       refs.set(options.label, { id, text: referenceText });
     }
+    const captionStyle = options.captionAlign
+      ? ` style="text-align:${options.captionAlign}"`
+      : '';
     const caption = options.caption
-      ? `<figcaption>${number ? `<span class="document-caption-number">${translated[kind]} ${number}.</span> ` : ''}${md.renderInline(options.caption)}</figcaption>`
+      ? `<figcaption${captionStyle}>${number ? `<span class="document-caption-number">${translated[kind]} ${number}.</span> ` : ''}${md.renderInline(options.caption)}</figcaption>`
       : '';
     const width = options.width
       ? ` style="--document-figure-width:${escape(options.width)}"`
@@ -447,7 +461,14 @@ export async function createDocumentContext(
         attributes: attributes(
           match[3] ?? '',
           match[2] === 'figure' || match[2] === 'table'
-            ? ['caption', 'label', 'width', 'align', 'numbered']
+            ? [
+                'caption',
+                'label',
+                'width',
+                'align',
+                'caption-align',
+                'numbered',
+              ]
             : ['title'],
           !['figure', 'table', 'cards'].includes(match[2]),
         ),

@@ -257,7 +257,11 @@
   line-height: 1.65;
   color: var(--muted);
   margin-top: 0.65rem;
-  text-align: center;
+  text-align: var(--figure-caption-align, center);
+}
+.sciastro-document .document-table > figcaption,
+.sciastro-document caption {
+  text-align: var(--table-caption-align, center);
 }
 .document-caption-number {
   font-weight: 650;

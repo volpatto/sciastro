@@ -37,14 +37,150 @@ async function serve(page, kind) {
   return failures;
 }
 
-for (const mode of ['automatic', 'composed']) {
+for (const kind of ['individual', 'group']) {
   for (const theme of ['classic', 'modern', 'lncc']) {
     for (const width of [1280, 390]) {
-      test(`${mode} / ${theme} / ${width}: circular About portrait without JavaScript`, async ({
+      test(`${kind} / ${theme} / ${width}: global and individual caption alignment without moving figures or table cells`, async ({
         page,
       }) => {
         await page.setViewportSize({ width, height: 844 });
-        const failures = await serve(page, `${mode}-${theme}`);
+        const failures = await serve(page, `alignment-${kind}-${theme}`);
+        for (const colorScheme of ['light', 'dark']) {
+          await page.emulateMedia({ colorScheme });
+          await page.goto(`${origin}/lab/alignment/`);
+          const figures = page.locator('main figure.sp-figure');
+          await expect(figures).toHaveCount(5);
+          for (const [index, alignment] of [
+            'left',
+            'left',
+            'center',
+            'right',
+            'justify',
+          ].entries()) {
+            const figure = figures.nth(index);
+            const caption = figure.locator('figcaption');
+            const links = caption.locator('.sp-links');
+            await expect(caption).toHaveCSS('text-align', alignment);
+            const flex =
+              alignment === 'center'
+                ? 'center'
+                : alignment === 'right'
+                  ? 'flex-end'
+                  : 'flex-start';
+            await expect(links).toHaveCSS('justify-content', flex);
+            const frame = await figure
+              .locator('.sp-figure-media')
+              .boundingBox();
+            const credit = await links
+              .getByRole('link', { name: 'Credits' })
+              .boundingBox();
+            const edge =
+              alignment === 'center' ? 0.5 : alignment === 'right' ? 1 : 0;
+            expect(
+              Math.abs(
+                credit.x + credit.width * edge - (frame.x + frame.width * edge),
+              ),
+            ).toBeLessThan(1);
+          }
+          const document = page
+            .locator('main .sciastro-document')
+            .filter({ has: page.locator('.document-figure') });
+          const documentFigures = document.locator('figure.document-figure');
+          const documentTables = document.locator('figure.document-table');
+          await expect(documentFigures).toHaveCount(5);
+          await expect(documentTables).toHaveCount(5);
+          const body = await document.boundingBox();
+          for (let index = 0; index < 5; index++) {
+            const figure = documentFigures.nth(index);
+            const table = documentTables.nth(index);
+            await expect(figure.locator('figcaption')).toHaveCSS(
+              'text-align',
+              ['left', 'left', 'center', 'right', 'justify'][index],
+            );
+            await expect(table.locator('figcaption')).toHaveCSS(
+              'text-align',
+              ['right', 'left', 'center', 'right', 'justify'][index],
+            );
+            const figureBox = await figure.boundingBox();
+            const tableBox = await table.boundingBox();
+            // Media placement stays independent of the caption's alignment.
+            expect(
+              Math.abs(figureBox.x + figureBox.width - (body.x + body.width)),
+            ).toBeLessThan(1);
+            expect(Math.abs(tableBox.x - body.x)).toBeLessThan(1);
+            expect(figureBox.width / body.width).toBeCloseTo(0.6, 2);
+            expect(tableBox.width / body.width).toBeCloseTo(0.6, 2);
+            for (const [column, alignment] of [
+              'left',
+              'center',
+              'right',
+            ].entries()) {
+              await expect(table.locator('th').nth(column)).toHaveCSS(
+                'text-align',
+                alignment,
+              );
+              await expect(table.locator('td').nth(column)).toHaveCSS(
+                'text-align',
+                alignment,
+              );
+            }
+          }
+          expect(
+            await page.evaluate(
+              () => document.documentElement.scrollWidth <= innerWidth,
+            ),
+          ).toBe(true);
+          if (
+            kind === 'individual' &&
+            theme === 'lncc' &&
+            colorScheme === 'light'
+          ) {
+            await page.screenshot({
+              path: `.test-output/caption-alignment-${width}.png`,
+              fullPage: true,
+            });
+            await documentTables.first().screenshot({
+              path: `.test-output/caption-alignment-table-${width}.png`,
+            });
+          }
+        }
+        expect(failures).toEqual([]);
+      });
+    }
+  }
+}
+
+async function expectCenteredCaption(figure) {
+  const caption = figure.locator('figcaption');
+  const media = figure.locator('.sp-figure-media');
+  await expect(caption).toHaveCSS('text-align', 'center');
+  await expect(caption.locator('.sp-links')).toHaveCSS(
+    'justify-content',
+    'center',
+  );
+  const imageBox = await media.boundingBox();
+  const creditBox = await caption
+    .getByRole('link', { name: 'Credits' })
+    .boundingBox();
+  expect(
+    Math.abs(
+      creditBox.x + creditBox.width / 2 - (imageBox.x + imageBox.width / 2),
+    ),
+  ).toBeLessThan(1);
+}
+
+for (const [mode, kind] of [
+  ['automatic', 'individual'],
+  ['composed', 'individual'],
+  ['composed', 'group'],
+]) {
+  for (const theme of ['classic', 'modern', 'lncc']) {
+    for (const width of [1280, 390]) {
+      test(`${mode} / ${kind} / ${theme} / ${width}: circular portraits and centered figure captions without JavaScript`, async ({
+        page,
+      }) => {
+        await page.setViewportSize({ width, height: 844 });
+        const failures = await serve(page, `${mode}-${kind}-${theme}`);
         for (const colorScheme of ['light', 'dark']) {
           await page.emulateMedia({ colorScheme });
           for (const [locale, alt] of [
@@ -99,12 +235,20 @@ for (const mode of ['automatic', 'composed']) {
               expect((await caption.boundingBox()).y).toBeGreaterThanOrEqual(
                 frame.y + frame.height,
               );
+              await expectCenteredCaption(figure);
             }
             if (theme === 'lncc' && colorScheme === 'light' && locale === 'pt')
               await page.screenshot({
-                path: `.test-output/portraits-${mode}-${width}.png`,
+                path: `.test-output/portraits-${mode}-${kind}-${width}.png`,
                 fullPage: true,
               });
+          }
+          if (mode === 'composed') {
+            await page.goto(`${origin}/lab/figures/`);
+            const figures = page.locator('main figure.sp-figure');
+            await expect(figures).toHaveCount(3);
+            for (const figure of await figures.all())
+              await expectCenteredCaption(figure);
           }
         }
         if (mode === 'composed') {

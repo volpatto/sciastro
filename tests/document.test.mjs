@@ -307,3 +307,94 @@ test('reserved layout, section and reference ids are not reused by headings or f
     );
   }
 });
+
+test('figure and table caption alignment is independent of block placement and numbering', async () => {
+  const doc = await context();
+  const html = doc.finish(
+    doc.render(
+      [
+        '::: figure caption="Left caption" caption-align="left" align="right" label="fig:aligned"',
+        '![Plot](/plot.png)',
+        ':::',
+        '',
+        '::: table caption="Justified caption" caption-align="justify" align="left" label="tab:aligned"',
+        '| x | y |',
+        '| - | - |',
+        '| 1 | 2 |',
+        ':::',
+        '',
+        '::: figure caption="Inherited caption"',
+        '![Plot](/plot.png)',
+        ':::',
+        '',
+        '::: table caption="Next table" caption-align="right"',
+        '| x | y |',
+        '| - | - |',
+        '| 3 | 4 |',
+        ':::',
+        '',
+        '::: figure caption="Centered explicitly" caption-align="center" numbered=false',
+        '![Plot](/plot.png)',
+        ':::',
+        '',
+        'See @ref(fig:aligned) and @ref(tab:aligned).',
+      ].join('\n'),
+    ),
+  ).html;
+  assert.match(
+    html,
+    /class="document-figure document-align-right"[^]*?<figcaption style="text-align:left">/,
+  );
+  assert.match(
+    html,
+    /class="document-table document-align-left"[^]*?<figcaption style="text-align:justify">/,
+  );
+  assert.match(
+    html,
+    /<figcaption><span class="document-caption-number">Figure 2\.<\/span> Inherited caption/,
+  );
+  assert.match(
+    html,
+    /<figcaption style="text-align:right"><span class="document-caption-number">Table 2\./,
+  );
+  assert.match(
+    html,
+    /<figcaption style="text-align:center">Centered explicitly<\/figcaption>/,
+  );
+  assert.match(html, /href="#fig:aligned">Figure 1<\/a>/);
+  assert.match(html, /href="#tab:aligned">Table 1<\/a>/);
+  assert.doesNotMatch(html, /Figure 3\./);
+});
+
+test('caption alignment rejects invalid and injected values before generating HTML', async () => {
+  const doc = await context();
+  for (const captionAlign of [
+    '',
+    'inherit',
+    'RIGHT',
+    'left;position:fixed',
+    'center" onclick="alert(1)',
+    null,
+    true,
+    ['left'],
+  ]) {
+    assert.throws(
+      () => doc.figure('<img alt="Plot">', { caption: 'Result', captionAlign }),
+      /Invalid caption alignment/,
+    );
+  }
+  for (const kind of ['figure', 'table']) {
+    assert.throws(
+      () =>
+        doc.render(
+          `::: ${kind} caption="Result" caption-align="left;position:fixed"\nText\n:::`,
+        ),
+      /Invalid caption alignment/,
+    );
+    assert.throws(
+      () =>
+        doc.render(`::: ${kind} caption="Result" caption-align=""\nText\n:::`),
+      /Invalid caption alignment/,
+    );
+  }
+});

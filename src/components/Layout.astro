@@ -45,8 +45,22 @@ const tokens = (values: Record<string, string>) =>
   Object.entries(values)
     .map(([key, value]) => `--${key}:${value}`)
     .join(';');
+const captionDefaults = appearance?.captions;
+const appearanceProperties = appearance
+  ? [
+      `--content-width:${appearance.contentWidth}px`,
+      appearance.bodyFont && `--body-font:${appearance.bodyFont}`,
+      appearance.headingFont && `--heading:${appearance.headingFont}`,
+      captionDefaults && `--figure-caption-align:${captionDefaults.figures}`,
+      captionDefaults && `--table-caption-align:${captionDefaults.tables}`,
+      captionDefaults &&
+        `--figure-caption-links-align:${captionDefaults.figures === 'center' ? 'center' : captionDefaults.figures === 'right' ? 'flex-end' : 'flex-start'}`,
+    ]
+      .filter(Boolean)
+      .join(';')
+  : '';
 const style = appearance
-  ? `:root:root[data-design] {--content-width:${appearance.contentWidth}px;${appearance.bodyFont ? `--body-font:${appearance.bodyFont};` : ''}${appearance.headingFont ? `--heading:${appearance.headingFont};` : ''}} :root:root[data-design]:not([data-theme="dark"]) {${tokens(appearance.light)}} :root:root[data-design][data-theme="dark"] {${tokens(appearance.dark)}} @media(prefers-color-scheme:dark){:root:root[data-design]:not([data-theme="light"]){${tokens(appearance.dark)}}}`
+  ? `:root:root[data-design] {${appearanceProperties}} :root:root[data-design]:not([data-theme="dark"]) {${tokens(appearance.light)}} :root:root[data-design][data-theme="dark"] {${tokens(appearance.dark)}} @media(prefers-color-scheme:dark){:root:root[data-design]:not([data-theme="light"]){${tokens(appearance.dark)}}}`
   : '';
 ---
 

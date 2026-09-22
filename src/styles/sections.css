@@ -119,10 +119,12 @@ body {
   line-height: 1.7;
   color: var(--muted);
   margin-top: 12px;
+  text-align: var(--figure-caption-align, center);
 }
 .sp-figure figcaption .sp-links {
   font-size: inherit;
   margin-top: 5px;
+  justify-content: var(--figure-caption-links-align, center);
 }
 .sp-grid .sp-items {
   display: grid;

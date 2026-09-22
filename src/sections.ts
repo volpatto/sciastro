@@ -5,8 +5,9 @@ import {
   iconSchema,
   profilePhotoSchema,
   pagePresentationFields,
+  captionAlignmentSchema,
 } from './schema.js';
-import type { Locale } from './schema.js';
+import type { CaptionAlignment, Locale } from './schema.js';
 import { translate } from './i18n.js';
 import { resolveIcon, type BuiltIcon } from './icons.js';
 import type { markdownContext } from './markdown.js';
@@ -37,6 +38,7 @@ export const sectionLinkSchema = z
 export const figureSchema = profilePhotoSchema
   .extend({
     caption: localized.optional(),
+    captionAlign: captionAlignmentSchema.optional(),
     links: z.array(sectionLinkSchema).default([]),
     enlarge: z.boolean().default(false),
     // A display window preserves the original file (e.g. a logo with white margins).
@@ -203,6 +205,7 @@ export interface BuiltFigure {
   width?: number;
   height?: number;
   caption?: string;
+  captionAlign?: CaptionAlignment;
   links: BuiltLink[];
   enlarge: boolean;
   viewBox?: string;

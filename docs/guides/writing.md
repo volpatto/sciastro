@@ -282,17 +282,24 @@ SciAstro prefixes the configured deployment `base` automatically.
 ```markdown
 The convergence result is shown in @ref(fig:convergence).
 
-::: figure caption="Absolute error under mesh refinement." label="fig:convergence" width="80%" align="center" numbered=true
+::: figure caption="Absolute error under mesh refinement." label="fig:convergence" width="80%" align="center" caption-align="left" numbered=true
 ![Error decreases quadratically as the mesh is refined](/images/convergence.svg)
 :::
 ```
 
 Captioned figures are numbered automatically. `numbered=false` retains the caption
-without incrementing the counter. `align` accepts `left`, `center` or `right`;
+without incrementing the counter. `align` positions the figure block and accepts
+`left`, `center` or `right`;
 `width` accepts a percentage from `1%` to `100%`, or a positive integer in `px` or
 `rem`. Images stay constrained to the viewport on small screens. Captions support
 inline Markdown and mathematics; image descriptions remain important for accessibility.
 Figure/table references use `@ref(label)` and can appear before their target.
+
+`caption-align` controls the caption text independently of the block position.
+It accepts `left`, `center`, `right` or `justify`, overriding
+`appearance.captions.figures` in `sciastro.yaml`. The default is `center` when
+neither setting is provided. For example, the figure above is centered at 80%
+width while its caption is left-aligned within that width.
 
 ## Tables
 
@@ -300,7 +307,7 @@ Standard pipe tables support text alignment and horizontal scrolling. Wrap a tab
 to provide a numbered caption and reference label:
 
 ```markdown
-::: table caption="Errors at successive resolutions." label="tab:errors"
+::: table caption="Errors at successive resolutions." label="tab:errors" caption-align="left"
 | Mesh | Error | Observed order |
 | --- | ---: | ---: |
 | Coarse | 0.0040 | — |
@@ -312,6 +319,9 @@ See @ref(tab:errors) for the comparison.
 
 Figures and tables have separate counters. Tables use native HTML semantics;
 notebook HTML tables also receive the site's typography and scroll treatment.
+Table directives accept the same `caption-align` values as figures, overriding
+`appearance.captions.tables` (default `center`). This does not change the text
+alignment of the table's cells. See [global caption settings](../customization.md#caption-alignment).
 
 ## Publish a Jupyter Notebook
 
@@ -349,12 +359,39 @@ missing results cannot be recomputed by the site builder.
 For Plotly, ipywidgets or other interactive tools, save a static PNG/SVG output if
 you want a faithful plot in the published article. Arbitrary notebook scripts,
 iframes, event handlers and external SVG resources are not executed. Output HTML
-is sanitized; notebook-specific CSS and interactive behavior are not preserved.
+is sanitized; embedded stylesheets and interactive behavior are not preserved.
+Permitted inline styles, such as table-caption text alignment, may remain.
 
 `showCode: false` hides code inputs while keeping results. `collapseCode: true`
 places inputs in expandable frames. These settings affect presentation, not cell
-execution. See the example notebook for output captions; optional cell/output
-metadata under `sciastro` can set `caption`, `label`, `numbered`, `width` and `align`.
+execution. For image output captions, optional cell/output metadata under
+`sciastro` can set `caption`, `label`, `numbered`, `width`, `align` and `captionAlign`:
+
+```json
+{
+  "sciastro": {
+    "caption": "Absolute error at successive resolutions.",
+    "label": "fig:notebook-error",
+    "numbered": true,
+    "width": "80%",
+    "align": "center",
+    "captionAlign": "left"
+  }
+}
+```
+
+Place this object inside a cell's or output's `metadata`. Output metadata
+overrides cell metadata for the same field. Cell-level figure metadata applies
+only to the first image output; configure later images through their own output
+metadata. `captionAlign` accepts `left`,
+`center`, `right` or `justify` and overrides `appearance.captions.figures`;
+`align` continues to position the image block independently.
+
+For saved HTML tables, existing `<caption>` elements follow
+`appearance.captions.tables`, unless their saved inline styles set another
+alignment. Image metadata does not generate or number table captions. Add a
+table caption in the notebook's HTML output or use a Markdown `table` directive
+in a Markdown cell when a numbered, referenceable table caption is needed.
 
 ## Complete runnable example
 

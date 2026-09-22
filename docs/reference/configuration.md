@@ -76,6 +76,8 @@ favicons or a generic symbol. Titles and descriptions are preserved without an i
 | `appearance.light`, `.dark` | Theme palette | `paper`, `surface`, `ink`, `muted`, `accent`, `line`; six-digit hex values |
 | `appearance.contentWidth` | `1160` when appearance configured | Content width, 720–1600 px |
 | `appearance.bodyFont`, `.headingFont` | Theme fonts | Font-family strings; does not download fonts |
+| `appearance.captions.figures` | `center` | Figure caption alignment: `left`, `center`, `right` or `justify`; covers composed images, Markdown figures and notebook image outputs |
+| `appearance.captions.tables` | `center` | Table caption alignment: `left`, `center`, `right` or `justify`; covers Markdown table captions and saved HTML table captions |
 | `themeStorageKey` | `sciastro-theme` | Browser storage key for saved theme |
 | `copyright` | Site name | Localized Markdown beside the framework credit |
 | `footer` | Optional | Localized Markdown below the copyright row |
@@ -84,6 +86,12 @@ favicons or a generic symbol. Titles and descriptions are preserved without an i
 An icon can be `lucide:name`, `circle-flags:code`, `{ src: /icons/name.svg }`, or
 `false`. Local image icons also accept `monochrome: true`. See [icons](../icones.md)
 and [theme customization](../customization.md#colors-typography-and-width).
+
+Per-image `captionAlign` and Markdown directive `caption-align` override the
+corresponding site default. Notebook image outputs accept
+`metadata.sciastro.captionAlign`; saved HTML table captions retain their own
+inline styles when supplied. These settings align caption text independently of
+the figure/table block. See [caption alignment](../customization.md#caption-alignment).
 
 ## Bibliography and people
 

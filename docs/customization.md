@@ -140,7 +140,7 @@ Labels and URLs can be translated. Supported destinations are `http(s)`, `mailto
 adjusted automatically for `BASE_PATH`.
 
 An image has `src` (a `/path` inside `public/`), `alt`, optional `width`, `height`,
-`caption`, `links` and `enlarge: true`. Captions and their source/license links
+`caption`, `captionAlign`, `links` and `enlarge: true`. Captions and their source/license links
 remain visible beneath the figure. Optional `viewBox: 'x y width height'` displays
 a window onto an original image using SVG; provide its original pixel dimensions.
 It does not modify the image file. Logos in linked logo rows should not themselves
@@ -260,6 +260,42 @@ six-digit hexadecimal colors. Omitted values inherit the selected theme.
 `contentWidth` is in pixels (720–1600). Setting a font family does not download that
 font: load additional local fonts through your CSS entry point. Check both modes
 and text contrast after changing colors.
+
+## Caption alignment
+
+Configure figure and table captions independently in `sciastro.yaml`:
+
+```yaml
+appearance:
+  captions:
+    figures: center
+    tables: left
+```
+
+Both settings accept `left`, `center`, `right` or `justify`, and default to
+`center` when omitted. They apply in every theme, to individual and group sites.
+The figure setting covers composed images, Markdown figures and notebook image
+outputs; the table setting covers Markdown table captions and saved HTML table
+captions in notebooks.
+
+For a composed image, `captionAlign` overrides the figure default:
+
+```yaml
+image:
+  src: /images/convergence.svg
+  alt: Error decreases under mesh refinement
+  caption: Absolute error at successive mesh resolutions.
+  captionAlign: left
+```
+
+This field also works on profile images, card images and logos. Source and
+license links follow the caption's left, center or right alignment; `justify`
+keeps those links left-aligned. Caption alignment does not move or crop the image.
+
+Markdown `figure` and `table` directives use `caption-align="left"`; notebook
+image outputs use `metadata.sciastro.captionAlign`. See the
+[writing guide](guides/writing.md#figures-plots-and-captions) for examples and
+notebook limitations.
 
 Additional site settings include Markdown `copyright` and `footer`, optional `structuredData`
 (JSON-LD), `favicon`, and `ui` (translated overrides for existing interface labels).

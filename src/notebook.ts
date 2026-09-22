@@ -282,7 +282,7 @@ function staticHtml(source: string): string {
     allowProtocolRelative: false,
     allowedStyles: {
       '*': {
-        'text-align': [/^(?:left|center|right)$/],
+        'text-align': [/^(?:left|center|right|justify)$/],
         'font-weight': [/^(?:normal|bold|[1-9]00)$/],
       },
     },
@@ -319,6 +319,16 @@ function figureOptions(metadata: ObjectValue, location: string): FigureOptions {
     if (!['left', 'center', 'right'].includes(String(options.align)))
       throw new Error(`${location}.sciastro.align: use left, center or right.`);
     result.align = options.align as FigureOptions['align'];
+  }
+  if (options.captionAlign !== undefined) {
+    if (
+      typeof options.captionAlign !== 'string' ||
+      !['left', 'center', 'right', 'justify'].includes(options.captionAlign)
+    )
+      throw new Error(
+        `${location}.sciastro.captionAlign: use left, center, right or justify.`,
+      );
+    result.captionAlign = options.captionAlign as FigureOptions['captionAlign'];
   }
   if (options.width !== undefined) {
     const width =

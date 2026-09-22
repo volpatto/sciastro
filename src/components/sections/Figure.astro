@@ -12,6 +12,9 @@ const src = assetPath(base, image.src);
 const Tag = image.enlarge ? 'a' : 'div';
 const circular = image.shape === 'circle';
 const position = image.position ?? [50, 50];
+const captionStyle = image.captionAlign
+  ? `--figure-caption-align:${image.captionAlign};--figure-caption-links-align:${image.captionAlign === 'center' ? 'center' : image.captionAlign === 'right' ? 'flex-end' : 'flex-start'}`
+  : undefined;
 ---
 
 <figure
@@ -52,7 +55,7 @@ const position = image.position ?? [50, 50];
     )}
   </Tag>
   {(image.caption || image.links.length > 0) && (
-    <figcaption>
+    <figcaption style={captionStyle}>
       {image.caption}
       <Links links={image.links} base={base} />
     </figcaption>

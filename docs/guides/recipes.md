@@ -28,6 +28,14 @@ Omit `shape` to preserve the original rectangular aspect ratio. See
 [profile photographs](../customization.md#profile-photographs) for automatic
 pages, bilingual descriptions and framing options.
 
+Captions and source links are centered below their image by default in all
+themes. Set `appearance.captions.figures` in `sciastro.yaml` to change the site
+default, or add `captionAlign: left` under this `image` to override it. The values
+are `left`, `center`, `right` and `justify`; justified captions keep credit links
+left-aligned. The same options apply to research figures, card images and logos.
+See [caption alignment](../customization.md#caption-alignment) for table defaults
+and Markdown/notebook syntax.
+
 ## Publications selected from BibTeX
 
 ```yaml

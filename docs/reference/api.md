@@ -107,6 +107,14 @@ The schema defaults `shape` to `rectangle`; `circle` enables a CSS crop. Compose
 an omitted value renders a rectangle. `position` is a pair of percentages in
 `[0, 100]` and defaults visually to `[50, 50]`. See [profile photographs](../customization.md#profile-photographs).
 
+`BuiltFigure.captionAlign` optionally overrides the figure-caption alignment with
+`'left'`, `'center'`, `'right'` or `'justify'`. The site defaults are
+`SiteConfig.appearance?.captions?.figures` and `.tables`, each falling back to
+`'center'` when omitted. The built-in figure renderer also aligns credit links;
+justified captions use left-aligned credits. Custom renderers should preserve
+these settings independently of image positioning. See
+[caption alignment](../customization.md#caption-alignment).
+
 `SiteConfig.social` optionally configures an `image` and a `fallback` (`logo`,
 `false`, or a separate image). Images accept `{ src, alt, width?, height? }`.
 `loadSite` resolves the sharing policy into optional `BuiltSite.socialImage`.
@@ -124,7 +132,7 @@ page and render these fields as meta tags. See [link previews](../guides/sharing
 | `BuiltPage` | `id`, resolved `icon`, `locale`, base-aware `path`, `title`, `html`, `references`, `areas`; optional `sections`, `heading`, `description`, `navigation`, `header`, `layout`, `parent`, `date`, `authors`, `tags`, `toc`, `headings` |
 | `BuiltSection` | `type`, optional `id`, `title`, sanitized `html`, `links`, and type-specific fields such as `items`, `image`, `logos`, `publications`, `component`, `props` |
 | `BuiltEntry` | `title`, optional `id`, `eyebrow`, `subtitle`, `html`, `meta`, `period`; `images` and `links` |
-| `BuiltFigure` | `src`, translated `alt`, `links`, `enlarge`; optional dimensions, `caption`, `viewBox`, `shape`, `position` |
+| `BuiltFigure` | `src`, translated `alt`, `links`, `enlarge`; optional dimensions, `caption`, `captionAlign`, `viewBox`, `shape`, `position` |
 | `BuiltLink` | Translated `label`/`url`, resolved `icon`, optional `download` and `analyticsEvent` |
 
 `AnalyticsConfig` is `false` or a union discriminated by `provider`. Custom link
