@@ -1,4 +1,19 @@
-# Academic websites as easy as Markdown and YAML
+---
+title: Overview
+---
+
+# SciAstro {.sciastro-visually-hidden}
+
+<div class="sciastro-hero">
+  <picture class="sciastro-banner sciastro-banner--light">
+    <source media="(max-width: 40rem)" srcset="assets/brand/sciastro-banner-compact-light.svg" width="900" height="460">
+    <img src="assets/brand/sciastro-banner-light.svg" alt="SciAstro — Academic websites as easy as Markdown and YAML" width="1600" height="480" fetchpriority="high">
+  </picture>
+  <picture class="sciastro-banner sciastro-banner--dark">
+    <source media="(max-width: 40rem)" srcset="assets/brand/sciastro-banner-compact-dark.svg" width="900" height="460">
+    <img src="assets/brand/sciastro-banner-dark.svg" alt="SciAstro — Academic websites as easy as Markdown and YAML" width="1600" height="480" fetchpriority="high">
+  </picture>
+</div>
 
 SciAstro is a package for academic websites **built on [Astro](https://astro.build/)**,
 for individual researchers and research groups. Maintain your content in
@@ -89,7 +104,7 @@ Third-party dependencies and bundled resources retain their own licenses:
 | YAML parser | ISC; see the dependency's license file |
 | Lucide icons | ISC, with MIT notices for icons derived from Feather; see [icon notices](icon-licenses.txt) |
 | Circle Flags | MIT; see [icon notices](icon-licenses.txt) |
-| Manrope and Newsreader fonts | SIL Open Font License 1.1; see [font notices](font-licenses.txt) |
+| Manrope and Newsreader fonts; STIX Two Math outlines in the SciAstro identity | SIL Open Font License 1.1; see [font notices](font-licenses.txt) |
 
 Your website's texts, photographs, publications, institutional logos and other
 supplied materials retain their own licensing conditions. Using SciAstro does

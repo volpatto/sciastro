@@ -1,8 +1,9 @@
 # Work on the documentation
 
-The documentation uses MkDocs Material with a neutral blue-grey palette, system
-fonts, search, code-copy controls and light/dark modes. It does not use the
-ThermoPhase branding or require a font service.
+The documentation uses MkDocs Material with SciAstro's blue and purple Monogram
+identity, locally hosted Manrope, search, code-copy controls and light/dark modes.
+The banner follows the theme selected in the documentation, including manual
+choices. Narrow screens use a compact banner with the complete tagline.
 
 ## Dedicated Pixi environment
 
@@ -30,6 +31,14 @@ that lockfile; CI always installs with `--locked`.
 ## Organization
 
 - `mkdocs.yml`: navigation, theme and strict link validation.
+- `docs/assets/brand/`: approved banners, monogram, favicon and sharing image.
+  The repository README uses these same banners; keep their paths stable.
+- `docs/assets/fonts/`: the locally hosted Manrope file, so building and reading
+  the docs do not require a font service or the Node.js environment.
+- `docs/stylesheets/docs.css`: brand colors for both schemes, typography and
+  responsive banner styling. Theme selection remains controlled by Material.
+- `docs/overrides/main.html`: link-preview metadata using the configured
+  `site_url` and the branded PNG. Templates are excluded from the built content.
 - `docs/tutorials/`: end-to-end individual and group examples.
 - `docs/guides/`: focused tasks and section recipes.
 - `docs/reference/`: configuration, CLI and public API.
@@ -40,8 +49,25 @@ that lockfile; CI always installs with `--locked`.
 - `docs/*-licenses.txt`: runtime attribution notices; keep these in the npm package.
 
 The generated website is `site/`, ignored by Git. It is not part of the npm package.
-The documentation sources remain in the repository; only the generated-site README
-and required attribution notices under `docs/` are packaged for consumers.
+The documentation sources remain in the repository. Under `docs/`, the npm package
+includes the generated-site README, required attribution notices and the brand
+assets referenced by the repository README.
+
+## Visual identity
+
+Use `sciastro-banner-light.svg` and `sciastro-banner-dark.svg` for wide headers;
+their compact counterparts keep the tagline legible on narrow screens. The
+full-color monogram uses blue `#3859C8` and purple `#7542BC`; dark surfaces use
+`#93ADFF` and `#C7A2F6`. The logo lettering is outlined, so the images need no fonts.
+Font attribution for STIX Two Math and Manrope is in [the notices](../font-licenses.txt).
+
+The docs favicon adapts to the browser's color-scheme preference independently of
+the documentation's manual theme switch. Check the homepage, a content-heavy page
+and a narrow viewport in both themes when changing these assets or styles.
+
+The package's built-in header mark and SciAstro footer credit use a monochrome
+version that follows the consumer theme. A website's configured logo continues
+to take precedence, and portrait fallback symbols remain independent.
 
 ## Checks
 

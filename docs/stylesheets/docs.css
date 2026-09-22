@@ -1,9 +1,121 @@
-/* Keep Material's navigation and controls; use a neutral, system-font surface. */
+/* SciAstro identity. Material still owns navigation, search and theme switching. */
+@font-face {
+  font-family: Manrope;
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url('../assets/fonts/manrope-latin-wght-normal.woff2') format('woff2');
+}
+
 :root {
-  --md-text-font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --md-text-font: Manrope, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --md-code-font: ui-monospace, SFMono-Regular, Consolas, monospace;
 }
-.md-typeset h1, .md-typeset h2 { font-weight: 650; letter-spacing: -.025em; }
-.md-typeset h1 { color: var(--md-default-fg-color); }
-.md-typeset .grid.cards > ul > li { border-radius: .45rem; }
-.md-typeset table:not([class]) { font-size: .72rem; }
+
+[data-md-color-scheme='default'] {
+  --md-primary-fg-color: #3859c8;
+  --md-primary-fg-color--light: #607fda;
+  --md-primary-fg-color--dark: #2a4095;
+  --md-accent-fg-color: #7542bc;
+  --md-accent-fg-color--transparent: #7542bc1f;
+  --md-default-bg-color: #f8f9fd;
+  --md-default-fg-color: #202743;
+  --md-default-fg-color--light: #53617b;
+  --md-default-fg-color--lighter: #53617b80;
+  --md-default-fg-color--lightest: #20274312;
+  --md-typeset-color: #202743;
+  --md-typeset-a-color: #3859c8;
+  --md-code-fg-color: #202743;
+  --md-code-bg-color: #eef0f8;
+  --md-footer-bg-color: #202743;
+  --md-footer-bg-color--dark: #12182e;
+  --sciastro-card-bg: #fff;
+  --sciastro-border: #dce1f1;
+}
+
+[data-md-color-scheme='slate'] {
+  --md-primary-fg-color: #1b2444;
+  --md-primary-fg-color--light: #293762;
+  --md-primary-fg-color--dark: #12182e;
+  --md-accent-fg-color: #c7a2f6;
+  --md-accent-fg-color--transparent: #c7a2f61f;
+  --md-default-bg-color: #12182e;
+  --md-default-fg-color: #f4f3ff;
+  --md-default-fg-color--light: #cad1e8;
+  --md-default-fg-color--lighter: #cad1e880;
+  --md-default-fg-color--lightest: #f4f3ff12;
+  --md-typeset-color: #f4f3ff;
+  --md-typeset-a-color: #93adff;
+  --md-code-fg-color: #e1e6fa;
+  --md-code-bg-color: #1c2440;
+  --md-code-hl-color: #93adff1f;
+  --md-typeset-table-color: #f4f3ff26;
+  --md-typeset-table-color--light: #f4f3ff0a;
+  --md-footer-bg-color: #1b2444;
+  --md-footer-bg-color--dark: #0e1326;
+  --sciastro-card-bg: #1b2340;
+  --sciastro-border: #31405f;
+}
+
+.md-header__button.md-logo img,
+.md-nav__button.md-logo img {
+  width: 1.7rem;
+  height: 1.7rem;
+}
+
+.md-typeset h1,
+.md-typeset h2 {
+  color: var(--md-default-fg-color);
+  font-weight: 650;
+  letter-spacing: -.025em;
+}
+
+.md-typeset .grid.cards > ul > li {
+  background: var(--sciastro-card-bg);
+  border-color: var(--sciastro-border);
+  border-radius: .6rem;
+  box-shadow: none;
+}
+
+.md-typeset .grid.cards > ul > li:hover {
+  border-color: var(--md-accent-fg-color);
+  box-shadow: none;
+}
+
+.md-typeset .grid.cards .twemoji {
+  color: var(--md-typeset-a-color);
+}
+
+.md-typeset table:not([class]) {
+  font-size: .72rem;
+}
+
+.sciastro-hero {
+  margin: 0 0 1.6rem;
+}
+
+.sciastro-banner,
+.sciastro-banner img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Follow Material's selected theme, including manual choices and persistence. */
+[data-md-color-scheme='default'] .sciastro-banner--dark,
+[data-md-color-scheme='slate'] .sciastro-banner--light {
+  display: none;
+}
+
+/* Keep an accessible page heading without repeating the visible wordmark. */
+.md-typeset .sciastro-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

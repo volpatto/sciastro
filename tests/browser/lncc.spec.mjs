@@ -1,3 +1,4 @@
+import { checkDefaultBranding } from './branding.mjs';
 import { test, expect } from '@playwright/test';
 
 test('BibTeX files and keys render publication cards with DOI, URL and unlinked titles', async ({
@@ -161,4 +162,10 @@ test('LNCC navigation and composed pages remain usable without JavaScript', asyn
   } finally {
     await context.close();
   }
+});
+
+test('default branding follows the theme and keeps the footer credit accessible', async ({
+  page,
+}) => {
+  await checkDefaultBranding(page);
 });

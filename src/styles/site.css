@@ -173,6 +173,7 @@ code {
 }
 .brand-mark {
   color: var(--accent);
+  flex-shrink: 0;
 }
 .brand-logo {
   object-fit: contain;
@@ -620,6 +621,14 @@ main {
 }
 .footer-links a:last-child {
   color: var(--muted);
+}
+.footer-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.footer-brand-mark {
+  flex-shrink: 0;
 }
 @media (max-width: 1000px) {
   .home-introduction {

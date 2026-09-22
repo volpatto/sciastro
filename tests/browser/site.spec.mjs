@@ -1,3 +1,4 @@
+import { checkDefaultBranding } from './branding.mjs';
 import { test as base, expect } from '@playwright/test';
 
 // A separate browser context per test avoids leaking language/theme preferences.
@@ -305,4 +306,10 @@ test.describe('without JavaScript', () => {
     ).toBeVisible();
     await expect(fallback).toHaveText('');
   });
+});
+
+test('default branding follows the theme and keeps the footer credit accessible', async ({
+  page,
+}) => {
+  await checkDefaultBranding(page);
 });

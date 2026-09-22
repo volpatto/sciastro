@@ -5,6 +5,7 @@ import '../styles/site.css';
 import '../styles/sections.css';
 import '../styles/lncc.css';
 import Icon from './Icon.astro';
+import SciAstroMark from '../assets/sciastro-monogram.svg';
 import iconLicenses from '../../docs/icon-licenses.txt?raw';
 import fontLicenses from '../../docs/font-licenses.txt?raw';
 import type { BuiltSite, BuiltPage } from '../content.js';
@@ -185,29 +186,13 @@ const style = appearance
               height="44"
             />
           ) : (
-            <svg
+            <SciAstroMark
               class="brand-mark"
-              width="40"
-              height="40"
-              viewBox="0 0 40 40"
-              fill="none"
+              width="44"
+              height="35.2"
               aria-hidden="true"
-            >
-              <rect
-                x="3"
-                y="3"
-                width="34"
-                height="34"
-                rx="6"
-                stroke="currentColor"
-              />
-              <circle cx="20" cy="20" r="10" stroke="currentColor" />
-              <path
-                d="M3 20h34M20 3v34M8 8l24 24"
-                stroke="currentColor"
-                opacity=".5"
-              />
-            </svg>
+              focusable="false"
+            />
           )}
           <span>
             <strong>{config.name}</strong>
@@ -313,7 +298,16 @@ const style = appearance
             <span aria-hidden="true">↗</span>
           </a>
         ))}
-        <a href="https://github.com/volpatto/sciastro">{l.built}</a>
+        <a class="footer-brand" href="https://github.com/volpatto/sciastro">
+          <SciAstroMark
+            class="footer-brand-mark"
+            width="26"
+            height="20.8"
+            aria-hidden="true"
+            focusable="false"
+          />
+          <span>{l.built}</span>
+        </a>
       </div>
       {config.notice && (
         <p class="footer-notice">{translate(config.notice, page.locale)}</p>

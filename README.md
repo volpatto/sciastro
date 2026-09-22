@@ -1,12 +1,15 @@
-# SciAstro
+<picture>
+  <source media="(prefers-color-scheme: dark) and (max-width: 640px)" srcset="docs/assets/brand/sciastro-banner-compact-dark.svg">
+  <source media="(max-width: 640px)" srcset="docs/assets/brand/sciastro-banner-compact-light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/brand/sciastro-banner-dark.svg">
+  <img src="docs/assets/brand/sciastro-banner-light.svg" alt="SciAstro — Academic websites as easy as Markdown and YAML" width="1600" height="480">
+</picture>
 
 [![Tests](https://github.com/volpatto/sciastro/actions/workflows/ci.yml/badge.svg)](https://github.com/volpatto/sciastro/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/sciastro/latest?logo=npm&label=npm)](https://www.npmjs.com/package/sciastro)
 [![Astro](https://img.shields.io/badge/Astro-BC52EE?logo=astro&logoColor=white)](https://astro.build/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Pixi](https://img.shields.io/badge/Pixi-41B3A3)](https://pixi.sh/)
-
-**Academic websites as easy as Markdown and YAML.**
 
 SciAstro is a package for individual researchers and research groups, **built on
 [Astro](https://astro.build/)**. Maintain content through Markdown, YAML and BibTeX;

@@ -77,6 +77,32 @@ for (const kind of ['logo', 'custom', 'fallback', 'none']) {
           'content',
           en ? 'research description' : 'Descrição research',
         );
+      // A configured institution logo always replaces the package identity.
+      const identity = page.locator('.identity');
+      if (kind === 'none') {
+        await expect(identity.locator('.brand-mark')).toBeVisible();
+        await expect(identity.locator('.brand-logo')).toHaveCount(0);
+      } else {
+        await expect(identity.locator('.brand-mark')).toHaveCount(0);
+        const logo = identity.getByRole('img', {
+          name: en ? 'logo image' : 'Imagem logo',
+          exact: true,
+        });
+        await expect(logo).toBeVisible();
+        if (kind === 'logo') {
+          await expect(logo).toHaveAttribute('viewBox', '0 0 1 1');
+          await expect(logo.locator('image')).toHaveAttribute(
+            'href',
+            '/lab/images/logo.png',
+          );
+        } else {
+          await expect(logo).toHaveAttribute('src', '/lab/images/logo.png');
+        }
+      }
+      await expect(page.locator('.footer-brand svg')).toHaveAttribute(
+        'aria-hidden',
+        'true',
+      );
       if (kind === 'none') {
         await expect(meta('og:image')).toHaveCount(0);
         await expect(page.locator('meta[property^="og:image:"]')).toHaveCount(
