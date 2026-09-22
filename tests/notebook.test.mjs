@@ -633,3 +633,113 @@ test('bare matrix and aligned LaTeX output environments render as mathematical d
   assert.equal((result.match(/<mjx-container[^>]*jax="SVG"/g) ?? []).length, 2);
   assert.doesNotMatch(result.replace(/<[^>]+>/g, ''), /\\begin|\\end/);
 });
+
+test('notebook image caption alignment follows cell defaults and per-output overrides', async () => {
+  const ctx = await createDocumentContext(new Bibliography(''), 'en');
+  const html = renderNotebook(
+    notebook([
+      code(
+        [
+          display(
+            { 'image/png': png },
+            { sciastro: { captionAlign: 'right' } },
+          ),
+          display(
+            { 'image/png': png },
+            { sciastro: { caption: 'Second', captionAlign: 'justify' } },
+          ),
+        ],
+        {
+          sciastro: { caption: 'First', captionAlign: 'left', align: 'center' },
+        },
+      ),
+      code([display({ 'image/png': png })], {
+        sciastro: { caption: 'Third', captionAlign: 'left' },
+      }),
+      code([display({ 'image/png': png })], {
+        sciastro: {
+          caption: 'Fourth',
+          captionAlign: 'center',
+          numbered: false,
+        },
+      }),
+      code([display({ 'image/png': png })], {
+        sciastro: { caption: 'Inherited alignment' },
+      }),
+    ]),
+    ctx,
+  );
+  const result = ctx.finish(html).html;
+  assert.match(
+    result,
+    /<figcaption style="text-align:right"><span class="document-caption-number">Figure 1\.<\/span> First/,
+  );
+  assert.match(
+    result,
+    /<figcaption style="text-align:justify"><span class="document-caption-number">Figure 2\.<\/span> Second/,
+  );
+  assert.match(
+    result,
+    /<figcaption style="text-align:left"><span class="document-caption-number">Figure 3\.<\/span> Third/,
+  );
+  assert.match(
+    result,
+    /<figcaption style="text-align:center">Fourth<\/figcaption>/,
+  );
+  assert.match(
+    result,
+    /<figcaption><span class="document-caption-number">Figure 4\.<\/span> Inherited alignment/,
+  );
+});
+
+test('notebook caption alignment validation identifies the invalid cell or output', () => {
+  for (const captionAlign of [
+    '',
+    'inherit',
+    'left;position:fixed',
+    'center" onmouseover="alert(1)',
+    null,
+    true,
+    ['left'],
+  ]) {
+    assert.throws(
+      () =>
+        renderNotebook(
+          notebook([
+            code([display({ 'image/png': png })], {
+              sciastro: { captionAlign },
+            }),
+          ]),
+          context(),
+        ),
+      /cell 1 metadata\.sciastro\.captionAlign/,
+    );
+    assert.throws(
+      () =>
+        renderNotebook(
+          notebook([
+            code([
+              display({ 'image/png': png }, { sciastro: { captionAlign } }),
+            ]),
+          ]),
+          context(),
+        ),
+      /cell 1, output 1 metadata\.sciastro\.captionAlign/,
+    );
+  }
+});
+
+test('saved HTML table captions retain safe alignment overrides and leave absent styles inherited', () => {
+  const source =
+    '<table><caption style="text-align:justify;position:fixed">Saved caption</caption><tbody><tr><td>1</td></tr></tbody></table><table><caption>Inherited caption</caption><tbody><tr><td>2</td></tr></tbody></table>';
+  const html = renderNotebook(
+    notebook([code([display({ 'text/html': source })])]),
+    context(),
+  );
+  assert.match(
+    html,
+    /<caption style="text-align:justify">Saved caption<\/caption>/,
+  );
+  assert.match(html, /<caption>Inherited caption<\/caption>/);
+  assert.doesNotMatch(html, /position:fixed/);
+});

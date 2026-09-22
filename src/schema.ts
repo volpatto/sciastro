@@ -9,6 +9,13 @@ export const localizedSchema = z.union([
   z.object({ pt: text.optional(), en: text.optional() }).strict(),
 ]);
 export type Localized = z.infer<typeof localizedSchema>;
+export const captionAlignmentSchema = z.enum([
+  'left',
+  'center',
+  'right',
+  'justify',
+]);
+export type CaptionAlignment = z.infer<typeof captionAlignmentSchema>;
 const id = text.regex(
   /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
   'Use letras minúsculas, números e hífens.',
@@ -162,6 +169,13 @@ export const configSchema = z
         contentWidth: z.number().min(720).max(1600).default(1160),
         bodyFont: text.regex(/^[\w\s,'"-]+$/).optional(),
         headingFont: text.regex(/^[\w\s,'"-]+$/).optional(),
+        captions: z
+          .object({
+            figures: captionAlignmentSchema.default('center'),
+            tables: captionAlignmentSchema.default('center'),
+          })
+          .strict()
+          .optional(),
       })
       .strict()
       .optional(),
