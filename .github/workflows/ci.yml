@@ -27,7 +27,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref || github.sha }}
       - name: Install locked Pixi environment
@@ -54,7 +54,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref || github.sha }}
       - name: Install locked Pixi environment
@@ -71,7 +71,7 @@ jobs:
         run: pixi run --locked test-browser
       - name: Save test report and failure traces
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: browser-test-report
           path: .test-output/
@@ -85,7 +85,7 @@ jobs:
     env:
       DOCS_COMMIT: ${{ inputs.ref || github.sha }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref || github.sha }}
       - uses: prefix-dev/setup-pixi@v0.10.2
@@ -96,7 +96,7 @@ jobs:
           cache: true
       - run: pixi run --locked -e docs docs-build
       - name: Save documentation preview without deploying
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: docs-preview
           path: site/
