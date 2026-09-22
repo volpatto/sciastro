@@ -4,11 +4,15 @@ import '@fontsource-variable/newsreader/index.css';
 import '../styles/site.css';
 import '../styles/sections.css';
 import '../styles/lncc.css';
+import '../styles/document.css';
+import '../styles/articles.css';
 import Icon from './Icon.astro';
+import Navigation from './Navigation.astro';
 import SciAstroMark from '../assets/sciastro-monogram.svg';
 import iconLicenses from '../../docs/icon-licenses.txt?raw';
 import fontLicenses from '../../docs/font-licenses.txt?raw';
 import type { BuiltSite, BuiltPage } from '../content.js';
+import { navigationTree } from '../navigation.js';
 import {
   translate,
   labelsFor,
@@ -18,13 +22,16 @@ import {
 } from '../i18n.js';
 interface Props {
   site: BuiltSite;
-  page: Pick<BuiltPage, 'id' | 'locale' | 'path' | 'title' | 'description'>;
+  page: Pick<BuiltPage, 'id' | 'locale' | 'path' | 'title' | 'description'> &
+    Partial<Pick<BuiltPage, 'layout' | 'date' | 'authors' | 'tags'>>;
 }
 const { site, page } = Astro.props;
 const { config } = site;
 const l = labelsFor(config, page.locale);
-const pages = site.pages.filter(
-  (item) => item.locale === page.locale && item.navigation !== false,
+const navigation = navigationTree(
+  site.pages.filter((item) => item.locale === page.locale),
+  page.id,
+  config.navigationDepth,
 );
 const lncc = config.theme === 'lncc';
 const canonical = new URL(page.path, config.url);
@@ -77,7 +84,26 @@ const style = appearance
         }
       />
     )}
-    <meta property="og:type" content="website" />
+    <meta
+      property="og:type"
+      content={page.layout === 'article' ? 'article' : 'website'}
+    />
+    {page.layout === 'article' && (
+      <>
+        {page.date && (
+          <meta
+            property="article:published_time"
+            content={`${page.date}T00:00:00Z`}
+          />
+        )}
+        {page.authors?.length ? (
+          <meta name="author" content={page.authors.join(', ')} />
+        ) : null}
+        {page.tags?.map((tag) => (
+          <meta property="article:tag" content={tag} />
+        ))}
+      </>
+    )}
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
@@ -256,16 +282,12 @@ const style = appearance
             <span aria-hidden="true">＋</span>
           </summary>
           <nav aria-label={l.navigation}>
-            {pages.map((item) => (
-              <a
-                href={item.path}
-                data-page={item.id}
-                aria-current={item.id === page.id ? 'page' : undefined}
-              >
-                <Icon icon={item.icon} base={config.base} />
-                <span>{item.title}</span>
-              </a>
-            ))}
+            <Navigation
+              nodes={navigation}
+              base={config.base}
+              locale={page.locale}
+              expandActive={lncc}
+            />
           </nav>
         </details>
       </aside>
@@ -357,10 +379,49 @@ const style = appearance
         syncMenu();
         desktop.addEventListener('change', syncMenu);
         document.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape' && event.target instanceof Element) {
+            const branch = event.target.closest<HTMLDetailsElement>(
+              '.navigation-branch[open]',
+            );
+            if (branch) {
+              branch.open = false;
+              branch.querySelector('summary')?.focus();
+              return;
+            }
+          }
           if (event.key === 'Escape' && !desktop.matches && menu.open) {
             menu.open = false;
             menu.querySelector('summary')?.focus();
           }
+        });
+      }
+      for (const copy of document.querySelectorAll<HTMLButtonElement>(
+        '[data-copy-code]',
+      )) {
+        if (!navigator.clipboard?.writeText) continue;
+        copy.hidden = false;
+        const originalLabel =
+          copy.getAttribute('aria-label') ??
+          copy.dataset.copyLabel ??
+          'Copy code';
+        let reset: ReturnType<typeof setTimeout> | undefined;
+        copy.addEventListener('click', async () => {
+          const code = copy
+            .closest('.document-code')
+            ?.querySelector('pre code');
+          if (!code) return;
+          clearTimeout(reset);
+          try {
+            await navigator.clipboard.writeText(code.textContent ?? '');
+            copy.textContent = copy.dataset.copiedLabel ?? 'Copied';
+          } catch {
+            copy.textContent = copy.dataset.copyErrorLabel ?? 'Unable to copy';
+          }
+          copy.setAttribute('aria-label', copy.textContent);
+          reset = setTimeout(() => {
+            copy.textContent = copy.dataset.copyLabel ?? 'Copy';
+            copy.setAttribute('aria-label', originalLabel);
+          }, 2500);
         });
       }
       if (document.body.dataset.page === 'home' && location.hash) {

@@ -1,0 +1,13 @@
+id: quadrature
+title: Convergência de uma quadratura
+description: Um notebook com gráficos, tabelas e equações, preservando os resultados salvos.
+paths: {pt: noticias/tutoriais/quadratura/}
+parent: tutorials
+layout: article
+date: 2026-09-22
+authors: [Equipe SciAstro]
+tags: [Jupyter, Métodos numéricos]
+body: notebooks/quadratura.ipynb
+notebook:
+  showCode: true
+  collapseCode: false

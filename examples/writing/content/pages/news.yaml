@@ -1,0 +1,6 @@
+id: news
+title: Notícias e notas
+description: Registros de pesquisa, tutoriais e resultados computacionais.
+icon: lucide:newspaper
+paths: {pt: noticias/}
+layout: listing

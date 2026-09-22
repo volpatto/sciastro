@@ -79,10 +79,18 @@ pixi run --locked pnpm exec playwright test --project=group-mobile
 pixi run --locked pnpm exec playwright test --grep "language switch"
 ```
 
-Browser tests serve the static example output on `127.0.0.1:4360`, `:4361` and `:4362`.
+Browser tests serve the static example output on `127.0.0.1:4360`, `:4361`, `:4362`
+and `:4363` (scientific writing).
 Playwright starts and stops those servers. If a port is occupied, the run fails
 rather than reusing an unrelated process. Keep those ports available. The user's
-development previews on `4340`/`4341`/`4342` are independent.
+development previews on `4340`/`4341`/`4342`/`4343` are independent.
+
+The writing tests cover scientific Markdown, saved notebook outputs, equation and
+figure references, code copying, nested navigation and both color schemes at
+desktop/mobile sizes. They also verify static mathematics and navigation with
+JavaScript disabled. Content tests exercise both `individual` and `group` with
+automatic and explicit pages, and installed-package tests build articles and
+notebooks in both generated consumer kinds.
 
 ## Reports and failures
 

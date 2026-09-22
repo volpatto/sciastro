@@ -138,7 +138,7 @@ export default function sciastro(
                     if (
                       file !== configFile &&
                       (delta.startsWith('..') ||
-                        !/\.(?:md|yaml|yml|bib)$/.test(file))
+                        !/\.(?:md|ipynb|yaml|yml|bib)$/i.test(file))
                     )
                       return;
                     // Configuration affects base URLs and route generation as well as

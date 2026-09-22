@@ -74,6 +74,11 @@ visitors' saved theme preferences across the rename.
 - **Publication cards:** select a BibTeX file and key to fill the bibliographic
   fields automatically; optionally add your own category through `topic`.
 - **Additional pages:** software, teaching, projects, CV and contact, defined in YAML.
+- **Articles and notebooks:** full Markdown pages or saved Jupyter notebooks,
+  highlighted code, callouts, cards, numbered equations, figures and tables;
+  available for both individual and group websites. See [scientific writing](docs/guides/writing.md).
+- **Nested navigation:** page parents, breadcrumbs, automatic post indexes and
+  configurable menu depth. Link to pages/sections by stable identifiers.
 - **Link previews:** configurable PNG/JPEG sharing images with an independent
   fallback to the site logo; see [sharing settings](docs/guides/sharing.md).
 - **Themes:** `classic`, `modern`, and **LNCC Theme** (`lncc`, sidebar and academic typography),
@@ -85,8 +90,9 @@ visitors' saved theme preferences across the rename.
 - **Analytics (opt-in):** Cloudflare Web Analytics or Umami through YAML, with
   optional Umami link events and previews excluded; see [setup](docs/guides/analytics.md).
 
-The examples contain **fictional people, institutions and publications**, clearly
-identified in the footer. They are demonstration websites, not real academic profiles.
+The academic-profile examples contain **fictional people, institutions and publications**,
+clearly identified in the footer. The writing example contains an executed numerical
+tutorial with a real reference. These are demonstration websites, not real academic profiles.
 
 ## Create a website from npm
 
@@ -173,6 +179,7 @@ means its preview server is not running.
 | `pixi run --locked test-browser` | Build the examples and run browser tests |
 | `pixi run --locked verify-all` | Run all package and browser checks; install Chromium first |
 | `pixi run --locked dev-lncc` | Preview the composed LNCC Theme example on port 4342 |
+| `pixi run --locked dev-writing` | Preview Markdown articles and an executed notebook at `http://127.0.0.1:4343/caderno/` |
 | `pixi run --locked dev` | Preview the group example |
 | `pixi run --locked dev-individual` | Preview the individual example |
 | `pixi run --locked pack` | Create an installable `.tgz` archive in `artifacts/` |

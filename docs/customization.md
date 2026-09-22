@@ -87,15 +87,26 @@ interface/bibliography localization extension.
 | `description` | Optional per-page search/social metadata |
 | `icon` | Catalog icon, local file, or `false` |
 | `navigation` | `false` keeps the page reachable but hides it from the menu |
-| `header` | Default `true`; use `false` with exactly one `profile` section |
-| `body` | Optional Markdown filename, relative to `contentDir` |
+| `header` | Default `true`; in `layout: page`, use `false` with exactly one `profile` section; article/listing layouts always provide their own title |
+| `body` | Optional `.md` or `.ipynb` filename, relative to `contentDir` |
+| `layout` | `page` (default), `article` (post metadata and contents list), or `listing` (child-page cards) |
+| `parent` | Optional parent page identifier; determines breadcrumbs, menu hierarchy and listing membership |
+| `date`, `authors`, `tags` | Optional `YYYY-MM-DD` publication date and lists of author names / tags |
+| `toc` | `true` (default); show H2/H3 contents in article layout |
+| `draft` | `false` (default); `true` excludes the page from previews and builds |
+| `notebook` | Optional `showCode` (default `true`) and `collapseCode` (default `false`) |
 | `sections` | Ordered sections; adding/reordering them requires no Astro code |
 | `references` | Optional list of BibTeX keys to list on this page, even if not cited |
 
-The `navigation` array in `sciastro.yaml` sets the menu order and selects pages to
+The `navigation` array in `sciastro.yaml` sets the menu order and selects top-level pages to
 show. Omit it to use page-file order. Unknown identifiers, duplicate paths and
 missing translations fail the build. A configured page with `navigation: false`
 remains hidden even if its ID appears in the menu list.
+
+`pageFiles` also accepts `.md` files with these fields in YAML front matter.
+See [Articles, Markdown and notebooks](guides/writing.md) for complete examples,
+scientific formatting and menu depth. Article/listing pages may include composed
+sections after their body; `profile` remains specific to the ordinary page layout.
 
 ## Section types
 
@@ -125,7 +136,7 @@ A link has `label`, `url`, optional `icon`, and optional `download: true`.
 It also accepts `analyticsEvent` (an event name or `false` to exclude the link).
 See [analytics](guides/analytics.md) to enable a provider and click events.
 Labels and URLs can be translated. Supported destinations are `http(s)`, `mailto`,
-`tel`, `#anchors`, and site-root-relative `/paths/`. Root-relative paths are
+`tel`, `page:id#anchor`, `#anchors`, and site-root-relative `/paths/`. Root-relative paths are
 adjusted automatically for `BASE_PATH`.
 
 An image has `src` (a `/path` inside `public/`), `alt`, optional `width`, `height`,

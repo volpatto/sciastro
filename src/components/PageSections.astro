@@ -1,0 +1,18 @@
+---
+import { sections as sectionComponents } from 'virtual:sciastro/components';
+import type { BuiltPage, BuiltSite } from '../content.js';
+import Section from './sections/Section.astro';
+interface Props {
+  site: BuiltSite;
+  page: BuiltPage;
+}
+const { site, page } = Astro.props;
+---
+
+{page.sections?.map((section) => {
+  const Component =
+    sectionComponents[
+      section.type === 'custom' ? section.component! : section.type
+    ] ?? Section;
+  return <Component section={section} site={site} page={page} />;
+})}

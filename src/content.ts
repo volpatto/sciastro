@@ -1,5 +1,12 @@
 import { readFile, access } from 'node:fs/promises';
-import { resolve, relative, isAbsolute, join, dirname } from 'node:path';
+import {
+  resolve,
+  relative,
+  isAbsolute,
+  join,
+  dirname,
+  extname,
+} from 'node:path';
 import { parse as parseYaml } from 'yaml';
 import { z } from 'zod';
 import {
@@ -19,13 +26,16 @@ import {
   type BuiltIcon,
 } from './icons.js';
 import { translate, routePath, labels } from './i18n.js';
-import { Bibliography, type Reference } from './bibliography.js';
+import { Bibliography, referenceId, type Reference } from './bibliography.js';
 import { markdownContext } from './markdown.js';
+import { createDocumentContext } from './document.js';
+import { renderNotebook } from './notebook.js';
 import { resolveSocialImage, type BuiltSocialImage } from './social.js';
 import {
   composedPageSchema,
   buildSection,
   type BuiltSection,
+  type ComposedPage,
 } from './sections.js';
 
 export type { BuiltSocialImage } from './social.js';
@@ -51,6 +61,13 @@ export interface BuiltPage {
   navigation?: boolean;
   header?: boolean;
   sections?: BuiltSection[];
+  layout?: 'page' | 'article' | 'listing';
+  parent?: string;
+  date?: string;
+  authors?: string[];
+  tags?: string[];
+  toc?: boolean;
+  headings?: Array<{ id: string; text: string; depth: number }>;
 }
 export interface BuiltSite {
   config: SiteConfig;
@@ -100,6 +117,232 @@ async function yaml<T extends z.ZodType>(
     throw new Error(
       `${file}: ${error instanceof Error ? error.message : error}`,
     );
+  }
+}
+
+/** Markdown front matter uses the same fields as an explicit YAML page. */
+async function pageFile(
+  file: string,
+): Promise<{ page: ComposedPage; source?: string }> {
+  if (/\.ya?ml$/i.test(file))
+    return { page: await yaml(file, composedPageSchema) };
+  if (!/\.md$/i.test(file))
+    throw new Error(
+      `${file}: pageFiles accepts .yaml, .yml or .md files. Reference notebooks with body: file.ipynb.`,
+    );
+  const source = (await read(file))
+    .replace(/^\uFEFF/, '')
+    .replace(/\r\n/g, '\n');
+  const match = /^---\n([\s\S]*?)\n---(?:\n|$)/.exec(source);
+  if (!match)
+    throw new Error(
+      `${file}: start Markdown pages with YAML front matter between --- lines.`,
+    );
+  try {
+    const metadata = parseYaml(match[1]);
+    if (metadata?.body !== undefined)
+      throw new Error(
+        'A Markdown page already contains its body; omit the body field.',
+      );
+    return {
+      page: composedPageSchema.parse(metadata),
+      source: source.slice(match[0].length),
+    };
+  } catch (error) {
+    throw new Error(
+      `${file}: ${error instanceof Error ? error.message : error}`,
+    );
+  }
+}
+
+async function documentBody(
+  dir: string,
+  file: string | undefined,
+  source: string | undefined,
+  bibliography: Bibliography,
+  locale: Locale,
+  base: string,
+  options?: { showCode?: boolean; collapseCode?: boolean },
+  links?: { resolveLink?: (target: string) => string; reservedIds?: string[] },
+) {
+  const context = await createDocumentContext(
+    bibliography,
+    locale,
+    base,
+    links,
+  );
+  const path = file ? within(dir, file) : undefined;
+  try {
+    const raw = source ?? (path ? await read(path) : '');
+    if (path && !/\.(?:md|ipynb)$/i.test(path))
+      throw new Error('Page body must be a .md or .ipynb file.');
+    const html =
+      path && extname(path).toLowerCase() === '.ipynb'
+        ? renderNotebook(raw, context, options)
+        : context.render(raw);
+    return { ...context.finish(html), references: context.references() };
+  } catch (error) {
+    throw new Error(
+      `${path ?? 'Markdown page'}: ${error instanceof Error ? error.message : error}`,
+    );
+  }
+}
+
+function validatePath(path: string | undefined, field: string) {
+  if (path === undefined || (path !== '' && !/^(?:[a-z0-9-]+\/)+$/.test(path)))
+    throw new Error(
+      `${field}: use a relative path ending in /, or an empty home path.`,
+    );
+  if (path === '404/' || path.startsWith('_astro/'))
+    throw new Error(`${field}: reserved path ${path}`);
+}
+
+/** Validate the page tree independently from how much the menu displays. */
+interface PageLink {
+  source: string;
+  target: string;
+  locale: Locale;
+  anchor?: string;
+}
+
+function pageLinkResolver(
+  config: SiteConfig,
+  source: string,
+  locale: Locale,
+  links: PageLink[],
+) {
+  return (value: string) => {
+    const match = /^page:([a-z0-9]+(?:-[a-z0-9]+)*)(?:#([^\s<>"'&]+))?$/.exec(
+      value,
+    );
+    if (!match)
+      throw new Error(
+        `page.${source}: invalid page link '${value}'. Use page:identifier#section.`,
+      );
+    const anchor = match[2] ? decodeURIComponent(match[2]) : undefined;
+    if (anchor && /[\s<>"'&\x00-\x1f]/.test(anchor))
+      throw new Error(`page.${source}: invalid section anchor.`);
+    links.push({ source, target: match[1], locale, anchor });
+    return (
+      routePath(config, match[1], locale) +
+      (anchor ? `#${encodeURIComponent(anchor)}` : '')
+    );
+  };
+}
+
+function collectIds(value: unknown, ids = new Set<string>()): Set<string> {
+  if (typeof value === 'string') {
+    for (const [, id] of value.matchAll(/\bid="([^"\s]+)"/g)) ids.add(id);
+  } else if (Array.isArray(value)) {
+    for (const child of value) collectIds(child, ids);
+  } else if (value && typeof value === 'object') {
+    for (const [key, child] of Object.entries(value)) {
+      if (key === 'id' && typeof child === 'string') ids.add(child);
+      if (key !== 'props') collectIds(child, ids);
+    }
+  }
+  return ids;
+}
+
+function teamIds(members: Member[]): string[] {
+  const ids = members.map((member) => `member-${member.id}`);
+  for (const role of ['faculty', 'researcher'] as const)
+    if (
+      members.some(
+        (member) => member.role === role && member.status === 'active',
+      )
+    )
+      ids.push(role === 'faculty' ? 'faculty' : 'researchers');
+  const students = members.filter(
+    (member) => member.role === 'student' && member.status === 'active',
+  );
+  if (students.length)
+    ids.push('students', ...students.map((member) => `level-${member.level}`));
+  if (members.some((member) => member.status === 'alumni')) ids.push('alumni');
+  return ids;
+}
+
+function finalizePages(
+  pages: BuiltPage[],
+  config: SiteConfig,
+  links: PageLink[] = [],
+  members: Member[] = [],
+) {
+  unique(
+    pages.map((page) => page.path),
+    'URLs',
+  );
+  unique(config.navigation ?? [], 'Navigation');
+  for (const locale of config.locales) {
+    const localized = pages.filter((page) => page.locale === locale);
+    const byId = new Map(localized.map((page) => [page.id, page]));
+    for (const key of config.navigation ?? []) {
+      if (!byId.has(key)) throw new Error(`navigation: unknown page '${key}'.`);
+      if (byId.get(key)?.parent)
+        throw new Error(
+          `navigation: '${key}' is a child page; list its top-level parent instead.`,
+        );
+    }
+    for (const page of localized) {
+      if (page.id === 'home' && page.parent)
+        throw new Error('The home page cannot have a parent.');
+      const visited = new Set<string>([page.id]);
+      let parent = page.parent;
+      while (parent) {
+        if (visited.has(parent))
+          throw new Error(
+            `page.${page.id}.parent: hierarchy contains a cycle at '${parent}'.`,
+          );
+        visited.add(parent);
+        const ancestor = byId.get(parent);
+        if (!ancestor)
+          throw new Error(
+            `page.${page.id}.parent: unknown or draft page '${parent}'.`,
+          );
+        parent = ancestor.parent;
+      }
+      if (
+        config.navigation &&
+        !page.parent &&
+        !config.navigation.includes(page.id)
+      )
+        page.navigation = false;
+    }
+  }
+  if (config.navigation) {
+    const order = (page: BuiltPage) => {
+      const index = config.navigation!.indexOf(page.id);
+      return index === -1 ? config.navigation!.length : index;
+    };
+    pages.sort((a, b) => order(a) - order(b));
+  }
+  for (const link of links) {
+    const target = pages.find(
+      (page) => page.id === link.target && page.locale === link.locale,
+    );
+    if (!target)
+      throw new Error(
+        `page.${link.source}: link to unknown or draft page '${link.target}'.`,
+      );
+    if (link.anchor) {
+      const ids = collectIds([
+        target.html,
+        target.sections,
+        target.id === 'research' ? target.areas : [],
+        target.references,
+      ]);
+      ids.add('main');
+      if (target.id === 'home' && target.areas.length) ids.add('areas-title');
+      if (
+        target.id === 'team' ||
+        target.sections?.some((section) => section.type === 'team')
+      )
+        for (const id of teamIds(members)) ids.add(id);
+      if (!ids.has(link.anchor))
+        throw new Error(
+          `page.${link.source}: section '${link.anchor}' was not found in page '${link.target}'.`,
+        );
+    }
   }
 }
 
@@ -170,7 +413,9 @@ export async function loadSite(
     // Explicit sources must exist; a missing default file still means no people.
     config.people?.file === undefined,
   );
-  const custom = await yaml(join(dir, 'pages.yaml'), pagesSchema, true);
+  const custom = (
+    await yaml(join(dir, 'pages.yaml'), pagesSchema, true)
+  ).filter((page) => !page.draft);
   unique(
     research.map((area) => area.id),
     'Pesquisa',
@@ -210,6 +455,12 @@ export async function loadSite(
   for (const page of custom)
     if (reserved.has(page.slug))
       throw new Error(`Página '${page.slug}': caminho reservado.`);
+  for (const page of custom) {
+    if (!page.paths) continue;
+    for (const locale of config.locales)
+      validatePath(page.paths[locale], `page.${page.slug}.paths.${locale}`);
+    config.routes[page.slug] = page.paths;
+  }
   // Icon overrides use locale keys, but are not translated text: missing keys
   // deliberately keep their defaults (e.g. changing PT must not require EN).
   const { icons, ...translatedConfig } = config;
@@ -279,6 +530,7 @@ export async function loadSite(
     config.bibliography?.style,
   );
   const pages: BuiltPage[] = [];
+  const links: PageLink[] = [];
   for (const locale of config.locales) {
     const l = labels[locale];
     const render = async (
@@ -308,7 +560,12 @@ export async function loadSite(
       references: [],
       areas: [],
     });
-    const homeContext = markdownContext(bibliography, locale, config.base);
+    const homeContext = markdownContext(
+      bibliography,
+      locale,
+      config.base,
+      pageLinkResolver(config, 'home', locale, links),
+    );
     const home = makePage('home', config.kind === 'group' ? l.home : l.about);
     home.html = await render(translate(config.home!.body, locale), homeContext);
     home.references = homeContext.references();
@@ -324,6 +581,7 @@ export async function loadSite(
         bibliography,
         locale,
         config.base,
+        pageLinkResolver(config, 'research', locale, links),
       );
       const page = makePage('research', l.research);
       for (const area of research)
@@ -352,17 +610,37 @@ export async function loadSite(
       pages.push(page);
     }
     for (const entry of custom) {
-      const context = markdownContext(bibliography, locale, config.base);
       const page = makePage(entry.slug, translate(entry.title, locale));
-      page.html = await render(translate(entry.body, locale), context);
-      page.references = context.references();
+      const document = await documentBody(
+        dir,
+        entry.body ? translate(entry.body, locale) : undefined,
+        undefined,
+        bibliography,
+        locale,
+        config.base,
+        entry.notebook,
+        {
+          resolveLink: pageLinkResolver(config, entry.slug, locale, links),
+          reservedIds: bibliography.keys.map(referenceId),
+        },
+      );
+      page.html = document.html;
+      page.references = document.references;
+      page.headings = document.headings;
+      page.description = entry.description
+        ? translate(entry.description, locale)
+        : undefined;
+      page.layout = entry.layout;
+      page.parent = entry.parent;
+      page.date = entry.date;
+      page.authors = entry.authors;
+      page.tags = entry.tags;
+      page.toc = entry.toc;
+      page.navigation = entry.navigation;
       pages.push(page);
     }
   }
-  unique(
-    pages.map((page) => page.path),
-    'URLs',
-  );
+  finalizePages(pages, config, links, members);
   return {
     config,
     languageIcons,
@@ -416,11 +694,12 @@ async function loadComposed(
         `Team ${member.id}: unknown student level ${member.level}`,
       );
   checkTranslations(members, config.locales, 'team');
-  const entries = await Promise.all(
-    config.pageFiles!.map((file) =>
-      yaml(within(dir, file), composedPageSchema),
-    ),
-  );
+  const sources = (
+    await Promise.all(
+      config.pageFiles!.map((file) => pageFile(within(dir, file))),
+    )
+  ).filter(({ page }) => !page.draft);
+  const entries = sources.map(({ page }) => page);
   unique(
     entries.map((page) => page.id),
     'Pages',
@@ -432,15 +711,7 @@ async function loadComposed(
     checkTranslations(page, config.locales, `page.${page.id}`);
     for (const locale of config.locales) {
       const path = page.paths[locale];
-      if (
-        path === undefined ||
-        (path !== '' && !/^(?:[a-z0-9-]+\/)+$/.test(path))
-      )
-        throw new Error(
-          `page.${page.id}.paths.${locale}: use a relative path ending in /, or an empty home path.`,
-        );
-      if (path === '404/' || path.startsWith('_astro/'))
-        throw new Error(`page.${page.id}: reserved path ${path}`);
+      validatePath(path, `page.${page.id}.paths.${locale}`);
     }
     config.routes[page.id] = page.paths;
     const ids: string[] = [];
@@ -462,7 +733,8 @@ async function loadComposed(
     if (
       profileCount > 1 ||
       (profileCount && page.header) ||
-      (!page.header && profileCount !== 1)
+      (!page.header && profileCount !== 1 && page.layout === 'page') ||
+      (profileCount && page.layout !== 'page')
     )
       throw new Error(
         `page.${page.id}: use one profile with header: false, or header: true without a profile.`,
@@ -520,25 +792,54 @@ async function loadComposed(
               );
           }
   const pages: BuiltPage[] = [];
+  const links: PageLink[] = [];
   for (const locale of config.locales)
-    for (const entry of entries) {
-      const context = markdownContext(bibliography, locale, config.base);
-      const html = entry.body
-        ? context.render(await read(within(dir, translate(entry.body, locale))))
-        : '';
+    for (const { page: entry, source } of sources) {
+      const resolveLink = pageLinkResolver(config, entry.id, locale, links);
+      const context = markdownContext(
+        bibliography,
+        locale,
+        config.base,
+        resolveLink,
+      );
+      const document = await documentBody(
+        dir,
+        entry.body ? translate(entry.body, locale) : undefined,
+        source,
+        bibliography,
+        locale,
+        config.base,
+        entry.notebook,
+        {
+          resolveLink,
+          reservedIds: [
+            ...collectIds(entry.sections),
+            ...bibliography.keys.map(referenceId),
+            ...(entry.sections.some((section) => section.type === 'team')
+              ? teamIds(members)
+              : []),
+          ],
+        },
+      );
       const sections = entry.sections.map((section) =>
-        buildSection(section, locale, context, (source) => {
-          if (typeof source === 'string')
-            return bibliography.publication(source);
-          const file = within(dir, source.file);
-          try {
-            return publicationLibraries.get(file)!.publication(source.key);
-          } catch (error) {
-            throw new Error(
-              `${source.file}: ${error instanceof Error ? error.message : error}`,
-            );
-          }
-        }),
+        buildSection(
+          section,
+          locale,
+          context,
+          (source) => {
+            if (typeof source === 'string')
+              return bibliography.publication(source);
+            const file = within(dir, source.file);
+            try {
+              return publicationLibraries.get(file)!.publication(source.key);
+            } catch (error) {
+              throw new Error(
+                `${source.file}: ${error instanceof Error ? error.message : error}`,
+              );
+            }
+          },
+          (target) => `/${resolveLink(target).slice(config.base.length)}`,
+        ),
       );
       pages.push({
         id: entry.id,
@@ -550,14 +851,24 @@ async function loadComposed(
         icon: navigationIcon(config, entry.id, entry.icon),
         navigation:
           entry.navigation &&
-          (!config.navigation || config.navigation.includes(entry.id)),
+          (!config.navigation ||
+            Boolean(entry.parent) ||
+            config.navigation.includes(entry.id)),
         header: entry.header,
-        html,
+        html: document.html,
+        headings: document.headings,
+        layout: entry.layout,
+        parent: entry.parent,
+        date: entry.date,
+        authors: entry.authors,
+        tags: entry.tags,
+        toc: entry.toc,
         sections,
         references: bibliography.references(
           [
             ...new Set([
               ...entry.references,
+              ...document.references.map((reference) => reference.key),
               ...context.references().map((reference) => reference.key),
             ]),
           ],
@@ -566,15 +877,7 @@ async function loadComposed(
         areas: [],
       });
     }
-  unique(
-    pages.map((page) => page.path),
-    'URLs',
-  );
-  if (config.navigation)
-    pages.sort(
-      (a, b) =>
-        config.navigation!.indexOf(a.id) - config.navigation!.indexOf(b.id),
-    );
+  finalizePages(pages, config, links, members);
   return {
     config,
     pages,

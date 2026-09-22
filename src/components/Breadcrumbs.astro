@@ -1,0 +1,33 @@
+---
+import type { BuiltPage } from '../content.js';
+import { pageAncestors } from '../navigation.js';
+interface Props {
+  page: BuiltPage;
+  pages: BuiltPage[];
+}
+const { page, pages } = Astro.props;
+const localePages = pages.filter((entry) => entry.locale === page.locale);
+const home = localePages.find((entry) => entry.id === 'home');
+const ancestors = pageAncestors(localePages, page.id).filter(
+  (entry) => entry.id !== 'home',
+);
+const trail = home && page.id !== 'home' ? [home, ...ancestors] : ancestors;
+---
+
+{trail.length > 0 && (
+  <nav
+    class="page-breadcrumbs"
+    aria-label={page.locale === 'pt' ? 'Caminho da página' : 'Breadcrumbs'}
+  >
+    <ol>
+      {trail.map((entry) => (
+        <li>
+          <a href={entry.path}>{entry.title}</a>
+        </li>
+      ))}
+      <li>
+        <span aria-current="page">{page.title}</span>
+      </li>
+    </ol>
+  </nav>
+)}

@@ -5,6 +5,7 @@ const sites = [
   { kind: 'group', port: 4360 },
   { kind: 'individual', port: 4361 },
   { kind: 'lncc', port: 4362 },
+  { kind: 'writing', port: 4363 },
 ];
 
 export default defineConfig({
@@ -48,7 +49,12 @@ export default defineConfig({
         { label: 'mobile', width: 390, height: 844 },
       ].map(({ label, width, height }) => ({
         name: `${kind}-${label}`,
-        testMatch: kind === 'lncc' ? '**/lncc.spec.mjs' : '**/site.spec.mjs',
+        testMatch:
+          kind === 'writing'
+            ? '**/writing.spec.mjs'
+            : kind === 'lncc'
+              ? '**/lncc.spec.mjs'
+              : '**/site.spec.mjs',
         metadata: { kind, mobile: label === 'mobile' },
         use: {
           baseURL: `http://127.0.0.1:${port}`,
@@ -59,7 +65,7 @@ export default defineConfig({
   ],
   webServer: sites.map(({ kind, port }) => ({
     command: `node tests/browser/server.mjs ${kind} ${port}`,
-    url: `http://127.0.0.1:${port}/`,
+    url: `http://127.0.0.1:${port}/${kind === 'writing' ? 'caderno/' : ''}`,
     timeout: 20_000,
     reuseExistingServer: false,
   })),

@@ -22,7 +22,7 @@ async function fixture(t) {
   t.after(() => rm(root, { recursive: true, force: true }));
   for (const file of ['package.json', 'README.md', 'CHANGELOG.md', 'docs'])
     await cp(file, join(root, file), { recursive: true });
-  for (const kind of ['group', 'individual', 'lncc']) {
+  for (const kind of ['group', 'individual', 'lncc', 'writing']) {
     await mkdir(join(root, 'examples', kind), { recursive: true });
     await cp(
       `examples/${kind}/package.json`,

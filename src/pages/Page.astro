@@ -1,14 +1,14 @@
 ---
 import site from 'virtual:sciastro';
 import type { BuiltPage } from '../content.js';
-import {
-  Layout,
-  sections as sectionComponents,
-} from 'virtual:sciastro/components';
-import Section from '../components/sections/Section.astro';
+import { Layout } from 'virtual:sciastro/components';
+import PageSections from '../components/PageSections.astro';
 import References from '../components/References.astro';
 import Team from '../components/Team.astro';
 import Figure from '../components/sections/Figure.astro';
+import ArticleHeader from '../components/ArticleHeader.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { childPages, displayDate } from '../navigation.js';
 import { labels, translate, routePath, assetPath } from '../i18n.js';
 export function getStaticPaths() {
   return site.pages.map((page) => ({
@@ -26,24 +26,110 @@ interface Props {
 const { page } = Astro.props;
 const { config } = site;
 const l = labels[page.locale];
+const article = page.layout === 'article';
+const listing = page.layout === 'listing';
+const children = listing
+  ? childPages(
+      site.pages.filter((entry) => entry.locale === page.locale),
+      page.id,
+    )
+  : [];
+const headings =
+  page.toc === false
+    ? []
+    : (page.headings ?? []).filter(
+        (heading) => heading.depth === 2 || heading.depth === 3,
+      );
 ---
 
 <Layout site={site} page={page}>
-  {page.sections ? (
+  {(article || listing || page.parent) && (
+    <Breadcrumbs page={page} pages={site.pages} />
+  )}
+  {article || listing ? (
+    <article
+      class:list={['article-page', { 'article-page--listing': listing }]}
+    >
+      <ArticleHeader page={page} />
+      {headings.length > 0 && (
+        <details class="article-toc" open>
+          <summary>
+            {page.locale === 'pt' ? 'Nesta página' : 'On this page'}
+          </summary>
+          <nav
+            aria-label={
+              page.locale === 'pt' ? 'Sumário da página' : 'Table of contents'
+            }
+          >
+            <ol>
+              {headings.map((heading) => (
+                <li class:list={{ 'toc-subheading': heading.depth === 3 }}>
+                  <a href={`#${heading.id}`}>{heading.text}</a>
+                </li>
+              ))}
+            </ol>
+          </nav>
+        </details>
+      )}
+      {page.html && (
+        <div
+          class="prose sciastro-document article-body"
+          set:html={page.html}
+        />
+      )}
+      <PageSections site={site} page={page} />
+      {listing && (
+        <div class="article-list">
+          {children.map((entry) => (
+            <article class="article-card">
+              {entry.date && (
+                <time datetime={entry.date}>
+                  {displayDate(entry.date, page.locale)}
+                </time>
+              )}
+              <h2>
+                <a href={entry.path}>{entry.title}</a>
+              </h2>
+              {entry.description && <p>{entry.description}</p>}
+              {entry.authors?.length ? (
+                <p class="article-card-authors">{entry.authors.join(', ')}</p>
+              ) : null}
+              {entry.tags?.length ? (
+                <ul
+                  class="article-tags"
+                  aria-label={page.locale === 'pt' ? 'Temas' : 'Topics'}
+                >
+                  {entry.tags.map((tag) => (
+                    <li>{tag}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </article>
+          ))}
+          {children.length === 0 && (
+            <p class="article-list-empty">
+              {page.locale === 'pt'
+                ? 'Nenhuma postagem disponível.'
+                : 'No posts available yet.'}
+            </p>
+          )}
+        </div>
+      )}
+    </article>
+  ) : page.sections ? (
     <>
       {page.header && (
         <header class="page-heading">
           <h1>{page.heading ?? page.title}</h1>
         </header>
       )}
-      {page.html && <div class="prose content-page" set:html={page.html} />}
-      {page.sections.map((section) => {
-        const Component =
-          sectionComponents[
-            section.type === 'custom' ? section.component! : section.type
-          ] ?? Section;
-        return <Component section={section} site={site} page={page} />;
-      })}
+      {page.html && (
+        <div
+          class="prose content-page sciastro-document"
+          set:html={page.html}
+        />
+      )}
+      <PageSections site={site} page={page} />
     </>
   ) : page.id === 'home' ? (
     <>
@@ -61,7 +147,7 @@ const l = labels[page.locale];
           </p>
           <h1>{config.name}</h1>
           <p class="standfirst">{translate(config.description, page.locale)}</p>
-          <div class="prose overview" set:html={page.html} />
+          <div class="prose overview sciastro-document" set:html={page.html} />
         </div>
         {config.home?.photo ? (
           <Figure
@@ -152,7 +238,7 @@ const l = labels[page.locale];
               <div>
                 <h2>{area.title}</h2>
                 <p class="section-summary">{area.summary}</p>
-                <div class="prose" set:html={area.html} />
+                <div class="prose sciastro-document" set:html={area.html} />
               </div>
               {area.image && (
                 <figure>
@@ -168,7 +254,12 @@ const l = labels[page.locale];
         </div>
       )}
       {page.id === 'team' && <Team site={site} locale={page.locale} />}
-      {page.html && <div class="prose content-page" set:html={page.html} />}
+      {page.html && (
+        <div
+          class="prose content-page sciastro-document"
+          set:html={page.html}
+        />
+      )}
       {page.id === 'publications' && !page.references.length && (
         <p>{l.emptyReferences}</p>
       )}

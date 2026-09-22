@@ -78,6 +78,7 @@ nav:
   - Guides:
       - Content and people: conteudo.md
       - Pages, themes and extensions: customization.md
+      - Articles, Markdown and notebooks: guides/writing.md
       - Section recipes: guides/recipes.md
       - Languages and navigation: guides/languages.md
       - Icons: icones.md
