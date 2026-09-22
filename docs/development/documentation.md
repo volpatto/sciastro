@@ -83,8 +83,8 @@ fictional and avoid adding a dependency on private scientific assets.
 
 ## Deployment policy
 
-CI builds and checks the documentation on every push and PR. It does **not** deploy
-it then. The [release workflow](releases.md) deploys the built site only after the
+CI builds and checks the documentation on pushes to `main` and PRs targeting
+`main`. It does **not** deploy it then. The [release workflow](releases.md) deploys the built site only after the
 same version has passed all tests and reached npm. There is no separate manual
 docs-deploy workflow. The public URL shows the most recently deployed release,
 including prereleases; this first implementation does not retain a version selector.

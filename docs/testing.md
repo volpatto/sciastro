@@ -112,8 +112,14 @@ rejects committed `test.only` calls instead of silently skipping other tests.
 
 ## Continuous integration
 
-[The workflow](https://github.com/volpatto/sciastro/blob/main/.github/workflows/ci.yml) runs on pushes to every branch, pull
-requests and manual dispatch:
+[The workflow](https://github.com/volpatto/sciastro/blob/main/.github/workflows/ci.yml)
+runs on pushes to `main`, pull requests targeting `main`, and manual dispatch.
+Work branches are tested when their PR is opened or updated, including draft PRs;
+their pushes do not start a duplicate run. Use manual dispatch to test a branch
+before opening a PR. The release workflow also calls this workflow to test the
+exact release commit.
+
+The workflow includes:
 
 1. **Package Tests (Linux/macOS/Windows)** installs the locked Pixi environment and runs
    separate type checks, builds, Unit Tests and Installed Package Tests on each platform.
@@ -127,6 +133,31 @@ A failed check fails the workflow. The workflow has read-only repository access
 and does not publish packages or deploy sites. To **prevent merging** with failing
 checks, a repository administrator must also make the workflow's jobs required in
 GitHub branch protection or a ruleset; merely defining CI does not enforce that.
+
+### Dependency updates
+
+[Dependabot configuration](https://github.com/volpatto/sciastro/blob/main/.github/dependabot.yml)
+checks npm dependencies in the root pnpm workspace (including examples) and the
+GitHub Actions used by CI and releases every Monday at 09:00, America/Sao_Paulo.
+Minor and patch updates are grouped by ecosystem; major updates get separate PRs.
+The limits are five open version-update PRs for npm and three for GitHub Actions.
+Their titles use `chore(deps)` or `ci(deps)`, compatible with the changelog workflow.
+
+Merge the configuration into the repository's default branch to activate it.
+GitHub manages the Dependabot update jobs; no additional scheduled workflow or
+personal access token is needed. Its PRs run the existing **Tests** workflow.
+Review the changes and checks before merging; this configuration does not enable
+automatic merging. See [GitHub's Dependabot setup instructions](https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuring-dependabot-version-updates)
+for repository settings and manually requesting an update check. Dependabot
+alerts and automatic security fixes are separate repository settings.
+
+Dependencies in `pixi.toml` and `pixi.lock` remain manually maintained. In
+particular, pnpm updates are excluded from Dependabot: change `packageManager` in
+`package.json`, the pnpm pin in `pixi.toml`, `pixi.lock`, and the generated Pixi
+configuration in `src/cli.ts` together. Action input values such as `pixi-version`
+also require a deliberate toolchain update. When reviewing an Astro update,
+keep the generated project's Astro version in `src/cli.ts` aligned with the root
+manifest; the existing consumer tests check this consistency.
 
 ## Adding or changing behavior
 

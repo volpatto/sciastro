@@ -1,8 +1,9 @@
 name: Tests
 on:
   push:
-    branches: ['**']
+    branches: [main]
   pull_request:
+    branches: [main]
   workflow_dispatch:
   workflow_call:
     inputs:
