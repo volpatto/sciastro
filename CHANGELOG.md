@@ -1,5 +1,39 @@
 # Changelog
 
+## 1.0.0
+
+<!-- sciastro:generated:start -->
+<!-- Source: v0.1.2..15e0efeed56305a1d8b3bd2c49c2946a3056507e -->
+
+### Features
+
+- integrate analytics support with Umami and Cloudflare (#9) ([5dafa96](https://github.com/volpatto/sciastro/commit/5dafa968301015357a37016cd5f25d4b07737a8d))
+
+- add support for customizable profile photographs with adjustable framing (#10) ([fd3bf64](https://github.com/volpatto/sciastro/commit/fd3bf646683a879fa11573153ffdd09371c184b3))
+
+- add support for configurable link previews and sharing images (#11) ([dc5a283](https://github.com/volpatto/sciastro/commit/dc5a28399fcb6eb0d454ff326cdeeb8cf8d3bfe4))
+
+- add SciAstro branding assets and update documentation (#12) ([8b3047a](https://github.com/volpatto/sciastro/commit/8b3047a135379dfcfa34d5b9974a40acaeebcb5f))
+
+- **Breaking:** add tests for scientific writing guide, document rendering, navigation, and notebook functionality (#13) ([78a7160](https://github.com/volpatto/sciastro/commit/78a71607842db0a06743a024413b4ad1db189b9d))
+
+- add Dependabot configuration for automated dependency updates and documentation (#14) ([d931162](https://github.com/volpatto/sciastro/commit/d931162a0bcee5c8b091bd09664a91b2154248fc))
+
+
+### Maintenance
+
+- bump actions/checkout from 4 to 7 (#15) ([a7f0b18](https://github.com/volpatto/sciastro/commit/a7f0b1821e8d5765dc10fe00dc5ed61a5184c51d))
+
+- bump actions/upload-artifact from 4 to 7 (#16) ([fdd21bc](https://github.com/volpatto/sciastro/commit/fdd21bc690aece29a639563d186274a1bc7e87a3))
+
+- bump actions/download-artifact from 4 to 8 (#17) ([1bf9fdd](https://github.com/volpatto/sciastro/commit/1bf9fdd6ef345332a8a77edf445fafb98febab17))
+
+- bump @types/node from 24.13.6 to 26.6.2 (#18) ([d713260](https://github.com/volpatto/sciastro/commit/d713260a050cbc44ed2e794dd3fef16fb1437816))
+
+- bump typescript from 5.9.3 to 6.0.3 (#19) ([15e0efe](https://github.com/volpatto/sciastro/commit/15e0efeed56305a1d8b3bd2c49c2946a3056507e))
+
+<!-- sciastro:generated:end -->
+
 ## 0.1.2
 
 <!-- sciastro:generated:start -->
