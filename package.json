@@ -26,7 +26,8 @@
     "docs/site-readme.md",
     "docs/icon-licenses.txt",
     "docs/font-licenses.txt",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "docs/assets/brand"
   ],
   "exports": {
     ".": {

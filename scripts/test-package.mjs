@@ -237,6 +237,25 @@ finally { await server.stop(); }`,
       'Installed consumers must expose an absolute, base-aware sharing image.',
     );
     assert.deepEqual(await readFile(join(consumer, 'dist/sharing.png')), png);
+    const identity = home.match(/<a class="identity"[^>]*>[\s\S]*?<\/a>/)?.[0];
+    assert(identity, 'Installed consumers must render their header identity.');
+    if (kind === 'group') {
+      assert.match(identity, /class="brand-logo"/);
+      assert.match(identity, /src="\/lab\/sharing.png"/);
+      assert.doesNotMatch(identity, /class="brand-mark"/);
+    } else {
+      assert.match(identity, /class="brand-mark"/);
+      assert.match(identity, /viewBox="0 0 400 320"/);
+      assert.match(identity, /fill="currentColor"/);
+      assert.match(identity, /aria-hidden="true"/);
+    }
+    const credit = home.match(
+      /<a class="footer-brand"[^>]*>[\s\S]*?<\/a>/,
+    )?.[0];
+    assert(credit, 'The package credit includes its decorative monogram.');
+    assert.match(credit, /class="footer-brand-mark"/);
+    assert.match(credit, /Feito com SciAstro/);
+
     // Resolve the browser runtime from the installed tarball, not this checkout.
     const assets = join(consumer, 'dist/_astro');
     const javascript = await Promise.all(

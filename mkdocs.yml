@@ -8,27 +8,30 @@ strict: true
 exclude_docs: |
   site-readme.md
   hooks.py
+  overrides/
 hooks:
   - docs/hooks.py
 theme:
   name: material
+  custom_dir: docs/overrides
+  logo: assets/brand/sciastro-icon-negative.svg
+  favicon: assets/brand/favicon.svg
   language: en
   font: false
   icon:
-    logo: material/book-open-page-variant-outline
     repo: fontawesome/brands/github
   palette:
     - media: '(prefers-color-scheme: light)'
       scheme: default
-      primary: blue grey
-      accent: blue
+      primary: custom
+      accent: custom
       toggle:
         icon: material/weather-night
         name: Switch to dark mode
     - media: '(prefers-color-scheme: dark)'
       scheme: slate
-      primary: blue grey
-      accent: blue
+      primary: custom
+      accent: custom
       toggle:
         icon: material/weather-sunny
         name: Switch to light mode
