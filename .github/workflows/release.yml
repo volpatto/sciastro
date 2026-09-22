@@ -64,7 +64,7 @@ jobs:
         run: pixi run --locked node scripts/release.mjs artifacts
       - name: Validate the npm publication command without publishing
         run: pixi run --locked node scripts/publish.mjs --dry-run
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: npm-release
           path: artifacts/
