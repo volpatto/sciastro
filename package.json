@@ -106,7 +106,7 @@
     "astro": "7.3.3",
     "prettier": "^3.9.8",
     "prettier-plugin-astro": "^1.0.1",
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.3"
   },
   "homepage": "https://volpatto.github.io/sciastro/",
   "bugs": {
