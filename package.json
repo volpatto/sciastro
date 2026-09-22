@@ -1,6 +1,6 @@
 {
   "name": "sciastro",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Academic websites from YAML, Markdown and BibTeX, powered by Astro.",
   "type": "module",
   "license": "MIT",
