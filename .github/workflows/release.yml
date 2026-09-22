@@ -19,7 +19,7 @@ jobs:
       tag: ${{ steps.release.outputs.tag }}
       prerelease: ${{ steps.release.outputs.prerelease }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: prefix-dev/setup-pixi@v0.10.2
@@ -45,7 +45,7 @@ jobs:
       DOCS_COMMIT: ${{ needs.validate.outputs.commit }}
       SCIASTRO_TEST_ARCHIVE: artifacts/sciastro-${{ needs.validate.outputs.version }}.tgz
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ needs.validate.outputs.commit }}
           fetch-depth: 0
@@ -64,7 +64,7 @@ jobs:
         run: pixi run --locked node scripts/release.mjs artifacts
       - name: Validate the npm publication command without publishing
         run: pixi run --locked node scripts/publish.mjs --dry-run
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: npm-release
           path: artifacts/
@@ -83,7 +83,7 @@ jobs:
       id-token: write
     environment: npm
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ needs.validate.outputs.commit }}
       - uses: prefix-dev/setup-pixi@v0.10.2
@@ -91,7 +91,7 @@ jobs:
           pixi-version: v0.72.2
           locked: true
           cache: false
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: npm-release
           path: artifacts/
@@ -110,7 +110,7 @@ jobs:
       RELEASE_TAG: ${{ needs.validate.outputs.tag }}
       PRERELEASE: ${{ needs.validate.outputs.prerelease }}
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: npm-release
           path: artifacts/
