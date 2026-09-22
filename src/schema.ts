@@ -17,6 +17,22 @@ const httpUrl = z
   .url()
   .refine((value) => /^https?:\/\//.test(value), 'Use http:// ou https://.');
 const image = z.object({ src: text, alt: localizedSchema }).strict();
+const socialImageSchema = image.extend({
+  alt: localizedSchema.refine(
+    (value) => typeof value === 'string' || Object.keys(value).length > 0,
+    'Provide an image description, shared or localized.',
+  ),
+  src: text.refine(
+    (value) =>
+      value.startsWith('/') &&
+      !value.startsWith('//') &&
+      !/[?#\\\x00-\x1f]/.test(value) &&
+      /\.(?:png|jpe?g)$/i.test(value),
+    'Use a PNG or JPEG file in public/, such as /images/social.png.',
+  ),
+  width: z.number().int().positive().optional(),
+  height: z.number().int().positive().optional(),
+});
 // Shared by automatic home portraits and composed-page figures.
 export const profilePhotoSchema = image.extend({
   src: text.refine(
@@ -148,6 +164,15 @@ export const configSchema = z
       .strict()
       .optional(),
     favicon: text.optional(),
+    social: z
+      .object({
+        image: socialImageSchema.optional(),
+        fallback: z
+          .union([z.literal('logo'), z.literal(false), socialImageSchema])
+          .default('logo'),
+      })
+      .strict()
+      .optional(),
     themeStorageKey: text.default('sciastro-theme'),
     copyright: localizedSchema.optional(),
     footer: localizedSchema.optional(),

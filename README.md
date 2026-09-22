@@ -71,6 +71,8 @@ visitors' saved theme preferences across the rename.
 - **Publication cards:** select a BibTeX file and key to fill the bibliographic
   fields automatically; optionally add your own category through `topic`.
 - **Additional pages:** software, teaching, projects, CV and contact, defined in YAML.
+- **Link previews:** configurable PNG/JPEG sharing images with an independent
+  fallback to the site logo; see [sharing settings](docs/guides/sharing.md).
 - **Themes:** `classic`, `modern`, and **LNCC Theme** (`lncc`, sidebar and academic typography),
   with light/dark modes and responsive layouts.
 - **Languages:** Portuguese and English, together or separately, with translation validation.

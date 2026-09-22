@@ -80,6 +80,7 @@ nav:
       - Icons: icones.md
       - BibTeX and citations: referencias.md
       - Analytics: guides/analytics.md
+      - Link previews and sharing: guides/sharing.md
       - Deploy a website: guides/deployment.md
       - Troubleshooting: guides/troubleshooting.md
   - Reference:

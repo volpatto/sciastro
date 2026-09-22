@@ -50,6 +50,15 @@ Check the origin and trailing-slash `base` in the [deployment guide](deployment.
 Do not include the base a second time in content paths. Rebuild after changing the
 hosting destination; copying an old build to a new subdirectory is insufficient.
 
+## A shared link has no image
+
+Configure `social.image` with a PNG/JPEG under `public/`, or let the default
+`social.fallback: logo` use a compatible site logo. SVG and other logo formats
+produce a build warning and no sharing image; a favicon or people fallback is
+not used instead. Check `og:image` in the deployed HTML and open its absolute URL.
+See [link previews and sharing](sharing.md) for independent fallbacks, supported
+formats and verification steps.
+
 ## Docs build fails
 
 Run `pixi run --locked -e docs docs-build` from the framework root. Strict mode

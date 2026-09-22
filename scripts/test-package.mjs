@@ -14,6 +14,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve, dirname } from 'node:path';
 import assert from 'node:assert/strict';
 import { parse, stringify } from 'yaml';
+import { png } from '../tests/fixtures/social.mjs';
 
 const root = resolve('.');
 const sourcePackage = JSON.parse(
@@ -101,10 +102,12 @@ try {
     pkg.dependencies.sciastro = `file:${tarball}`;
     await writeFile(packageFile, JSON.stringify(pkg, null, 2));
     run(['install', '--no-frozen-lockfile'], consumer);
+    await writeFile(join(consumer, 'public/sharing.png'), png);
     if (kind === 'individual') {
       const configPath = join(consumer, 'sciastro.yaml');
       const config = parse(await readFile(configPath, 'utf8'));
       config.people = { ...config.people, file: 'orientacoes.yaml' };
+      config.social = { image: { src: '/sharing.png', alt: 'Sharing image' } };
       config.analytics = {
         provider: 'umami',
         websiteId: '94db1cb1-74f4-4a40-ad6c-962362670409',
@@ -159,10 +162,11 @@ try {
         ? { SITE_URL: 'https://example.org', BASE_PATH: '/lab/' }
         : { SITE_URL: 'https://example.org', BASE_PATH: '/' };
     // Exercise customization in a real installed consumer, including assets
-    // beneath a deployment base path. The individual changes only its people file.
+    // beneath a deployment base path and with both sharing-image policies.
     if (kind === 'group') {
       const configFile = join(consumer, 'sciastro.yaml');
       const config = parse(await readFile(configFile, 'utf8'));
+      config.logo = { src: '/sharing.png', alt: 'Institution logo' };
       config.analytics = {
         provider: 'cloudflare',
         token: '0123456789abcdef0123456789abcdef',
@@ -226,6 +230,13 @@ finally { await server.stop(); }`,
     run(['build'], consumer, overrides);
     const count = await audit(join(consumer, 'dist'), overrides.BASE_PATH);
     const home = await readFile(join(consumer, 'dist/index.html'), 'utf8');
+    assert(
+      home.includes(
+        `property="og:image" content="https://example.org${overrides.BASE_PATH}sharing.png"`,
+      ),
+      'Installed consumers must expose an absolute, base-aware sharing image.',
+    );
+    assert.deepEqual(await readFile(join(consumer, 'dist/sharing.png')), png);
     // Resolve the browser runtime from the installed tarball, not this checkout.
     const assets = join(consumer, 'dist/_astro');
     const javascript = await Promise.all(

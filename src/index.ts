@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { resolve, relative, extname } from 'node:path';
 import { access } from 'node:fs/promises';
 import { loadSite } from './content.js';
+import { resolveSocialImage } from './social.js';
 
 export interface SciAstroOptions {
   configFile?: string;
@@ -25,6 +26,7 @@ export default function sciastro(
         injectRoute,
         injectScript,
         command,
+        logger,
       }) => {
         const root = fileURLToPath(config.root);
         const configFile = resolve(root, options.configFile ?? 'sciastro.yaml');
@@ -34,6 +36,8 @@ export default function sciastro(
         };
         const initial = await loadSite(configFile, overrides);
         const { config: settings } = initial;
+        const socialWarning = resolveSocialImage(settings).warning;
+        if (socialWarning) logger.warn(socialWarning);
         if (
           command === 'build' &&
           settings.analytics &&
@@ -185,4 +189,4 @@ export type {
   BuiltLink,
   BuiltEntry,
 } from './sections.js';
-export type { BuiltPage, BuiltSite } from './content.js';
+export type { BuiltPage, BuiltSite, BuiltSocialImage } from './content.js';
