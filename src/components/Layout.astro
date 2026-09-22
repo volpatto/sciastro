@@ -31,6 +31,7 @@ const title =
   page.id === 'home' ? config.name : `${page.title} · ${config.name}`;
 const description =
   page.description ?? translate(config.description, page.locale);
+const socialImage = site.socialImage;
 const appearance = config.appearance;
 const tokens = (values: Record<string, string>) =>
   Object.entries(values)
@@ -79,6 +80,53 @@ const style = appearance
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content={config.name} />
+    <meta
+      property="og:locale"
+      content={page.locale === 'pt' ? 'pt_BR' : 'en_GB'}
+    />
+    {config.locales
+      .filter((locale) => locale !== page.locale)
+      .map((locale) => (
+        <meta
+          property="og:locale:alternate"
+          content={locale === 'pt' ? 'pt_BR' : 'en_GB'}
+        />
+      ))}
+    {socialImage && (
+      <>
+        <meta property="og:image" content={socialImage.url} />
+        <meta
+          property="og:image:alt"
+          content={translate(socialImage.alt, page.locale)}
+        />
+        <meta property="og:image:type" content={socialImage.type} />
+        {socialImage.width && (
+          <meta property="og:image:width" content={String(socialImage.width)} />
+        )}
+        {socialImage.height && (
+          <meta
+            property="og:image:height"
+            content={String(socialImage.height)}
+          />
+        )}
+      </>
+    )}
+    <meta
+      name="twitter:card"
+      content={socialImage ? 'summary_large_image' : 'summary'}
+    />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    {socialImage && (
+      <>
+        <meta name="twitter:image" content={socialImage.url} />
+        <meta
+          name="twitter:image:alt"
+          content={translate(socialImage.alt, page.locale)}
+        />
+      </>
+    )}
     {config.structuredData && (
       <script
         is:inline

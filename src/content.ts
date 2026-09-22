@@ -21,11 +21,14 @@ import {
 import { translate, routePath, labels } from './i18n.js';
 import { Bibliography, type Reference } from './bibliography.js';
 import { markdownContext } from './markdown.js';
+import { resolveSocialImage, type BuiltSocialImage } from './social.js';
 import {
   composedPageSchema,
   buildSection,
   type BuiltSection,
 } from './sections.js';
+
+export type { BuiltSocialImage } from './social.js';
 
 export interface BuiltArea {
   id: string;
@@ -51,6 +54,7 @@ export interface BuiltPage {
 }
 export interface BuiltSite {
   config: SiteConfig;
+  socialImage?: BuiltSocialImage;
   languageIcons: Partial<Record<Locale, BuiltIcon>>;
   pages: BuiltPage[];
   members: Member[];
@@ -152,7 +156,13 @@ export async function loadSite(
     ),
   });
   const dir = within(root, config.contentDir);
-  if (config.pageFiles) return loadComposed(root, dir, config);
+  // Check every explicitly configured image, even an unused fallback, so typos
+  // fail early instead of becoming a broken preview after a later edit.
+  for (const image of [config.social?.image, config.social?.fallback])
+    if (image && typeof image === 'object') await checkImage(root, image.src);
+  const socialImage = resolveSocialImage(config).image;
+  if (config.pageFiles)
+    return { ...(await loadComposed(root, dir, config)), socialImage };
   const research = await yaml(join(dir, 'research.yaml'), researchSchema, true);
   const members = await yaml(
     within(dir, config.people?.file ?? 'team.yaml'),
@@ -356,6 +366,7 @@ export async function loadSite(
   return {
     config,
     languageIcons,
+    socialImage,
     pages,
     members,
     bibliographyKeys: bibliography.keys,

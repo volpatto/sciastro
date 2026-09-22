@@ -88,7 +88,7 @@ to inspect errors. Configuration field details are in
 
 The root type exports are `SciAstroOptions`, `SiteConfig`, `Member`, `ResearchArea`,
 `Locale`, `IconSetting`, `Section`, `BuiltSection`, `BuiltFigure`, `BuiltLink`,
-`BuiltEntry`, `BuiltPage`, `BuiltSite` and `AnalyticsConfig`. `SiteConfig`/`Section` describe parsed data
+`BuiltEntry`, `BuiltPage`, `BuiltSite`, `BuiltSocialImage` and `AnalyticsConfig`. `SiteConfig`/`Section` describe parsed data
 including defaults, so an authored YAML object may have fewer fields. `Locale` is
 `'pt' | 'en'`. `Section` is a discriminated union; narrow by `section.type`.
 
@@ -107,11 +107,20 @@ The schema defaults `shape` to `rectangle`; `circle` enables a CSS crop. Compose
 an omitted value renders a rectangle. `position` is a pair of percentages in
 `[0, 100]` and defaults visually to `[50, 50]`. See [profile photographs](../customization.md#profile-photographs).
 
+`SiteConfig.social` optionally configures an `image` and a `fallback` (`logo`,
+`false`, or a separate image). Images accept `{ src, alt, width?, height? }`.
+`loadSite` resolves the sharing policy into optional `BuiltSite.socialImage`.
+`BuiltSocialImage` contains an absolute `url`, localized `alt`, MIME `type`
+(`image/png` or `image/jpeg`), and optional `width`/`height`. It contains no crop
+or people fallback settings. A custom layout can localize `alt` for the current
+page and render these fields as meta tags. See [link previews](../guides/sharing.md).
+
 ### Prepared data
 
 | Type | Main fields |
 | --- | --- |
-| `BuiltSite` | `config`, `pages`, `members`, `bibliographyKeys`, `languageIcons`, `copyright`, `footer` |
+| `BuiltSite` | `config`, `pages`, `members`, `bibliographyKeys`, `languageIcons`, `copyright`, `footer`; optional `socialImage` |
+| `BuiltSocialImage` | Absolute `url`, localized `alt`, MIME `type`; optional original `width`/`height` |
 | `BuiltPage` | `id`, resolved `icon`, `locale`, base-aware `path`, `title`, `html`, `references`, `areas`; optional `sections`, `heading`, `description`, `navigation`, `header` |
 | `BuiltSection` | `type`, optional `id`, `title`, sanitized `html`, `links`, and type-specific fields such as `items`, `image`, `logos`, `publications`, `component`, `props` |
 | `BuiltEntry` | `title`, optional `id`, `eyebrow`, `subtitle`, `html`, `meta`, `period`; `images` and `links` |
@@ -131,7 +140,7 @@ sanitized HTML. See the [custom component example](../customization.md#advanced-
 ## Content helpers: `sciastro/content`
 
 Exports `loadSite`, `readConfig(file): Promise<SiteConfig>`, and
-`within(root, file): string`, plus `BuiltArea`, `BuiltPage`, `BuiltSite` types.
+`within(root, file): string`, plus `BuiltArea`, `BuiltPage`, `BuiltSite`, `BuiltSocialImage` types.
 `readConfig` parses only the root YAML; it does not perform a full content check.
 `within` rejects absolute paths and lexical traversal outside the supplied root;
 it is not a filesystem/symlink sandbox.

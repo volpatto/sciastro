@@ -51,6 +51,20 @@ Provider fields cannot be mixed; Cloudflare rejects `events`. Production trackin
 is limited to `url` and `base`. Set `SCIASTRO_ANALYTICS=false` in the build environment
 to disable injection temporarily. Settings are public, never secret API credentials.
 
+## Link previews and sharing
+
+See [link previews](../guides/sharing.md) for full examples and format limitations.
+
+| Field | Default | Meaning |
+| --- | --- | --- |
+| `social.image` | Omitted | Global sharing image: local PNG/JPEG `src`, localized `alt`, optional original `width`/`height` |
+| `social.fallback` | `logo` | Independent fallback: reuse the configured site logo, provide an image object with the same fields, or use `false` to omit the fallback |
+
+An explicit image takes priority. The logo is reused in full, without `viewBox`
+or styling. Unsupported logo formats produce an Astro warning and no image tags;
+missing explicit files fail validation. Sharing does not use people fallbacks,
+favicons or a generic symbol. Titles and descriptions are preserved without an image.
+
 ## Appearance
 
 | Field | Default | Meaning |

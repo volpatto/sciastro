@@ -7,6 +7,7 @@ import ts from 'typescript';
 import { parse } from 'yaml';
 import { loadSite } from '../dist/content.js';
 import { sectionSchema } from '../dist/sections.js';
+import { configSchema } from '../dist/schema.js';
 import { main } from '../dist/cli.js';
 
 for (const kind of ['individual', 'group']) {
@@ -64,6 +65,22 @@ test('all documented section recipes satisfy the public schema', async () => {
   assert(blocks.length >= 6);
   for (const [, yaml] of blocks)
     for (const section of parse(yaml)) sectionSchema.parse(section);
+});
+
+test('documented sharing examples satisfy the configuration schema', async () => {
+  const source = await readFile('docs/guides/sharing.md', 'utf8');
+  const blocks = [...source.matchAll(/```yaml\r?\n([\s\S]*?)\r?\n```/g)];
+  assert.equal(blocks.length, 3);
+  for (const [, yaml] of blocks)
+    configSchema.parse({
+      schemaVersion: 1,
+      kind: 'individual',
+      name: 'Example',
+      description: 'Research',
+      url: 'https://example.org',
+      home: { body: 'home.md' },
+      ...parse(yaml),
+    });
 });
 
 test('API page covers all public entry points, runtime exports and root types', async () => {

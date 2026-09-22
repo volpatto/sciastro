@@ -32,6 +32,11 @@ export default defineConfig({
   },
   projects: [
     {
+      name: 'social',
+      testMatch: '**/social.spec.mjs',
+      use: { javaScriptEnabled: false },
+    },
+    {
       name: 'portraits',
       testMatch: '**/portraits.spec.mjs',
       use: { javaScriptEnabled: false },

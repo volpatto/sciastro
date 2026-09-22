@@ -13,6 +13,7 @@ separate and load the integration with `import sciastro from 'sciastro'`.
 | `src/bibliography.ts` | BibTeX parsing, CSL formatting and stable reference identifiers |
 | `src/i18n.ts` | Interface labels, translations and paths |
 | `src/icons.ts` | Local icon resolution and menu/language defaults |
+| `src/social.ts` | Sharing-image selection and absolute URLs, independent of people and favicon settings |
 | `src/components/` | Layout, bibliography, icons and member presentation |
 | `src/pages/` | Routes injected into consumer websites |
 | `src/styles/` | Shared styling, sections and LNCC Theme |
