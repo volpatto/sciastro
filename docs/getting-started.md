@@ -48,7 +48,8 @@ pixi run dev
 use an exact published version with `sciastro@VERSION` (replace `VERSION` with that release).
 The generated site's dependency
 is pinned to the generator's version, regardless of the channel used to invoke it.
-Choose `--kind group` for a group. `--theme classic`, `modern` or `lncc` sets the
+Choose `--kind group` for a group or `--kind course` for course materials.
+`--theme classic`, `modern` or `lncc` sets the
 initial theme; you can change it later in YAML.
 
 The generator requires a new or empty destination. It creates files but does not
@@ -108,5 +109,6 @@ pixi run --locked dev-stop
 These are **website** tasks. The framework repository has separate tasks for its
 examples, tests and MkDocs documentation; see [development](testing.md).
 
-Continue with [an individual website](tutorials/individual.md) or
-[a research-group website](tutorials/group.md).
+Continue with [an individual website](tutorials/individual.md),
+[a research-group website](tutorials/group.md) or [a course](tutorials/course.md).
+The [gallery](gallery.md) contains complete previews and links to their source.

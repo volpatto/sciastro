@@ -18,6 +18,7 @@ const heading = s.title ? 'h3' : 'h2';
 
 <section
   id={s.id}
+  data-appearance-hero={s.type === 'profile' || undefined}
   class:list={[
     'sp-section',
     `sp-${s.type}`,
@@ -29,7 +30,7 @@ const heading = s.title ? 'h3' : 'h2';
     <>
       <div class="sp-profile-copy">
         {s.eyebrow && <p class="sp-eyebrow">{s.eyebrow}</p>}
-        <h1>{s.title}</h1>
+        <h1 data-appearance-heading>{s.title}</h1>
         {s.html && <div class="prose" set:html={s.html} />}
         <Links links={s.links} base={base} />
       </div>

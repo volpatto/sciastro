@@ -11,7 +11,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Pixi](https://img.shields.io/badge/Pixi-41B3A3)](https://pixi.sh/)
 
-SciAstro is a package for individual researchers and research groups, **built on
+SciAstro is a package for individual researchers, research groups and courses, **built on
 [Astro](https://astro.build/)**. Maintain content through Markdown, YAML and BibTeX;
 SciAstro supplies the pages, themes and validation. Each website owns its content
 and public assets. Astro generates a static site suitable for GitHub Pages or any
@@ -23,14 +23,15 @@ available for testing unpublished changes. Review the changelog before upgrading
 incompatible changes should include migration instructions.
 
 The package documentation is in English. The example websites intentionally keep
-Portuguese as their default language and include English translations. You can
+Portuguese as their default language; the academic profiles include English translations. You can
 build a Portuguese-only, English-only or bilingual site.
 
 ## Documentation
 
 The documentation covers [installation](docs/getting-started.md), complete tutorials
-for [individual researchers](docs/tutorials/individual.md) and
-[research groups](docs/tutorials/group.md), [section recipes](docs/guides/recipes.md),
+for [individual researchers](docs/tutorials/individual.md),
+[research groups](docs/tutorials/group.md) and [courses](docs/tutorials/course.md),
+[live examples](https://volpatto.github.io/sciastro/gallery/), [section recipes](docs/guides/recipes.md),
 [deployment](docs/guides/deployment.md), [configuration](docs/reference/configuration.md)
 and the [public API](docs/reference/api.md).
 
@@ -45,6 +46,10 @@ Open `http://127.0.0.1:8000/`. Use `pixi run --locked -e docs docs-build` for a 
 production build in `site/`. The environment supplies Python, MkDocs and Material;
 it is separate from the Node.js/pnpm package-development environment. See
 [documentation maintenance](docs/development/documentation.md).
+
+After that build, run `pixi run --locked docs-gallery` to include all example
+websites under `site/examples/`. This task uses the default Node.js environment.
+The [gallery guide](docs/gallery.md) describes URL overrides and local previews.
 
 Read the published documentation at
 [volpatto.github.io/sciastro](https://volpatto.github.io/sciastro/). CI builds docs
@@ -65,6 +70,8 @@ visitors' saved theme preferences across the rename.
 - **Individual researchers:** an About page and a Supervision page; optional
   [circular or rectangular profile photographs](docs/customization.md#profile-photographs)
   with adjustable framing in YAML.
+- **Courses:** a syllabus, lesson index, scientific Markdown notes and Jupyter
+  notebooks, authored through explicit page files. See the [course tutorial](docs/tutorials/course.md).
 - **People:** faculty, researchers, active students grouped by level, and alumni.
   Circular portraits with adjustable framing, configurable institution symbols
   and a fictional built-in fallback; see [photo settings](docs/conteudo.md#portraits-and-fallback-symbols).
@@ -76,13 +83,23 @@ visitors' saved theme preferences across the rename.
 - **Additional pages:** software, teaching, projects, CV and contact, defined in YAML.
 - **Articles and notebooks:** full Markdown pages or saved Jupyter notebooks,
   highlighted code, callouts, cards, numbered equations, figures and tables;
-  available for both individual and group websites. See [scientific writing](docs/guides/writing.md).
+  available for all site profiles. See [scientific writing](docs/guides/writing.md).
+- **Interactive plots:** Plotly figures from local JSON files or saved notebook
+  outputs, served with the site. See [Plotly graphs](docs/guides/plots.md).
+- **Article exports:** opt-in notebook downloads from Markdown or the original
+  notebook, plus a browser print action for saving PDF. See [downloads](docs/guides/downloads.md).
 - **Nested navigation:** page parents, breadcrumbs, automatic post indexes and
   configurable menu depth. Link to pages/sections by stable identifiers.
+- **Flexible layouts:** top or sidebar navigation, optional contextual navigation
+  on the right, and opt-in motion that respects reduced-motion preferences.
+  These settings are independent of theme and profile; see [layouts](docs/guides/layouts.md).
 - **Link previews:** configurable PNG/JPEG sharing images with an independent
   fallback to the site logo; see [sharing settings](docs/guides/sharing.md).
 - **Themes:** `classic`, `modern`, and **LNCC Theme** (`lncc`, sidebar and academic typography),
   with light/dark modes and responsive layouts.
+- **Appearance recipes:** mix five color bases and accents, choose typography and
+  icon treatments, and add optional gradients or a translucent top menu through YAML.
+  See [palettes and decorative accents](docs/guides/appearance.md).
 - **Languages:** Portuguese and English, together or separately, with translation validation.
 - **Icons:** menu icons and Brazilian/British language flags by default; replace
   them with catalog icons or local images, or hide them through YAML.
@@ -93,6 +110,7 @@ visitors' saved theme preferences across the rename.
 The academic-profile examples contain **fictional people, institutions and publications**,
 clearly identified in the footer. The writing example contains an executed numerical
 tutorial with a real reference. These are demonstration websites, not real academic profiles.
+The course includes an unexecuted exercise notebook with analytically known expected values.
 
 ## Create a website from npm
 
@@ -105,7 +123,8 @@ pnpm install
 pnpm dev
 ```
 
-Use `--kind group` for a research-group website and `--theme lncc` for the
+Use `--kind group` for a research group, `--kind course` for teaching materials,
+and `--theme lncc` for the
 LNCC Theme. The generator pins the website's SciAstro dependency to the release
 used to create it. Open the preview URL printed in the terminal, normally
 `http://127.0.0.1:4321/`.
@@ -180,6 +199,9 @@ means its preview server is not running.
 | `pixi run --locked verify-all` | Run all package and browser checks; install Chromium first |
 | `pixi run --locked dev-lncc` | Preview the composed LNCC Theme example on port 4342 |
 | `pixi run --locked dev-writing` | Preview Markdown articles and an executed notebook at `http://127.0.0.1:4343/caderno/` |
+| `pixi run --locked dev-course` | Preview the course, lessons and downloads on port 4344 |
+| `pixi run --locked dev-course-stop` | Stop the course preview |
+| `pixi run --locked docs-gallery` | Add all example previews to an existing MkDocs build |
 | `pixi run --locked dev` | Preview the group example |
 | `pixi run --locked dev-individual` | Preview the individual example |
 | `pixi run --locked pack` | Create an installable `.tgz` archive in `artifacts/` |
@@ -201,7 +223,8 @@ pixi run --locked pack
 pixi run --locked node dist/cli.js init ../my-group --kind group
 ```
 
-Use `--kind individual` for a personal website. The generator accepts a new or
+Use `--kind individual` for a personal website or `--kind course` for a course.
+The generator accepts a new or
 empty directory only; it does not overwrite an existing project, install dependencies
 or publish anything.
 
@@ -246,6 +269,10 @@ astro.config.mjs           Connection to the package; normally unchanged
 
 Components and styles belong to the installed package. Editing content or switching
 the theme or site kind does not require TypeScript or Astro knowledge.
+
+The course starter uses `pageFiles` instead of the automatic academic-profile
+files above. Edit its `content/pages/*.md` and `.yaml`, notebook files under
+`content/notebooks/`, and Plotly JSON under `content/plots/`.
 
 For example, an English-only site can use:
 
@@ -295,7 +322,8 @@ icons:
 `icon` field in `content/pages.yaml`. See the [icon guide](docs/icones.md) for
 catalogs, custom images, configuration keys and disabling options.
 
-See the complete [group](starters/group) and [individual](starters/individual)
+See the complete [group](starters/group), [individual](starters/individual) and
+[course](starters/course)
 starters, the [content guide](docs/conteudo.md), and the
 [reference guide](docs/referencias.md).
 
@@ -329,7 +357,8 @@ the homepage for every unknown URL.
 
 For GitHub Pages, select **Settings → Pages → Source → GitHub Actions**, build your
 consumer website and deploy its `dist/`. This repository checks the **package** on pushes to `main` and PRs targeting `main`, and publishes npm releases
-and MkDocs documentation on validated `v*` tags. It does not deploy the example websites.
+and MkDocs documentation on validated `v*` tags. Example websites are included
+under that documentation's gallery; they need no separate repository or deployment.
 
 **There are two different `dist/` directories:** at the SciAstro root it contains
 the compiled package; inside a consumer or `examples/group/` it contains the
@@ -343,7 +372,7 @@ Run the package checks without installing a browser:
 pixi run --locked verify
 ```
 
-This checks TypeScript/Astro, runs automated content/BibTeX/icon tests, builds all three
+This checks TypeScript/Astro, runs automated content/BibTeX/icon tests, builds all bundled
 examples, and installs the actual `.tgz` into independent temporary projects. The
 consumer checks cover CLI execution, configuration overrides, assets, links,
 anchors, citations and team grouping, including deployment under a subdirectory.
@@ -361,18 +390,18 @@ On Linux, browser system libraries may also be required:
 pixi run --locked pnpm exec playwright install --with-deps chromium
 ```
 
-The browser suite tests both site kinds and the LNCC Theme on desktop and mobile: navigation, icons,
+The browser suite tests the site profiles and the LNCC Theme on desktop and mobile: navigation, icons,
 language switching, persistent themes, research/citation anchors, team sections,
 404 recovery and navigation with JavaScript disabled. It serves the generated
-static sites on ports `4360` and `4361`; it does not use or stop the previews on
-`4340`/`4341`. Browser binaries are needed only for testing, not for building or hosting.
+static sites on dedicated test ports; it does not use or stop normal development
+previews. Browser binaries are needed only for testing, not for building or hosting.
 
 [GitHub Actions](.github/workflows/ci.yml) runs on pushes to `main`, pull requests
 targeting `main` and manual dispatch. Work branches run CI through their PR
 (including draft PRs), avoiding duplicate push/PR runs. Before opening a PR, use
 manual dispatch to test a work branch. Releases reuse the same workflow.
 It performs package verification on Linux, macOS and Windows, plus
-browser tests and a strict MkDocs build on Linux. Version consistency, documentation
+browser tests and a strict MkDocs/gallery build on Linux. Version consistency, documentation
 tutorial tests and changelog tests using real temporary Git repositories and git-cliff
 are included. Failures fail the corresponding job. The
 `browser-test-report` artifact contains an HTML report, JUnit results and traces /
@@ -402,6 +431,7 @@ User-provided materials retain their own licensing conditions. Dependencies reta
 their licenses: [Astro](https://astro.build/), [Citation.js](https://citation.js.org/),
 [markdown-it](https://github.com/markdown-it/markdown-it), [YAML](https://eemeli.org/yaml/),
 [Zod](https://zod.dev/), [sanitize-html](https://github.com/apostrophecms/sanitize-html),
+[Plotly.js](https://github.com/plotly/plotly.js),
 the [icon collections](docs/icon-licenses.txt), and the [font notices](docs/font-licenses.txt). Browser testing uses
 [Playwright](https://playwright.dev/).
 

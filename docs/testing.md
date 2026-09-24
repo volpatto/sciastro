@@ -18,11 +18,13 @@ Install [Pixi](https://pixi.prefix.dev/latest/installation/) first, then run
 | Types and components | `pnpm check` | TypeScript contracts and Astro diagnostics |
 | Composition and themes | `tests/composition.test.mjs` | Explicit routes, menu order, assets, strict fields, translations, tokens and section citations |
 | Content and bibliography | `tests/*.test.mjs` | Translation requirements, routes, optional sections, team levels, BibTeX parsing, citation links and errors |
+| Course scaffolding | `tests/course.test.mjs` | CLI generation, lesson hierarchy, portable paths and an explicitly unexecuted notebook across themes |
+| Documentation gallery | `tests/gallery.test.mjs` | Build URL overrides, nested preview copying, output safety and preserving prior output after a build failure |
 | Icons | `tests/icons.test.mjs` | Defaults, overrides, disabling, aliases, SVG IDs, invalid names and local files |
 | Release preparation | `tests/changelog.test.mjs` | Actual git-cliff generation, main-only commit ranges, squash merges, regeneration and preservation of reviewed notes |
 | People images | `tests/people.test.mjs` | Portrait/fallback fields, framing, symbol crops, translations and local assets in both site kinds and composition modes |
 | Installed package | `scripts/test-package.mjs` | Actual archive installation, CLI entry points, generated sites, root/subdirectory deployment, links/assets/anchors and grouping |
-| Browser interactions | `tests/browser/*.spec.mjs` | All three themes and both site kinds at desktop/mobile widths, navigation, languages, theme persistence, icons, citations, team sections, 404 and no-JavaScript behavior |
+| Browser interactions | `tests/browser/*.spec.mjs` | Themes and site profiles at desktop/mobile widths, navigation, article actions, languages, persistent themes, figures, citations, team sections and no-JavaScript behavior |
 
 The browser tests use **Chromium**. Mobile tests use a 390 × 844 viewport; they do
 not emulate a physical device or establish compatibility with Safari or Firefox.
@@ -79,18 +81,26 @@ pixi run --locked pnpm exec playwright test --project=group-mobile
 pixi run --locked pnpm exec playwright test --grep "language switch"
 ```
 
-Browser tests serve the static example output on `127.0.0.1:4360`, `:4361`, `:4362`
-and `:4363` (scientific writing).
+Browser tests serve the static example output on `127.0.0.1:4360`, `:4361`, `:4362`,
+`:4363` (scientific writing) and `:4364` (course).
 Playwright starts and stops those servers. If a port is occupied, the run fails
 rather than reusing an unrelated process. Keep those ports available. The user's
-development previews on `4340`/`4341`/`4342`/`4343` are independent.
+development previews on `4340`/`4341`/`4342`/`4343`/`4344` are independent.
+
+Navigation regressions exercise wrapped labels with equal-height link/disclosure
+targets, open and closed submenus, keyboard interaction and no-JavaScript fallbacks.
+Theme-control tests check sun/moon visibility, icon centering, translated action
+labels, touch-target size, live system preferences and persistence across pages.
 
 The writing tests cover scientific Markdown, saved notebook outputs, equation and
 figure references, code copying, nested navigation and both color schemes at
 desktop/mobile sizes. They also verify static mathematics and navigation with
 JavaScript disabled. Content tests exercise both `individual` and `group` with
 automatic and explicit pages, and installed-package tests build articles and
-notebooks in both generated consumer kinds.
+notebooks in generated consumers. The course adds coverage for lesson navigation,
+article exports and interactive figures. Download tests distinguish the faithful
+original `.ipynb` source from Markdown conversion; print controls are tested as
+browser actions, not as server-generated PDF files.
 
 ## Reports and failures
 
@@ -128,6 +138,9 @@ The workflow includes:
 3. The browser job uploads `browser-test-report` even when tests fail, provided
    reports were generated and the job was not canceled. Artifacts are retained
    for 14 days.
+4. **Documentation build and link checks** builds strict MkDocs output and the
+   example gallery using both locked environments, then uploads the combined
+   `docs-preview` artifact without deploying it.
 
 A failed check fails the workflow. The workflow has read-only repository access
 and does not publish packages or deploy sites. To **prevent merging** with failing

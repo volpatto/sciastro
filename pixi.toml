@@ -125,3 +125,18 @@ description = "Preview scientific Markdown and notebook articles"
 cmd = "pnpm --filter sciastro-example-writing exec astro dev stop"
 depends-on = ["setup"]
 description = "Stop the scientific writing preview"
+
+[tasks.dev-course]
+cmd = "pnpm dev:course"
+depends-on = ["build"]
+description = "Preview the numerical-methods course"
+
+[tasks.dev-course-stop]
+cmd = "pnpm --filter sciastro-example-course exec astro dev stop"
+depends-on = ["setup"]
+description = "Stop the course preview"
+
+[tasks.docs-gallery]
+cmd = "pnpm docs:gallery"
+depends-on = ["build"]
+description = "Build example previews into an existing MkDocs output; run docs-build first"

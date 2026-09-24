@@ -1,0 +1,310 @@
+/* One scale for navigation, independent of the selected reading theme. */
+.navigation {
+  padding-block: 6px;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+.navigation > summary {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+  padding: 10px 12px;
+  color: var(--ink);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+  border-radius: 6px;
+}
+.navigation summary::-webkit-details-marker {
+  display: none;
+}
+.navigation[open] > summary > .ui-icon {
+  transform: rotate(180deg);
+}
+.navigation nav .navigation-tree,
+.navigation nav .navigation-children {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.navigation nav .navigation-tree {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  width: 100%;
+}
+.navigation-item {
+  position: relative;
+  min-width: 0;
+}
+.navigation nav a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 5px;
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.4;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+.navigation .ui-icon {
+  width: 18px;
+  height: 18px;
+}
+.navigation nav a[aria-current],
+.navigation nav a[data-active-ancestor] {
+  color: var(--accent);
+  background: var(--surface);
+  font-weight: 650;
+}
+.navigation nav a[aria-current]::after,
+.navigation nav a[data-active-ancestor]::after {
+  content: '';
+  position: absolute;
+  inset: auto 12px 3px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+.navigation nav a[data-active-ancestor]::after {
+  opacity: 0.6;
+}
+.navigation nav .navigation-parent > a {
+  margin-right: 44px;
+  border-radius: 5px 0 0 5px;
+}
+.navigation .navigation-branch > summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 0 5px 5px 0;
+  color: var(--muted);
+  cursor: pointer;
+  list-style: none;
+}
+.navigation-parent:has(> .navigation-branch[open]) > a,
+.navigation-parent:has(> .navigation-branch[open])
+  > .navigation-branch
+  > summary {
+  color: var(--ink);
+  background: var(--surface);
+}
+.navigation-parent:has(> a:is([aria-current], [data-active-ancestor]))
+  > .navigation-branch
+  > summary,
+.navigation
+  nav
+  .navigation-parent
+  > a:is([aria-current], [data-active-ancestor]) {
+  color: var(--accent);
+  background: var(--surface);
+}
+.navigation-branch[open] > summary > svg {
+  transform: rotate(180deg);
+}
+/* Keep native disclosure semantics and let the label determine the entire row's
+   height. The submenu occupies a separate row, so expanding it cannot stretch
+   the arrow. Older engines retain the functional positioned-control fallback. */
+@supports (grid-template-rows: subgrid) and selector(::details-content) {
+  .navigation-parent {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 44px;
+    grid-template-rows: auto auto;
+  }
+  .navigation nav .navigation-parent > a {
+    grid-area: 1 / 1;
+    margin-right: 0;
+    z-index: 1;
+  }
+  .navigation-parent > .navigation-branch {
+    display: grid;
+    grid-area: 1 / 1 / 3 / 3;
+    grid-template-columns: subgrid;
+    grid-template-rows: subgrid;
+    min-width: 0;
+  }
+  .navigation .navigation-branch > summary {
+    position: relative;
+    grid-area: 1 / 2;
+    width: auto;
+    height: auto;
+    min-height: 44px;
+    align-self: stretch;
+  }
+  .navigation-branch::details-content {
+    grid-area: 2 / 1 / 3 / 3;
+    min-width: 0;
+  }
+  .navigation-branch:not([open])::details-content {
+    display: none;
+  }
+}
+.navigation a:focus-visible,
+.navigation summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  z-index: 1;
+}
+@media (hover: hover) {
+  .navigation-parent:has(> a:hover, > .navigation-branch > summary:hover) > a,
+  .navigation-parent:has(> a:hover, > .navigation-branch > summary:hover)
+    > .navigation-branch
+    > summary,
+  .navigation nav a:hover,
+  .navigation summary:hover {
+    color: var(--ink);
+    background: var(--surface);
+    text-decoration: none;
+  }
+  .navigation .navigation-branch > summary:hover {
+    box-shadow: inset 1px 0 var(--line);
+  }
+}
+.navigation nav .navigation-children {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px;
+}
+.navigation-tree
+  > .navigation-item
+  > .navigation-branch
+  > .navigation-children {
+  position: absolute;
+  z-index: 30;
+  inset: calc(100% + 4px) auto auto 0;
+  width: max-content;
+  min-width: min(15rem, calc(100vw - 38px));
+  max-width: min(20rem, calc(100vw - 38px));
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--ink) 10%, transparent);
+}
+.navigation-tree
+  > .navigation-item:last-child
+  > .navigation-branch
+  > .navigation-children {
+  left: auto;
+  right: 0;
+}
+.navigation nav .navigation-children a[aria-current]::after,
+.navigation nav .navigation-children a[data-active-ancestor]::after {
+  inset: 10px auto 10px 0;
+  height: auto;
+  width: 2px;
+}
+.navigation-children .navigation-children {
+  margin-left: 12px;
+  border-left: 1px solid var(--line);
+}
+
+/* Sidebar and mobile menus keep child links in the reading order. */
+.sidebar-shell .navigation {
+  padding: 0;
+  border: 0;
+}
+.sidebar-shell .navigation nav .navigation-tree {
+  flex-direction: column;
+}
+.sidebar-shell .navigation nav a[aria-current]::after,
+.sidebar-shell .navigation nav a[data-active-ancestor]::after {
+  inset: 10px auto 10px 0;
+  height: auto;
+  width: 2px;
+}
+.sidebar-shell
+  .navigation-tree
+  > .navigation-item
+  > .navigation-branch
+  > .navigation-children {
+  position: static;
+  width: auto;
+  min-width: 0;
+  max-width: 100%;
+  margin: 4px 0 4px 12px;
+  padding: 0 0 0 8px;
+  border: 0;
+  border-left: 1px solid var(--line);
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+@media (min-width: 851px) {
+  .sidebar-shell .navigation {
+    position: sticky;
+    top: 24px;
+  }
+  .lncc-shell .navigation {
+    top: 110px;
+  }
+}
+@media (max-width: 850px) {
+  .sidebar-shell .navigation > summary {
+    display: flex;
+  }
+  .sidebar-shell .navigation[open] > nav {
+    padding-block: 6px;
+  }
+}
+@media (max-width: 759px) {
+  .navigation > summary {
+    display: flex;
+  }
+  .navigation nav .navigation-tree {
+    flex-direction: column;
+  }
+  .navigation[open] > nav {
+    padding-block: 6px;
+  }
+  .navigation-tree
+    > .navigation-item
+    > .navigation-branch
+    > .navigation-children {
+    position: static;
+    width: auto;
+    min-width: 0;
+    max-width: 100%;
+    margin: 4px 0 4px 12px;
+    padding: 0 0 0 8px;
+    border: 0;
+    border-left: 1px solid var(--line);
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
+  }
+  .navigation nav a[aria-current]::after,
+  .navigation nav a[data-active-ancestor]::after {
+    inset: 10px auto 10px 0;
+    height: auto;
+    width: 2px;
+  }
+}
+@media (forced-colors: active) {
+  .navigation nav a[aria-current],
+  .navigation nav a[data-active-ancestor] {
+    outline: 1px solid currentColor;
+    outline-offset: -2px;
+  }
+  .navigation nav a:focus-visible,
+  .navigation summary:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+}

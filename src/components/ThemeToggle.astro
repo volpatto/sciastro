@@ -1,0 +1,72 @@
+---
+import type { Locale } from '../schema.js';
+import { resolveIcon } from '../icons.js';
+import Icon from './Icon.astro';
+
+interface Props {
+  locale: Locale;
+  base: string;
+}
+const { locale, base } = Astro.props;
+const lightLabel =
+  locale === 'pt' ? 'Ativar modo claro' : 'Switch to light mode';
+const darkLabel =
+  locale === 'pt' ? 'Ativar modo escuro' : 'Switch to dark mode';
+const sun = resolveIcon('lucide:sun', 'Light theme action');
+const moon = resolveIcon('lucide:moon', 'Dark theme action');
+---
+
+<button
+  class="theme-toggle"
+  type="button"
+  hidden
+  aria-label={darkLabel}
+  title={darkLabel}
+  data-theme-state="light"
+  data-light-label={lightLabel}
+  data-dark-label={darkLabel}
+>
+  <Icon icon={sun} base={base} />
+  <Icon icon={moon} base={base} />
+</button>
+
+<style>
+  .theme-toggle {
+    display: inline-grid;
+    place-items: center;
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    color: var(--ink);
+    background: transparent;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .theme-toggle[hidden] {
+    display: none;
+  }
+  .theme-toggle:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--surface);
+  }
+  .theme-toggle:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+  .theme-toggle :global(.ui-icon) {
+    display: block;
+    grid-area: 1 / 1;
+    width: 20px;
+    height: 20px;
+  }
+  .theme-toggle[data-theme-state='light'] :global([data-icon='lucide:sun']),
+  .theme-toggle[data-theme-state='dark'] :global([data-icon='lucide:moon']) {
+    display: none;
+  }
+</style>

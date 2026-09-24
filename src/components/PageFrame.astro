@@ -1,0 +1,35 @@
+---
+import type { BuiltPage, BuiltSite } from '../content.js';
+import { pageContext } from '../layout.js';
+import ContextNavigation from './ContextNavigation.astro';
+interface Props {
+  site: BuiltSite;
+  page: BuiltPage;
+}
+const { site, page } = Astro.props;
+const context = pageContext(site.pages, page);
+const showContext =
+  site.config.layout?.subnavigation === 'right' &&
+  (context.parent ||
+    context.children.length ||
+    context.siblings.length ||
+    context.headings.length);
+---
+
+{showContext ? (
+  <div class="page-layout">
+    <aside
+      class="page-context"
+      aria-label={
+        page.locale === 'pt' ? 'Navegação contextual' : 'Contextual navigation'
+      }
+    >
+      <ContextNavigation page={page} context={context} />
+    </aside>
+    <div class="page-content">
+      <slot />
+    </div>
+  </div>
+) : (
+  <slot />
+)}

@@ -71,14 +71,20 @@ extra_css:
 copyright: SciAstro contributors · MIT license
 nav:
   - Overview: index.md
+  - Gallery: gallery.md
   - Get started:
       - Installation: getting-started.md
       - Individual website: tutorials/individual.md
       - Research-group website: tutorials/group.md
+      - Course website: tutorials/course.md
   - Guides:
       - Content and people: conteudo.md
       - Pages, themes and extensions: customization.md
+      - Palettes, typography and accents: guides/appearance.md
       - Articles, Markdown and notebooks: guides/writing.md
+      - Interactive Plotly graphs: guides/plots.md
+      - Navigation layouts and motion: guides/layouts.md
+      - Notebook downloads and PDF printing: guides/downloads.md
       - Section recipes: guides/recipes.md
       - Languages and navigation: guides/languages.md
       - Icons: icones.md

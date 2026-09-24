@@ -31,6 +31,268 @@ async function noHorizontalOverflow(page) {
   ).toBe(true);
 }
 
+async function listingCardGeometry(page) {
+  return page.locator('.article-list > .article-card').evaluateAll((cards) =>
+    cards.map((card) => {
+      const bounds = (element) => {
+        const { x, y, width, height, bottom } = element.getBoundingClientRect();
+        return { x, y, width, height, bottom };
+      };
+      const title = card.querySelector('h2');
+      const description = card.querySelector('.article-card-description');
+      const style = getComputedStyle(card);
+      const lines = (element) => {
+        const range = document.createRange();
+        range.selectNodeContents(element);
+        return new Set(
+          [...range.getClientRects()]
+            .filter((rect) => rect.width > 0 && rect.height > 0)
+            .map((rect) => Math.round(rect.top)),
+        ).size;
+      };
+      const textFits = [title, description].every((element) => {
+        const rect = element.getBoundingClientRect();
+        const range = document.createRange();
+        range.selectNodeContents(element);
+        return (
+          element.scrollWidth <= element.clientWidth + 1 &&
+          element.scrollHeight <= element.clientHeight + 1 &&
+          [...range.getClientRects()].every(
+            (part) =>
+              part.left >= rect.left - 1 &&
+              part.right <= rect.right + 1 &&
+              part.top >= rect.top - 1 &&
+              part.bottom <= rect.bottom + 1,
+          )
+        );
+      });
+      return {
+        card: bounds(card),
+        title: bounds(title),
+        description: bounds(description),
+        titleLines: lines(title),
+        descriptionLines: lines(description),
+        bottomPadding:
+          parseFloat(style.paddingBottom) + parseFloat(style.borderBottomWidth),
+        textFits,
+        contentFits: card.scrollHeight <= card.clientHeight + 1,
+      };
+    }),
+  );
+}
+
+async function expectListingCardLayout(page, mobile) {
+  const geometry = await listingCardGeometry(page);
+  expect(geometry).toHaveLength(2);
+  for (const item of geometry) {
+    expect(
+      item.textFits,
+      'Full titles/descriptions fit without clipping or truncation',
+    ).toBe(true);
+    expect(item.contentFits, 'Card content fits its natural height').toBe(true);
+    expect(item.description.y).toBeGreaterThanOrEqual(item.title.bottom);
+  }
+  const [first, second] = geometry;
+  if (mobile) {
+    expect(Math.abs(first.card.x - second.card.x)).toBeLessThan(1);
+    expect(second.card.y).toBeGreaterThan(first.card.bottom);
+    expect(
+      Math.abs(
+        second.card.bottom - second.description.bottom - second.bottomPadding,
+      ),
+      'A mobile card without metadata ends after its description and normal padding',
+    ).toBeLessThan(2);
+  } else {
+    expect(Math.abs(first.card.y - second.card.y)).toBeLessThan(1);
+    expect(second.card.x).toBeGreaterThan(first.card.x + first.card.width);
+    expect(
+      Math.abs(first.title.y - second.title.y),
+      'Titles share their row',
+    ).toBeLessThan(1);
+    expect(
+      Math.abs(first.description.y - second.description.y),
+      'Descriptions share their row despite unequal title lengths',
+    ).toBeLessThan(1);
+  }
+  await noHorizontalOverflow(page);
+  return geometry;
+}
+
+for (const stress of [false, true]) {
+  test(`listing cards align titles and descriptions with optional metadata${stress ? ' and asymmetric long text' : ''}`, async ({
+    page,
+  }, testInfo) => {
+    const mobile = Boolean(testInfo.project.metadata.mobile);
+    for (const width of mobile ? [600, 390] : [1440, 1024, 760]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(paths.news);
+      await page.evaluate(() => document.fonts.ready);
+      const cards = page.locator('.article-list > .article-card');
+      await expect(cards).toHaveCount(2);
+      await expect(cards.nth(0).locator('h2 a')).toHaveAttribute(
+        'href',
+        paths.article,
+      );
+      await expect(cards.nth(1).locator('h2 a')).toHaveAttribute(
+        'href',
+        paths.tutorials,
+      );
+      await expect(cards.nth(0).locator('.article-card-meta')).toHaveCount(1);
+      await expect(
+        cards.nth(0).locator('.article-card-meta time'),
+      ).toHaveAttribute('datetime', '2026-09-22');
+      await expect(
+        cards.nth(0).locator('.article-card-meta .article-card-authors'),
+      ).toHaveText('Equipe SciAstro');
+      await expect(
+        cards
+          .nth(1)
+          .locator(
+            '.article-card-meta, time, .article-card-authors, .article-tags',
+          ),
+      ).toHaveCount(0);
+      expect(
+        await cards.evaluateAll((elements) =>
+          elements.every((card) => card.firstElementChild?.tagName === 'H2'),
+        ),
+      ).toBe(true);
+      const original = await listingCardGeometry(page);
+      if (stress) {
+        // Change content only: the real card structure and sizing rules stay under test.
+        await cards.evaluateAll((elements) => {
+          elements[0].querySelector('h2 a').textContent =
+            'Escrita científica e métodos numéricos para investigar convergência, hipóteses, estabilidade e limitações em aplicações computacionais de pesquisa';
+          elements[0].querySelector('.article-card-description').textContent =
+            'Resumo curto.';
+          elements[1].querySelector('h2 a').textContent = 'Tutoriais';
+          elements[1].querySelector('.article-card-description').textContent =
+            'Exemplos detalhados para estudar os resultados, comparar hipóteses e reproduzir cálculos com dados e código documentados. '.repeat(
+              6,
+            );
+        });
+      }
+      for (const theme of ['light', 'dark']) {
+        const toggle = page.locator('.theme-toggle');
+        if ((await toggle.getAttribute('data-theme-state')) !== theme)
+          await toggle.click();
+        await expect(toggle).toHaveAttribute('data-theme-state', theme);
+        const geometry = await expectListingCardLayout(page, mobile);
+        if (stress) {
+          expect(
+            geometry[0].titleLines,
+            'The long title actually wraps',
+          ).toBeGreaterThan(geometry[1].titleLines);
+          expect(
+            geometry[1].descriptionLines,
+            'The longer description actually wraps',
+          ).toBeGreaterThan(geometry[0].descriptionLines);
+          expect(
+            geometry[1].card.height,
+            'Long content grows the card instead of imposing a fixed height',
+          ).toBeGreaterThan(original[1].card.height + 40);
+        }
+      }
+    }
+  });
+}
+
+test('listing cards expose one native link with full-card pointer access and visible hover/keyboard highlights', async ({
+  page,
+}) => {
+  const themeAppearances = [];
+  for (const theme of ['light', 'dark']) {
+    await page.goto(paths.news);
+    await page.evaluate(() => document.fonts.ready);
+    const toggle = page.locator('.theme-toggle');
+    if ((await toggle.getAttribute('data-theme-state')) !== theme)
+      await toggle.click();
+    await expect(toggle).toHaveAttribute('data-theme-state', theme);
+    const cards = page.locator('.article-list > .article-card');
+    const card = cards.nth(1);
+    const link = card.locator('h2 > a');
+    await expect(link).toHaveAttribute('href', paths.tutorials);
+    await expect(
+      card.locator(
+        'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      ),
+    ).toHaveCount(1);
+    const appearance = () =>
+      card.evaluate((element) => {
+        const cardStyle = getComputedStyle(element);
+        const linkStyle = getComputedStyle(element.querySelector('h2 > a'));
+        return {
+          shadow: cardStyle.boxShadow,
+          border: cardStyle.borderColor,
+          transform: cardStyle.transform,
+          transitions: cardStyle.transitionDuration
+            .split(',')
+            .map((duration) => parseFloat(duration)),
+          focusRing: [cardStyle, linkStyle].some(
+            (style) =>
+              style.outlineStyle !== 'none' &&
+              parseFloat(style.outlineWidth) > 0,
+          ),
+        };
+      });
+    await card.scrollIntoViewIfNeeded();
+    await page.mouse.move(0, 0);
+    const resting = await appearance();
+    themeAppearances.push({ shadow: resting.shadow, border: resting.border });
+    expect(resting.shadow).not.toBe('none');
+    expect(
+      await page.evaluate(
+        () => matchMedia('(prefers-reduced-motion: reduce)').matches,
+      ),
+    ).toBe(true);
+    const bounds = await card.boundingBox();
+    const paddingPoint = { x: bounds.width - 8, y: bounds.height - 8 };
+    await card.hover({ position: paddingPoint });
+    const hovered = await appearance();
+    expect(
+      hovered.shadow,
+      'Hover remains visibly distinct with reduced motion',
+    ).not.toBe(resting.shadow);
+    expect(hovered.transform).toBe('none');
+    expect(hovered.transitions.every((duration) => duration === 0)).toBe(true);
+    await page.mouse.move(0, 0);
+    await cards.nth(0).locator('h2 > a').focus();
+    await page.keyboard.press('Tab');
+    await expect(link).toBeFocused();
+    const focused = await appearance();
+    expect(focused.shadow, 'Keyboard focus highlights the card').not.toBe(
+      resting.shadow,
+    );
+    expect(
+      focused.focusRing || focused.border !== resting.border,
+      'Keyboard focus has a visible ring or border',
+    ).toBe(true);
+    expect(focused.transform).toBe('none');
+    expect(focused.transitions.every((duration) => duration === 0)).toBe(true);
+    await page.emulateMedia({ media: 'print' });
+    await expect(card).toHaveCSS('box-shadow', 'none');
+    await page.emulateMedia({ media: 'screen' });
+    await card.scrollIntoViewIfNeeded();
+    const target = await card.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return document
+        .elementFromPoint(rect.right - 8, rect.bottom - 8)
+        ?.closest('a')
+        ?.getAttribute('href');
+    });
+    expect(
+      target,
+      'Padding near the bottom/right belongs to the native title link',
+    ).toBe(paths.tutorials);
+    await card.click({ position: paddingPoint });
+    await expect(page).toHaveURL(new RegExp(`${paths.tutorials}$`));
+    await noHorizontalOverflow(page);
+  }
+  expect(
+    themeAppearances[1],
+    'Card contrast follows the effective theme',
+  ).not.toEqual(themeAppearances[0]);
+});
+
 test('headings without dates or authors do not render empty metadata or stray text', async ({
   page,
 }) => {
@@ -313,4 +575,18 @@ test('scientific content and native navigation remain usable with JavaScript dis
   } finally {
     await context.close();
   }
+});
+
+test('references show bibliographic content without internal BibTeX keys', async ({
+  page,
+}) => {
+  await page.goto('/caderno/noticias/escrita-cientifica/');
+  const references = page.locator('[data-bibliography]');
+  await expect(references).toContainText('Methods of Numerical Integration');
+  await expect(references).not.toContainText('davis1984');
+  await expect(references.locator('code')).toHaveCount(0);
+  await expect(page.locator('a[role="doc-biblioref"]').first()).toHaveAttribute(
+    'href',
+    /#ref-/,
+  );
 });

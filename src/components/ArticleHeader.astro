@@ -1,14 +1,26 @@
 ---
 import type { BuiltPage } from '../content.js';
 import { displayDate } from '../navigation.js';
+import { resolveIcon } from '../icons.js';
+import Icon from './Icon.astro';
+import '../styles/article-actions.css';
 interface Props {
   page: BuiltPage;
 }
 const { page } = Astro.props;
+const portuguese = page.locale === 'pt';
+const notebookLabel = portuguese
+  ? 'Baixar notebook Jupyter (.ipynb)'
+  : 'Download Jupyter notebook (.ipynb)';
+const pdfLabel = portuguese
+  ? 'Salvar PDF — abre a janela de impressão'
+  : 'Save PDF — opens the print dialog';
+const downloadIcon = resolveIcon('lucide:download', 'Article notebook action');
+const pdfIcon = resolveIcon('lucide:file-text', 'Article PDF action');
 ---
 
-<header class="page-heading article-heading">
-  <h1>{page.heading ?? page.title}</h1>
+<header class="page-heading article-heading" data-appearance-hero>
+  <h1 data-appearance-heading>{page.heading ?? page.title}</h1>
   {(Boolean(page.date) || (page.authors?.length ?? 0) > 0) && (
     <p class="article-metadata">
       {page.date && (
@@ -21,6 +33,48 @@ const { page } = Astro.props;
     </p>
   )}
   {page.description && <p class="article-description">{page.description}</p>}
+  {(page.downloads?.notebook || page.downloads?.pdf) && (
+    <div
+      class="article-actions"
+      role="group"
+      aria-label={portuguese ? 'Downloads da página' : 'Page downloads'}
+    >
+      {page.downloads.notebook && (
+        <a
+          class="article-action"
+          href={page.downloads.notebook.path}
+          download={page.downloads.notebook.filename}
+          aria-label={notebookLabel}
+          title={notebookLabel}
+        >
+          <Icon icon={downloadIcon} base="/" />
+          <span>.ipynb</span>
+        </a>
+      )}
+      {page.downloads.pdf && (
+        <>
+          <button
+            class="article-action"
+            data-sciastro-print
+            type="button"
+            hidden
+            aria-label={pdfLabel}
+            title={pdfLabel}
+          >
+            <Icon icon={pdfIcon} base="/" />
+            <span>PDF</span>
+          </button>
+          <noscript>
+            <span class="article-print-help">
+              {portuguese
+                ? 'Para PDF, use Imprimir no menu do navegador.'
+                : 'For PDF, use Print in your browser menu.'}
+            </span>
+          </noscript>
+        </>
+      )}
+    </div>
+  )}
   {page.tags?.length ? (
     <ul
       class="article-tags"
@@ -32,3 +86,50 @@ const { page } = Astro.props;
     </ul>
   ) : null}
 </header>
+
+<script>
+  import { preparePlotsForPrint } from '../client/plots.js';
+  // Use the browser's PDF destination; no server, third-party converter or
+  // rasterized screenshot is needed. Text, links and math stay in the document.
+  const closedDetails = new Set<HTMLDetailsElement>();
+  window.addEventListener('beforeprint', () => {
+    document
+      .querySelectorAll<HTMLDetailsElement>(
+        'main .document-details, main .notebook-code-collapse, main .notebook-output-collapse',
+      )
+      .forEach((details) => {
+        if (!details.open) {
+          closedDetails.add(details);
+          details.open = true;
+        }
+      });
+  });
+  window.addEventListener('afterprint', () => {
+    for (const details of closedDetails) details.open = false;
+    closedDetails.clear();
+  });
+  document
+    .querySelectorAll<HTMLButtonElement>('[data-sciastro-print]')
+    .forEach((button) => {
+      button.hidden = false;
+      button.addEventListener('click', async () => {
+        button.disabled = true;
+        try {
+          await document.fonts.ready;
+          await preparePlotsForPrint();
+          const images = [
+            ...document.querySelectorAll<HTMLImageElement>('main img'),
+          ];
+          images.forEach((image) => {
+            image.loading = 'eager';
+          });
+          await Promise.all(
+            images.map((image) => image.decode().catch(() => {})),
+          );
+          window.print();
+        } finally {
+          button.disabled = false;
+        }
+      });
+    });
+</script>

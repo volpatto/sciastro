@@ -24,7 +24,8 @@ const options: SciAstroOptions = {
 
 The default export goes in `defineConfig({ integrations: [sciastro()] })`.
 It loads/validates content, configures static output, the URL/base and trailing
-slashes, injects pages plus a 404, and watches content in development.
+slashes, injects pages plus a 404 and enabled notebook-download routes, and
+watches content in development.
 Enabled `SiteConfig.analytics` is injected into production pages, including custom
 layouts; no analytics component needs to be added manually.
 
@@ -127,9 +128,9 @@ page and render these fields as meta tags. See [link previews](../guides/sharing
 
 | Type | Main fields |
 | --- | --- |
-| `BuiltSite` | `config`, `pages`, `members`, `bibliographyKeys`, `languageIcons`, `copyright`, `footer`; optional `socialImage` |
+| `BuiltSite` | `config`, `pages`, `members`, `bibliographyKeys`, `languageIcons`, `copyright`, `footer`; optional `socialImage`, `downloads` |
 | `BuiltSocialImage` | Absolute `url`, localized `alt`, MIME `type`; optional original `width`/`height` |
-| `BuiltPage` | `id`, resolved `icon`, `locale`, base-aware `path`, `title`, `html`, `references`, `areas`; optional `sections`, `heading`, `description`, `navigation`, `header`, `layout`, `parent`, `date`, `authors`, `tags`, `toc`, `headings` |
+| `BuiltPage` | `id`, resolved `icon`, `locale`, base-aware `path`, `title`, `html`, `references`, `areas`; optional `sections`, `heading`, `description`, `navigation`, `header`, `layout`, `parent`, `date`, `authors`, `tags`, `toc`, `headings`, `downloads` |
 | `BuiltSection` | `type`, optional `id`, `title`, sanitized `html`, `links`, and type-specific fields such as `items`, `image`, `logos`, `publications`, `component`, `props` |
 | `BuiltEntry` | `title`, optional `id`, `eyebrow`, `subtitle`, `html`, `meta`, `period`; `images` and `links` |
 | `BuiltFigure` | `src`, translated `alt`, `links`, `enlarge`; optional dimensions, `caption`, `captionAlign`, `viewBox`, `shape`, `position` |
@@ -141,11 +142,31 @@ renderers can forward `BuiltLink.analyticsEvent` as `data-sciastro-event`
 See the [analytics guide](../guides/analytics.md).
 
 `BuiltPage.layout` is `page`, `article` or `listing`; optional `headings` contains
-`{id, text, depth}` entries from the rendered document. `parent` is another page
+`{id, text, depth, number?}` entries from the rendered document. `number`, when
+section numbering is enabled, is the rendered decimal prefix as a string;
+`text` and `id` retain the unnumbered heading text and stable anchor. A custom
+contents list should display `number` before `text` while linking to `id`.
+`SiteConfig.numberSections` defaults to `false`; an article page's
+`numberSections` boolean takes precedence over that default. `parent` is another page
 identifier; `date` is a validated `YYYY-MM-DD` string. `loadSite` omits draft pages,
 validates the hierarchy and renders Markdown/notebook bodies before returning.
 The renderer and notebook helpers are internal; configure these capabilities in
 YAML rather than depending on their implementation. See [Scientific writing](../guides/writing.md).
+
+`BuiltPage.downloads`, when present, has shape
+`{ pdf: boolean; notebook?: { path: string; filename: string } }`.
+`path` already includes the deployment base. `pdf` enables the built-in browser
+print action, not a PDF asset. The optional `BuiltSite.downloads` array contains
+`{ path, filename, content }` entries used to emit static notebook files; this
+source content stays on the build side and is not embedded in an HTML control.
+The download renderer/endpoint and Markdown-to-notebook helpers are internal,
+not additional public import paths. Configure [downloads](../guides/downloads.md)
+through YAML and use the prepared page metadata in custom renderers.
+
+`SiteConfig.kind` accepts `individual`, `group` and `course`.
+`SiteConfig.layout` controls site navigation placement independently of the
+per-page `layout` field. `SiteConfig.appearance.motion` controls optional
+decorative motion; see [configuration](configuration.md).
 
 Page paths already include `base`; prepared section image and link paths are
 resolved by the rendering components. Do not prefix paths twice. A custom

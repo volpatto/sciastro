@@ -97,6 +97,11 @@ export default function sciastro(
           entrypoint: new URL('./pages/404.astro', import.meta.url),
           prerender: true,
         });
+        injectRoute({
+          pattern: '/_sciastro/downloads/[...download].ipynb',
+          entrypoint: new URL('./pages/Download.js', import.meta.url),
+          prerender: true,
+        });
         updateConfig({
           site: settings.url,
           base: settings.base,
@@ -138,7 +143,7 @@ export default function sciastro(
                     if (
                       file !== configFile &&
                       (delta.startsWith('..') ||
-                        !/\.(?:md|ipynb|yaml|yml|bib)$/i.test(file))
+                        !/\.(?:md|ipynb|json|yaml|yml|bib)$/i.test(file))
                     )
                       return;
                     // Configuration affects base URLs and route generation as well as

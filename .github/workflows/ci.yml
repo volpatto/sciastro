@@ -91,10 +91,13 @@ jobs:
       - uses: prefix-dev/setup-pixi@v0.10.2
         with:
           pixi-version: v0.72.2
-          environments: docs
+          environments: default docs
           locked: true
           cache: true
+      - run: pixi run --locked setup
       - run: pixi run --locked -e docs docs-build
+      - name: Build example gallery under the documentation path
+        run: pixi run --locked docs-gallery
       - name: Save documentation preview without deploying
         uses: actions/upload-artifact@v7
         with:

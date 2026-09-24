@@ -1,0 +1,263 @@
+/* Layout choices preserve each theme's fonts, colors and existing defaults. */
+.site-shell > main,
+.page-layout,
+.page-content,
+.page-context {
+  min-width: 0;
+}
+
+/* The shared navigation styles supply the same controls in every theme. */
+.sidebar-shell:not(.lncc-shell) .site-navigation {
+  padding-top: 30px;
+}
+@media (min-width: 851px) {
+  .sidebar-shell:not(.lncc-shell) {
+    display: grid;
+    grid-template-columns: 180px minmax(0, 1fr);
+    gap: 36px;
+    align-items: start;
+  }
+  .sidebar-shell:not(.lncc-shell) .site-navigation {
+    align-self: stretch;
+  }
+  .sidebar-shell:not(.lncc-shell) main {
+    padding-top: 30px;
+  }
+  .sidebar-shell:not(.lncc-shell) .page-heading {
+    padding-top: 0;
+  }
+}
+
+/* Native details remains inline and operable without JavaScript on narrow
+   screens. Only give it a sticky column when the actual content area fits. */
+[data-subnavigation='right'] .site-shell > main {
+  container-type: inline-size;
+  container-name: page-main;
+  --context-top: 24px;
+}
+[data-design='lncc'][data-subnavigation='right'] .site-shell > main {
+  --context-top: 108px;
+}
+.page-context {
+  margin-block: 24px;
+  overflow-wrap: anywhere;
+}
+.context-navigation {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  padding: 15px 18px;
+  font-size: 0.8rem;
+}
+.context-navigation > summary {
+  color: var(--ink);
+  font-weight: 650;
+  cursor: pointer;
+}
+.context-navigation nav,
+.context-parent {
+  margin-top: 16px;
+}
+.context-label {
+  color: var(--muted);
+  font-size: 0.73rem;
+  font-weight: 650;
+}
+.context-navigation ul,
+.context-navigation ol {
+  padding: 0;
+  margin: 7px 0 0;
+  list-style: none;
+}
+.context-navigation li + li {
+  margin-top: 7px;
+}
+.context-navigation a {
+  text-decoration: none;
+}
+.context-navigation a:hover {
+  text-decoration: underline;
+}
+.context-navigation .toc-subheading {
+  padding-left: 14px;
+}
+@media (min-width: 1100px) {
+  @container page-main (min-width: 48rem) {
+    .page-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 13rem;
+      gap: 28px;
+      align-items: start;
+    }
+    .page-context {
+      grid-column: 2;
+      grid-row: 1;
+      position: sticky;
+      top: var(--context-top);
+      /* Keep the panel clear of the menu divider before it becomes sticky. */
+      margin-top: 24px;
+      max-height: calc(100dvh - var(--context-top) - 24px);
+      overflow-y: auto;
+      scrollbar-gutter: stable;
+    }
+    .page-content {
+      grid-column: 1;
+      grid-row: 1;
+    }
+  }
+}
+
+/* Elevation identifies linked cards without making plain callouts look like
+   controls. The theme palette also supplies their borders and surfaces. */
+:root {
+  --card-shadow-soft: color-mix(in srgb, var(--ink) 7%, transparent);
+  --card-shadow-wide: color-mix(in srgb, var(--ink) 4%, transparent);
+  --card-shadow-active-soft: color-mix(in srgb, var(--ink) 11%, transparent);
+  --card-shadow-active-wide: color-mix(in srgb, var(--ink) 7%, transparent);
+  --card-border: var(--line);
+  --card-border-active: color-mix(in srgb, var(--accent) 50%, var(--line));
+  --card-surface: var(--paper);
+  --card-surface-active: color-mix(in srgb, var(--surface) 50%, var(--paper));
+  --card-shadow:
+    0 1px 3px var(--card-shadow-soft), 0 5px 14px var(--card-shadow-wide);
+  --card-shadow-active:
+    0 3px 7px var(--card-shadow-active-soft),
+    0 10px 24px var(--card-shadow-active-wide);
+}
+:root[data-theme='dark'] {
+  --card-shadow-soft: rgb(0 0 0 / 24%);
+  --card-shadow-wide: rgb(0 0 0 / 16%);
+  --card-shadow-active-soft: rgb(0 0 0 / 32%);
+  --card-shadow-active-wide: rgb(0 0 0 / 24%);
+  --card-border: color-mix(in srgb, var(--line) 90%, var(--ink));
+  --card-surface: color-mix(in srgb, var(--surface) 25%, var(--paper));
+  --card-surface-active: color-mix(in srgb, var(--surface) 70%, var(--paper));
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --card-shadow-soft: rgb(0 0 0 / 24%);
+    --card-shadow-wide: rgb(0 0 0 / 16%);
+    --card-shadow-active-soft: rgb(0 0 0 / 32%);
+    --card-shadow-active-wide: rgb(0 0 0 / 24%);
+    --card-border: color-mix(in srgb, var(--line) 90%, var(--ink));
+    --card-surface: color-mix(in srgb, var(--surface) 25%, var(--paper));
+    --card-surface-active: color-mix(in srgb, var(--surface) 70%, var(--paper));
+  }
+}
+:is(
+  .area-card,
+  .article-card:has(a),
+  .document-card:has(a[href]:not(.document-heading-anchor))
+) {
+  border-color: var(--card-border);
+  background: var(--card-surface);
+  box-shadow: var(--card-shadow);
+}
+:is(
+  .area-card:focus-visible,
+  .article-card:has(a:focus-visible),
+  .document-card:has(a[href]:not(.document-heading-anchor):focus-visible)
+) {
+  border-color: var(--card-border-active);
+  background: var(--card-surface-active);
+  box-shadow: var(--card-shadow-active);
+}
+@media (hover: hover) and (pointer: fine) {
+  :is(
+    .area-card:hover,
+    .article-card:has(a:hover),
+    .document-card:has(a[href]:not(.document-heading-anchor):hover)
+  ) {
+    border-color: var(--card-border-active);
+    background: var(--card-surface-active);
+    box-shadow: var(--card-shadow-active);
+  }
+}
+:root[data-motion='none']
+  :is(
+    .area-card,
+    .article-card:has(a),
+    .document-card:has(a[href]:not(.document-heading-anchor))
+  ) {
+  transition: none;
+  transform: none;
+}
+
+/* Decorative movement is opt-in and never hides or reveals reading content. */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  :root[data-motion='subtle'] {
+    --control-lift: -1px;
+    --control-scale: 1;
+    --control-duration: 120ms;
+  }
+  :root[data-motion='expressive'] {
+    --control-lift: -2px;
+    --control-scale: 1.008;
+    --control-duration: 180ms;
+  }
+  :root:is([data-motion='subtle'], [data-motion='expressive'])
+    :is(
+      .area-card,
+      .document-card:has(a[href]:not(.document-heading-anchor)),
+      .article-card:has(a),
+      .theme-toggle,
+      .languages a,
+      .document-code-copy,
+      .article-action
+    ) {
+    transition:
+      transform var(--control-duration) ease,
+      background-color var(--control-duration) ease,
+      border-color var(--control-duration) ease,
+      box-shadow var(--control-duration) ease;
+  }
+  :root:is([data-motion='subtle'], [data-motion='expressive'])
+    :is(
+      .area-card,
+      .theme-toggle,
+      .languages a,
+      .document-code-copy,
+      .article-action
+    ):is(:hover, :focus-visible),
+  :root:is([data-motion='subtle'], [data-motion='expressive'])
+    :is(.document-card, .article-card):has(
+      a[href]:not(.document-heading-anchor):is(:hover, :focus-visible)
+    ) {
+    transform: translateY(var(--control-lift)) scale(var(--control-scale));
+  }
+}
+@media (prefers-reduced-motion: reduce), (hover: none), (pointer: coarse) {
+  :root[data-motion]
+    :is(
+      .area-card,
+      .document-card:has(a[href]:not(.document-heading-anchor)),
+      .article-card:has(a),
+      .theme-toggle,
+      .languages a,
+      .document-code-copy,
+      .article-action
+    ) {
+    transition: none;
+    transform: none;
+  }
+}
+@media print {
+  :is(.area-card, .article-card, .document-card) {
+    box-shadow: none !important;
+    transform: none !important;
+    transition: none !important;
+    outline: none !important;
+    border-color: var(--line) !important;
+    background: transparent !important;
+  }
+  .page-context {
+    display: none;
+  }
+  .page-layout,
+  .sidebar-shell:not(.lncc-shell) {
+    display: block;
+  }
+  [data-subnavigation='right'] .site-shell > main {
+    container-type: normal;
+  }
+}

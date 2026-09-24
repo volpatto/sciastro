@@ -8,7 +8,7 @@ import { loadSite } from './content.js';
 
 const usage = `SciAstro — sites acadêmicos com YAML, Markdown e BibTeX
 
-  sciastro init <pasta> --kind group|individual [--theme classic|modern|lncc]
+  sciastro init <pasta> --kind group|individual|course [--theme classic|modern|lncc]
   sciastro check [--config sciastro.yaml]
 
 init cria um projeto em pasta nova ou vazia; não instala nem publica nada.
@@ -49,8 +49,8 @@ export async function main(args = process.argv.slice(2)) {
   }
   if (command !== 'init' || !destination || positionals.length !== 2)
     throw new Error(usage);
-  if (!['group', 'individual'].includes(values.kind))
-    throw new Error('--kind deve ser group ou individual.');
+  if (!['group', 'individual', 'course'].includes(values.kind))
+    throw new Error('--kind deve ser group, individual ou course.');
   if (!['classic', 'modern', 'lncc'].includes(values.theme))
     throw new Error('--theme must be classic, modern or lncc.');
   const target = resolve(destination);

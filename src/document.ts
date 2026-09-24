@@ -16,11 +16,14 @@ import '@mathjax/src/js/input/tex/boldsymbol/BoldsymbolConfiguration.js';
 import type { Bibliography, Reference } from './bibliography.js';
 import type { CaptionAlignment, Locale } from './schema.js';
 import { markdownContext } from './markdown.js';
+import { plotMarkup, type PlotSpec } from './plots.js';
 
 export interface DocumentHeading {
   id: string;
   text: string;
   depth: number;
+  /** Display-only outline number; never included in the heading's anchor. */
+  number?: string;
 }
 export interface DocumentFigureOptions {
   caption?: string;
@@ -32,10 +35,14 @@ export interface DocumentFigureOptions {
   width?: string;
 }
 export interface DocumentOptions {
+  /** Number Markdown sections (h2–h6) in this document, including notebook cells. */
+  numberSections?: boolean;
   /** IDs already used by the page layout, composed sections or bibliography. */
   reservedIds?: string[];
   /** Resolve page:id#anchor links using the site's locale and base path. */
   resolveLink?: (target: string) => string;
+  /** Read an exported local figure; the site loader confines paths to contentDir. */
+  resolvePlot?: (source: string) => PlotSpec;
 }
 export interface DocumentContext {
   readonly locale: Locale;
@@ -172,6 +179,19 @@ export async function createDocumentContext(
   );
   const md = shared.markdown;
   const headings: DocumentHeading[] = [];
+  // Count actual siblings instead of inventing empty levels for skipped depths.
+  // The root survives h1 boundaries; its children restart only for a new page.
+  const outline = [{ depth: 1, number: '', children: 0 }];
+  const sectionNumber = (depth: number): string | undefined => {
+    if (!options.numberSections) return;
+    while (outline.length > 1 && outline.at(-1)!.depth >= depth) outline.pop();
+    if (depth === 1) return;
+    const parent = outline.at(-1)!;
+    const ordinal = ++parent.children;
+    const number = parent.number ? `${parent.number}.${ordinal}` : `${ordinal}`;
+    outline.push({ depth, number, children: 0 });
+    return number;
+  };
   const identifiers = new Set<string>([
     'main',
     'references',
@@ -304,8 +324,14 @@ export async function createDocumentContext(
         last.content = last.content.replace(/\s*\{#[^}]+\}\s*$/, '');
     }
     const id = identifier(explicit?.[1] ?? slug(text), Boolean(explicit));
-    headings.push({ id, text, depth: Number(tokens[index].tag.slice(1)) });
-    return `<${tokens[index].tag} id="${escape(id)}" class="document-heading"><a class="document-heading-anchor" href="#${escape(id)}" aria-label="${translated.anchor}: ${escape(text)}">#</a>`;
+    const depth = Number(tokens[index].tag.slice(1));
+    const number = sectionNumber(depth);
+    headings.push({ id, text, depth, ...(number ? { number } : {}) });
+    const label = number ? `${number} ${text}` : text;
+    const prefix = number
+      ? `<span class="document-heading-number">${number}</span> `
+      : '';
+    return `<${tokens[index].tag} id="${escape(id)}" class="document-heading"><a class="document-heading-anchor" href="#${escape(id)}" aria-label="${translated.anchor}: ${escape(label)}">#</a>${prefix}`;
   };
 
   // Parse math before Markdown escapes/emphasis can alter the original TeX.
@@ -418,7 +444,8 @@ export async function createDocumentContext(
     return marker;
   };
 
-  const kinds = 'note|tip|warning|danger|details|card|cards|figure|table';
+  const kinds =
+    'note|tip|warning|danger|details|card|cards|figure|table|plotly';
   const opening = new RegExp(`^(:{3,})\\s*(${kinds})(?:\\s+(.*))?$`);
   md.block.ruler.before(
     'fence',
@@ -460,8 +487,9 @@ export async function createDocumentContext(
         kind: match[2],
         attributes: attributes(
           match[3] ?? '',
-          match[2] === 'figure' || match[2] === 'table'
+          ['figure', 'table', 'plotly'].includes(match[2])
             ? [
+                ...(match[2] === 'plotly' ? ['src'] : []),
                 'caption',
                 'label',
                 'width',
@@ -470,7 +498,7 @@ export async function createDocumentContext(
                 'numbered',
               ]
             : ['title'],
-          !['figure', 'table', 'cards'].includes(match[2]),
+          !['figure', 'table', 'plotly', 'cards'].includes(match[2]),
         ),
       };
       token.content = state.getLines(
@@ -480,6 +508,10 @@ export async function createDocumentContext(
         false,
       );
       token.children = [];
+      if (match[2] === 'plotly' && token.content.trim())
+        throw new Error(
+          'The plotly directive body must be empty; provide src="plots/figure.json".',
+        );
       md.block.parse(token.content, md, state.env, token.children);
       // Inline tokens from the nested parse are processed by markdown-it's core inline rule.
       state.line = close + 1;
@@ -501,13 +533,34 @@ export async function createDocumentContext(
     };
     parseChildren(state.tokens);
   });
-  md.renderer.rules['document-container'] = (tokens, index, options, env) => {
+  md.renderer.rules['document-container'] = (
+    tokens,
+    index,
+    rendererOptions,
+    env,
+  ) => {
     const token = tokens[index];
     const { kind, attributes: values } = token.meta as {
       kind: string;
       attributes: Record<string, string>;
     };
-    const body = md.renderer.render(token.children ?? [], options, env);
+    if (kind === 'plotly') {
+      if (!values.src)
+        throw new Error(
+          'The plotly directive requires src="plots/figure.json".',
+        );
+      if (!options.resolvePlot)
+        throw new Error(
+          'The plotly directive requires a local figure resolver.',
+        );
+      const { src, ...presentation } = values;
+      return media(
+        'figure',
+        plotMarkup(options.resolvePlot(src), locale, '', values.caption),
+        figureOptions(presentation),
+      );
+    }
+    const body = md.renderer.render(token.children ?? [], rendererOptions, env);
     if (kind === 'figure' || kind === 'table')
       return media(kind, body, figureOptions(values));
     const title = values.title ?? translated[kind as keyof typeof translated];

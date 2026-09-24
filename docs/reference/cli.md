@@ -2,19 +2,19 @@
 
 The package installs a `sciastro` executable. In a website managed by Pixi, use
 `pixi run pnpm exec sciastro ...`; outside Pixi, use `pnpm exec sciastro ...`.
-Before npm publication, build the source and invoke `node dist/cli.js` in its
-development environment.
+For unpublished local changes, build the source and invoke `node dist/cli.js`
+in its development environment.
 
 ## `sciastro init`
 
 ```text
-sciastro init <directory> --kind group|individual --theme classic|modern|lncc
+sciastro init <directory> --kind group|individual|course --theme classic|modern|lncc
 ```
 
 | Argument | Default | Meaning |
 | --- | --- | --- |
 | `<directory>` | Required | New or empty destination directory |
-| `--kind` | `group` | Starter content and automatic page labels |
+| `--kind` | `group` | `group`, `individual` or `course`; selects the initial content and site profile |
 | `--theme` | `classic` | Initial theme |
 
 Copies starter content and creates `package.json`, `astro.config.mjs`, `pixi.toml`,
@@ -22,6 +22,11 @@ a workspace configuration, `.gitignore`, README and `public/`. The consumer is
 private and pins SciAstro to the generator's version. It does not overwrite a
 nonempty directory, install dependencies, initialize Git or publish a website.
 See [installation](../getting-started.md) for the required first install.
+
+The course starter uses explicit `pageFiles`: an overview, syllabus, lesson
+index, Markdown lesson and notebook page. It starts with top navigation and a
+contextual right panel. These layout settings can be used by other site kinds
+as well. See the [course tutorial](../tutorials/course.md).
 
 ## `sciastro check`
 

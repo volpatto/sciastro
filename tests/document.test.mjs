@@ -113,6 +113,99 @@ test('headings have stable Unicode-aware ids, explicit ids and page-wide dedupli
   assert.throws(() => doc.render('## Another'), /already finished/);
 });
 
+test('optional section numbering follows the outline across renders without changing text or anchors', async () => {
+  const numbered = await createDocumentContext(
+    new Bibliography(''),
+    'en',
+    '/',
+    {
+      numberSections: true,
+    },
+  );
+  const source =
+    '# Document title\n\n## **Methods** {#method}\n\n### Assumptions\n\n#### Smoothness\n\n### Discretization';
+  const last = '\n## Results\n\n### Validation\n\n## Results';
+  const result = numbered.finish(
+    numbered.render(source) + numbered.render(last),
+  );
+  assert.deepEqual(
+    result.headings.map(({ number }) => number),
+    [undefined, '1', '1.1', '1.1.1', '1.2', '2', '2.1', '3'],
+  );
+  const original = await finish(source + last);
+  assert.deepEqual(
+    result.headings.map(({ number, ...heading }) => heading),
+    original.headings,
+  );
+  assert.match(
+    result.html,
+    /id="method"[^>]*>.*class="document-heading-number">1<\/span> <strong>Methods<\/strong>/,
+  );
+  assert.match(result.html, /aria-label="Link to this section: 1 Methods"/);
+  assert.doesNotMatch(original.html, /document-heading-number/);
+  const disabled = await createDocumentContext(
+    new Bibliography(''),
+    'en',
+    '/lab/',
+    {
+      numberSections: false,
+    },
+  );
+  assert.deepEqual(disabled.finish(disabled.render(source + last)), original);
+});
+
+test('numbering compacts skipped depths, handles every section level and resets per document', async () => {
+  const doc = await createDocumentContext(new Bibliography(''), 'en', '/', {
+    numberSections: true,
+  });
+  const result = doc.finish(
+    doc.render(
+      [
+        '### Starts deeper',
+        '## Methods',
+        '#### Skipped level',
+        '### Sibling',
+        '#### Detail',
+        '##### More detail',
+        '###### Last level',
+        '# Another title',
+        '### New branch',
+      ].join('\n\n'),
+    ),
+  );
+  assert.deepEqual(
+    result.headings.map(({ number }) => number),
+    ['1', '2', '2.1', '2.2', '2.2.1', '2.2.1.1', '2.2.1.1.1', undefined, '3'],
+  );
+  const fresh = await createDocumentContext(new Bibliography(''), 'en', '/', {
+    numberSections: true,
+  });
+  assert.equal(fresh.finish(fresh.render('## Start')).headings[0].number, '1');
+});
+
+test('code, captions and card titles do not consume section numbers', async () => {
+  const doc = await createDocumentContext(new Bibliography(''), 'en', '/', {
+    numberSections: true,
+  });
+  const result = doc.finish(
+    doc.render(
+      [
+        '## Method',
+        '```markdown\n## A code example\n```',
+        '::: card title="A card heading"\nCard text.\n:::',
+        '::: figure caption="A plot"\n![Plot](/plot.png)\n:::',
+        '## Results',
+      ].join('\n\n'),
+    ),
+  );
+  assert.deepEqual(
+    result.headings.map(({ number }) => number),
+    ['1', '2'],
+  );
+  assert.match(result.html, /<h3>A card heading<\/h3>/);
+  assert.match(result.html, /Figure 1\./);
+});
+
 test('figure/table numbering, captions and forward references span multiple renders', async () => {
   const doc = await context('pt');
   const intro = doc.render('Consulte @ref(fig:curve) e @ref(tab:data).');

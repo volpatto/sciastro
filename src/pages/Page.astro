@@ -8,6 +8,8 @@ import Team from '../components/Team.astro';
 import Figure from '../components/sections/Figure.astro';
 import ArticleHeader from '../components/ArticleHeader.astro';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
+import PageFrame from '../components/PageFrame.astro';
+import PlotlyPlots from '../components/PlotlyPlots.astro';
 import { childPages, displayDate } from '../navigation.js';
 import { labels, translate, routePath, assetPath } from '../i18n.js';
 export function getStaticPaths() {
@@ -43,233 +45,274 @@ const headings =
 ---
 
 <Layout site={site} page={page}>
-  {(article || listing || page.parent) && (
-    <Breadcrumbs page={page} pages={site.pages} />
-  )}
-  {article || listing ? (
-    <article
-      class:list={['article-page', { 'article-page--listing': listing }]}
-    >
-      <ArticleHeader page={page} />
-      {headings.length > 0 && (
-        <details class="article-toc" open>
-          <summary>
-            {page.locale === 'pt' ? 'Nesta página' : 'On this page'}
-          </summary>
-          <nav
-            aria-label={
-              page.locale === 'pt' ? 'Sumário da página' : 'Table of contents'
-            }
-          >
-            <ol>
-              {headings.map((heading) => (
-                <li class:list={{ 'toc-subheading': heading.depth === 3 }}>
-                  <a href={`#${heading.id}`}>{heading.text}</a>
-                </li>
-              ))}
-            </ol>
-          </nav>
-        </details>
-      )}
-      {page.html && (
-        <div
-          class="prose sciastro-document article-body"
-          set:html={page.html}
-        />
-      )}
-      <PageSections site={site} page={page} />
-      {listing && (
-        <div class="article-list">
-          {children.map((entry) => (
-            <article class="article-card">
-              {entry.date && (
-                <time datetime={entry.date}>
-                  {displayDate(entry.date, page.locale)}
-                </time>
-              )}
-              <h2>
-                <a href={entry.path}>{entry.title}</a>
-              </h2>
-              {entry.description && <p>{entry.description}</p>}
-              {entry.authors?.length ? (
-                <p class="article-card-authors">{entry.authors.join(', ')}</p>
-              ) : null}
-              {entry.tags?.length ? (
-                <ul
-                  class="article-tags"
-                  aria-label={page.locale === 'pt' ? 'Temas' : 'Topics'}
-                >
-                  {entry.tags.map((tag) => (
-                    <li>{tag}</li>
-                  ))}
-                </ul>
-              ) : null}
-            </article>
-          ))}
-          {children.length === 0 && (
-            <p class="article-list-empty">
-              {page.locale === 'pt'
-                ? 'Nenhuma postagem disponível.'
-                : 'No posts available yet.'}
-            </p>
-          )}
-        </div>
-      )}
-    </article>
-  ) : page.sections ? (
-    <>
-      {page.header && (
-        <header class="page-heading">
-          <h1>{page.heading ?? page.title}</h1>
-        </header>
-      )}
-      {page.html && (
-        <div
-          class="prose content-page sciastro-document"
-          set:html={page.html}
-        />
-      )}
-      <PageSections site={site} page={page} />
-    </>
-  ) : page.id === 'home' ? (
-    <>
-      <section class="home-introduction">
-        <div class="intro-copy">
-          <p class="eyebrow">
-            {page.title}
-            {config.affiliation && (
-              <>
-                {' '}
-                <span aria-hidden="true">/</span>{' '}
-                {translate(config.affiliation, page.locale)}
-              </>
-            )}
-          </p>
-          <h1>{config.name}</h1>
-          <p class="standfirst">{translate(config.description, page.locale)}</p>
-          <div class="prose overview sciastro-document" set:html={page.html} />
-        </div>
-        {config.home?.photo ? (
-          <Figure
-            image={{
-              ...config.home.photo,
-              alt: translate(config.home.photo.alt, page.locale),
-              links: [],
-              enlarge: false,
-            }}
-            base={config.base}
-            priority
-          />
-        ) : (
-          <aside class="research-note" aria-label={l.areas}>
-            <svg viewBox="0 0 240 170" fill="none" aria-hidden="true">
-              <g stroke="currentColor" opacity=".2">
-                <path d="M20 30h200M20 65h200M20 100h200M20 135h200M50 15v140M85 15v140M120 15v140M155 15v140M190 15v140" />
-              </g>
-              <g stroke="currentColor" stroke-width="1.5">
-                <ellipse
-                  cx="120"
-                  cy="85"
-                  rx="80"
-                  ry="27"
-                  transform="rotate(-25 120 85)"
-                />
-                <ellipse
-                  cx="120"
-                  cy="85"
-                  rx="80"
-                  ry="27"
-                  transform="rotate(25 120 85)"
-                />
-                <circle cx="120" cy="85" r="5" fill="currentColor" />
-              </g>
-            </svg>
-            <p>
-              {config.kind === 'group'
-                ? page.locale === 'pt'
-                  ? 'Pesquisa, formação e colaboração.'
-                  : 'Research, education and collaboration.'
-                : page.locale === 'pt'
-                  ? 'Pesquisa e formação acadêmica.'
-                  : 'Research and academic education.'}
-            </p>
-          </aside>
-        )}
-      </section>
-      {page.areas.length > 0 && (
-        <section class="areas-section" aria-labelledby="areas-title">
-          <div class="section-heading">
-            <h2 id="areas-title">{l.areas}</h2>
-            <a href={routePath(config, 'research', page.locale)}>
-              {l.research} <span aria-hidden="true">↗</span>
-            </a>
-          </div>
-          <div class="area-grid">
-            {page.areas.map((area, index) => (
-              <a
-                class="area-card"
-                href={`${routePath(config, 'research', page.locale)}#${area.id}`}
+  <PageFrame site={site} page={page}>
+    {(article || listing || page.parent) && (
+      <Breadcrumbs page={page} pages={site.pages} />
+    )}
+    {article || listing ? (
+      <article
+        class:list={['article-page', { 'article-page--listing': listing }]}
+      >
+        <ArticleHeader page={page} />
+        {(config.layout?.subnavigation ?? 'inline') === 'inline' &&
+          headings.length > 0 && (
+            <details class="article-toc" open>
+              <summary>
+                {page.locale === 'pt' ? 'Nesta página' : 'On this page'}
+              </summary>
+              <nav
+                aria-label={
+                  page.locale === 'pt'
+                    ? 'Sumário da página'
+                    : 'Table of contents'
+                }
               >
-                <span class="area-number" aria-hidden="true">
-                  {String(index + 1).padStart(2, '0')}
-                </span>
-                <h3>{area.title}</h3>
-                <p>{area.summary}</p>
-                <span class="card-link">
-                  {l.details}
-                  <span aria-hidden="true"> →</span>
-                </span>
+                <ol>
+                  {headings.map((heading) => (
+                    <li class:list={{ 'toc-subheading': heading.depth === 3 }}>
+                      <a href={`#${heading.id}`}>
+                        {heading.number && (
+                          <>
+                            <span class="document-heading-number">
+                              {heading.number}
+                            </span>{' '}
+                          </>
+                        )}
+                        {heading.text}
+                      </a>
+                    </li>
+                  ))}
+                </ol>
+              </nav>
+            </details>
+          )}
+        {page.html && (
+          <div
+            class="prose sciastro-document article-body"
+            set:html={page.html}
+          />
+        )}
+        <PageSections site={site} page={page} />
+        {listing && (
+          <div class="article-list">
+            {children.map((entry) => {
+              const hasMetadata = Boolean(
+                entry.date || entry.authors?.length || entry.tags?.length,
+              );
+              return (
+                <article class="article-card">
+                  <h2>
+                    <a href={entry.path}>{entry.title}</a>
+                  </h2>
+                  {(entry.description || hasMetadata) && (
+                    <div class="article-card-body">
+                      {entry.description && (
+                        <p class="article-card-description">
+                          {entry.description}
+                        </p>
+                      )}
+                      {hasMetadata && (
+                        <footer class="article-card-meta">
+                          {entry.date && (
+                            <time datetime={entry.date}>
+                              {displayDate(entry.date, page.locale)}
+                            </time>
+                          )}
+                          {entry.authors?.length ? (
+                            <p class="article-card-authors">
+                              {entry.authors.join(', ')}
+                            </p>
+                          ) : null}
+                          {entry.tags?.length ? (
+                            <ul
+                              class="article-tags"
+                              aria-label={
+                                page.locale === 'pt' ? 'Temas' : 'Topics'
+                              }
+                            >
+                              {entry.tags.map((tag) => (
+                                <li>{tag}</li>
+                              ))}
+                            </ul>
+                          ) : null}
+                        </footer>
+                      )}
+                    </div>
+                  )}
+                </article>
+              );
+            })}
+            {children.length === 0 && (
+              <p class="article-list-empty">
+                {page.locale === 'pt'
+                  ? 'Nenhuma postagem disponível.'
+                  : 'No posts available yet.'}
+              </p>
+            )}
+          </div>
+        )}
+      </article>
+    ) : page.sections ? (
+      <>
+        {page.header && (
+          <header class="page-heading" data-appearance-hero>
+            <h1 data-appearance-heading>{page.heading ?? page.title}</h1>
+          </header>
+        )}
+        {page.html && (
+          <div
+            class="prose content-page sciastro-document"
+            set:html={page.html}
+          />
+        )}
+        <PageSections site={site} page={page} />
+      </>
+    ) : page.id === 'home' ? (
+      <>
+        <section class="home-introduction" data-appearance-hero>
+          <div class="intro-copy">
+            <p class="eyebrow">
+              {page.title}
+              {config.affiliation && (
+                <>
+                  {' '}
+                  <span aria-hidden="true">/</span>{' '}
+                  {translate(config.affiliation, page.locale)}
+                </>
+              )}
+            </p>
+            <h1 data-appearance-heading>{config.name}</h1>
+            <p class="standfirst">
+              {translate(config.description, page.locale)}
+            </p>
+            <div
+              class="prose overview sciastro-document"
+              set:html={page.html}
+            />
+          </div>
+          {config.home?.photo ? (
+            <Figure
+              image={{
+                ...config.home.photo,
+                alt: translate(config.home.photo.alt, page.locale),
+                links: [],
+                enlarge: false,
+              }}
+              base={config.base}
+              priority
+            />
+          ) : (
+            <aside class="research-note" aria-label={l.areas}>
+              <svg viewBox="0 0 240 170" fill="none" aria-hidden="true">
+                <g stroke="currentColor" opacity=".2">
+                  <path d="M20 30h200M20 65h200M20 100h200M20 135h200M50 15v140M85 15v140M120 15v140M155 15v140M190 15v140" />
+                </g>
+                <g stroke="currentColor" stroke-width="1.5">
+                  <ellipse
+                    cx="120"
+                    cy="85"
+                    rx="80"
+                    ry="27"
+                    transform="rotate(-25 120 85)"
+                  />
+                  <ellipse
+                    cx="120"
+                    cy="85"
+                    rx="80"
+                    ry="27"
+                    transform="rotate(25 120 85)"
+                  />
+                  <circle cx="120" cy="85" r="5" fill="currentColor" />
+                </g>
+              </svg>
+              <p>
+                {config.kind === 'group'
+                  ? page.locale === 'pt'
+                    ? 'Pesquisa, formação e colaboração.'
+                    : 'Research, education and collaboration.'
+                  : page.locale === 'pt'
+                    ? 'Pesquisa e formação acadêmica.'
+                    : 'Research and academic education.'}
+              </p>
+            </aside>
+          )}
+        </section>
+        {page.areas.length > 0 && (
+          <section class="areas-section" aria-labelledby="areas-title">
+            <div class="section-heading">
+              <h2 id="areas-title">{l.areas}</h2>
+              <a href={routePath(config, 'research', page.locale)}>
+                {l.research} <span aria-hidden="true">↗</span>
               </a>
+            </div>
+            <div class="area-grid">
+              {page.areas.map((area, index) => (
+                <a
+                  class="area-card"
+                  href={`${routePath(config, 'research', page.locale)}#${area.id}`}
+                >
+                  <span class="area-number" aria-hidden="true">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  <h3>{area.title}</h3>
+                  <p>{area.summary}</p>
+                  <span class="card-link">
+                    {l.details}
+                    <span aria-hidden="true"> →</span>
+                  </span>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+      </>
+    ) : (
+      <>
+        <header class="page-heading" data-appearance-hero>
+          <p class="eyebrow">{config.name}</p>
+          <h1 data-appearance-heading>{page.title}</h1>
+        </header>
+        {page.id === 'research' && (
+          <div class="research-list">
+            {page.areas.map((area) => (
+              <section class="research-section" id={area.id}>
+                <div>
+                  <h2>{area.title}</h2>
+                  <p class="section-summary">{area.summary}</p>
+                  <div class="prose sciastro-document" set:html={area.html} />
+                </div>
+                {area.image && (
+                  <figure>
+                    <img
+                      src={assetPath(config.base, area.image.src)}
+                      alt={area.image.alt}
+                      loading="lazy"
+                    />
+                  </figure>
+                )}
+              </section>
             ))}
           </div>
-        </section>
-      )}
-    </>
-  ) : (
-    <>
-      <header class="page-heading">
-        <p class="eyebrow">{config.name}</p>
-        <h1>{page.title}</h1>
-      </header>
-      {page.id === 'research' && (
-        <div class="research-list">
-          {page.areas.map((area) => (
-            <section class="research-section" id={area.id}>
-              <div>
-                <h2>{area.title}</h2>
-                <p class="section-summary">{area.summary}</p>
-                <div class="prose sciastro-document" set:html={area.html} />
-              </div>
-              {area.image && (
-                <figure>
-                  <img
-                    src={assetPath(config.base, area.image.src)}
-                    alt={area.image.alt}
-                    loading="lazy"
-                  />
-                </figure>
-              )}
-            </section>
-          ))}
-        </div>
-      )}
-      {page.id === 'team' && <Team site={site} locale={page.locale} />}
-      {page.html && (
-        <div
-          class="prose content-page sciastro-document"
-          set:html={page.html}
-        />
-      )}
-      {page.id === 'publications' && !page.references.length && (
-        <p>{l.emptyReferences}</p>
-      )}
-    </>
-  )}
-  <References
-    references={page.references}
-    locale={page.locale}
-    keys={site.bibliographyKeys}
-    style={config.bibliography?.style ?? 'apa'}
-    heading={page.id !== 'publications'}
-  />
+        )}
+        {page.id === 'team' && <Team site={site} locale={page.locale} />}
+        {page.html && (
+          <div
+            class="prose content-page sciastro-document"
+            set:html={page.html}
+          />
+        )}
+        {page.id === 'publications' && !page.references.length && (
+          <p>{l.emptyReferences}</p>
+        )}
+      </>
+    )}
+    <References
+      references={page.references}
+      locale={page.locale}
+      keys={site.bibliographyKeys}
+      style={config.bibliography?.style ?? 'apa'}
+      heading={page.id !== 'publications'}
+    />
+  </PageFrame>
+  {page.html.includes('data-plotly-spec') && <PlotlyPlots />}
 </Layout>

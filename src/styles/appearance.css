@@ -1,0 +1,175 @@
+/* Opt-in presentation settings. Theme defaults remain unchanged. */
+:root[data-typography] main :is(h1, h2) {
+  font-family: var(--heading);
+  text-wrap: balance;
+}
+:root[data-typography='editorial'] main :is(h1, h2) {
+  font-weight: 500;
+  letter-spacing: -0.025em;
+}
+:root:is([data-typography='humanist'], [data-typography='technical'])
+  main
+  :is(h1, h2) {
+  font-weight: 650;
+  letter-spacing: -0.035em;
+}
+:root[data-typography='technical']
+  :is(
+    .eyebrow,
+    .sp-eyebrow,
+    .sp-period,
+    .article-metadata,
+    .article-card-meta,
+    .article-tags
+  ) {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: 0;
+}
+
+/* Lucide outlines can change weight; flags, logos and supplied images cannot. */
+:root[data-icon-style] .ui-icon[data-icon^='lucide:'],
+:root[data-icon-style] .ui-icon[data-icon^='lucide:'] [stroke-width] {
+  stroke-width: var(--icon-stroke-width, 2);
+}
+:root:is([data-icon-style='accent'], [data-icon-style='soft'])
+  .navigation
+  a[data-page]
+  > .ui-icon[data-icon^='lucide:'] {
+  color: var(--accent);
+}
+:root[data-icon-style='soft']
+  .navigation
+  a[data-page]
+  > .ui-icon[data-icon^='lucide:'] {
+  box-sizing: content-box;
+  padding: 3px;
+  border-radius: 6px;
+  background: var(--surface);
+  background: color-mix(in srgb, var(--accent) 9%, var(--paper));
+}
+
+/* Only introductory surfaces receive decoration, never long reading sections.
+   Layered mesh spots peak below 16% tint; presets test this contrast bound. */
+:root[data-gradient] {
+  --gradient-heading: linear-gradient(
+    var(--gradient-angle, 135deg),
+    var(--gradient-from),
+    var(--gradient-to)
+  );
+  --gradient-hero: linear-gradient(
+    var(--gradient-angle, 135deg),
+    color-mix(
+      in srgb,
+      var(--gradient-from) var(--gradient-tint, 5%),
+      var(--paper)
+    ),
+    color-mix(
+      in srgb,
+      var(--gradient-to) var(--gradient-tint, 5%),
+      var(--paper)
+    )
+  );
+}
+:root[data-gradient='radial'] {
+  --gradient-heading: radial-gradient(
+    ellipse at 20% 20%,
+    var(--gradient-from),
+    var(--gradient-to)
+  );
+  --gradient-hero:
+    radial-gradient(
+      ellipse at 100% 0%,
+      color-mix(
+        in srgb,
+        var(--gradient-from) var(--gradient-tint, 5%),
+        transparent
+      ),
+      transparent 75%
+    ),
+    radial-gradient(
+      ellipse at 0% 100%,
+      color-mix(
+        in srgb,
+        var(--gradient-to) var(--gradient-tint, 5%),
+        transparent
+      ),
+      transparent 75%
+    );
+}
+:root[data-gradient='mesh'] {
+  --gradient-heading:
+    radial-gradient(ellipse at 15% 20%, var(--gradient-from), transparent 70%),
+    linear-gradient(115deg, var(--gradient-to), var(--gradient-from));
+  --gradient-hero:
+    radial-gradient(
+      ellipse at 0% 0%,
+      color-mix(
+        in srgb,
+        var(--gradient-from) var(--gradient-tint, 5%),
+        transparent
+      ),
+      transparent 65%
+    ),
+    radial-gradient(
+      ellipse at 100% 70%,
+      color-mix(
+        in srgb,
+        var(--gradient-to) var(--gradient-tint, 5%),
+        transparent
+      ),
+      transparent 70%
+    );
+}
+:root[data-gradient-targets~='hero'] [data-appearance-hero] {
+  position: relative;
+  isolation: isolate;
+  padding: clamp(24px, 4vw, 44px);
+  margin-block: 28px 40px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--paper);
+}
+:root[data-gradient-targets~='hero'] [data-appearance-hero]::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background-image: var(--gradient-hero);
+  pointer-events: none;
+}
+:root[data-gradient-targets~='headings'] [data-appearance-heading] {
+  color: var(--accent);
+}
+@supports ((background-clip: text) or (-webkit-background-clip: text)) {
+  :root[data-gradient-targets~='headings'] [data-appearance-heading] {
+    background-image: var(--gradient-heading);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+}
+
+/* Gradients are decorative. Text remains readable without background printing
+   and in user-selected high contrast colors, including title links and math. */
+@media print, (forced-colors: active) {
+  :root[data-gradient-targets~='hero'] [data-appearance-hero]::before {
+    display: none;
+    background-image: none;
+  }
+  :root[data-gradient-targets~='headings'] [data-appearance-heading] {
+    background-image: none;
+    color: inherit;
+    -webkit-text-fill-color: currentColor;
+  }
+}
+@media print {
+  :root[data-gradient-targets~='hero'] [data-appearance-hero] {
+    padding: 0;
+    margin-block: 0 24px;
+    border: 0;
+    border-radius: 0;
+    background: none;
+  }
+}

@@ -122,7 +122,7 @@ const iconsSchema = z.union([
 export const configSchema = z
   .object({
     schemaVersion: z.literal(1),
-    kind: z.enum(['group', 'individual']),
+    kind: z.enum(['group', 'individual', 'course']),
     name: text,
     description: localizedSchema,
     affiliation: localizedSchema.optional(),
@@ -142,6 +142,23 @@ export const configSchema = z
     navigation: z.array(id).optional(),
     /** Number of levels displayed in the menu; deeper pages keep their URLs. */
     navigationDepth: z.number().int().min(1).max(10).default(2),
+    /** Number Markdown sections in article bodies; individual pages may override. */
+    numberSections: z.boolean().default(false),
+    layout: z
+      .object({
+        // Omission preserves each theme's existing navigation placement.
+        navigation: z.enum(['top', 'sidebar']).optional(),
+        subnavigation: z.enum(['inline', 'right', 'none']).default('inline'),
+      })
+      .strict()
+      .optional(),
+    downloads: z
+      .object({
+        notebook: z.boolean().default(false),
+        pdf: z.boolean().default(false),
+      })
+      .strict()
+      .default({ notebook: false, pdf: false }),
     routes: z
       .record(
         id,
@@ -154,6 +171,51 @@ export const configSchema = z
     ui: z.record(text, localizedSchema).default({}),
     appearance: z
       .object({
+        palette: z
+          .union([
+            z.enum(['violet', 'ocean', 'forest', 'amber', 'slate']),
+            z
+              .object({
+                base: z.enum(['violet', 'ocean', 'forest', 'amber', 'slate']),
+                accent: z.enum(['violet', 'ocean', 'forest', 'amber', 'slate']),
+              })
+              .strict(),
+          ])
+          .optional(),
+        typography: z.enum(['editorial', 'humanist', 'technical']).optional(),
+        navigation: z.enum(['solid', 'glass']).optional(),
+        icons: z
+          .object({
+            style: z.enum(['plain', 'accent', 'soft']).default('plain'),
+            weight: z.enum(['light', 'regular', 'bold']).default('regular'),
+          })
+          .strict()
+          .optional(),
+        gradient: z
+          .union([
+            z.literal(false),
+            z
+              .object({
+                style: z.enum(['linear', 'radial', 'mesh']).default('linear'),
+                colors: z
+                  .tuple([
+                    z.enum(['violet', 'ocean', 'forest', 'amber', 'slate']),
+                    z.enum(['violet', 'ocean', 'forest', 'amber', 'slate']),
+                  ])
+                  .default(['violet', 'ocean']),
+                targets: z
+                  .array(z.enum(['hero', 'headings']))
+                  .nonempty()
+                  .refine(
+                    (values) => new Set(values).size === values.length,
+                    'Gradient targets must not be repeated.',
+                  )
+                  .default(['hero']),
+                angle: z.number().min(-360).max(360).default(135),
+              })
+              .strict(),
+          ])
+          .optional(),
         light: z
           .partialRecord(
             z.enum(['paper', 'surface', 'ink', 'muted', 'accent', 'line']),
@@ -167,6 +229,7 @@ export const configSchema = z
           )
           .default({}),
         contentWidth: z.number().min(720).max(1600).default(1160),
+        motion: z.enum(['none', 'subtle', 'expressive']).default('none'),
         bodyFont: text.regex(/^[\w\s,'"-]+$/).optional(),
         headingFont: text.regex(/^[\w\s,'"-]+$/).optional(),
         captions: z
@@ -254,6 +317,13 @@ export const configSchema = z
   })
   .strict()
   .superRefine((config, ctx) => {
+    if (config.kind === 'course' && !config.pageFiles)
+      ctx.addIssue({
+        code: 'custom',
+        path: ['pageFiles'],
+        message:
+          'Course sites require pageFiles for their syllabus and lessons.',
+      });
     if (!config.home && !config.pageFiles)
       ctx.addIssue({
         code: 'custom',
@@ -358,7 +428,15 @@ export const pagePresentationFields = {
   authors: z.array(text).default([]),
   tags: z.array(text).default([]),
   toc: z.boolean().default(true),
+  numberSections: z.boolean().optional(),
   draft: z.boolean().default(false),
+  downloads: z
+    .object({
+      notebook: z.boolean().optional(),
+      pdf: z.boolean().optional(),
+    })
+    .strict()
+    .optional(),
   notebook: z
     .object({
       showCode: z.boolean().default(true),
