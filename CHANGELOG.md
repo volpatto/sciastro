@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.1.0
+
+<!-- sciastro:generated:start -->
+<!-- Source: v1.0.1..5426d64a8dd74c5f0e9cb72e3b6b98fa27e0ff54 -->
+
+### Features
+
+- add course sites, interactive content and customizable layouts (#23) ([5426d64](https://github.com/volpatto/sciastro/commit/5426d64a8dd74c5f0e9cb72e3b6b98fa27e0ff54))
+
+<!-- sciastro:generated:end -->
+
 ## 1.0.1
 
 <!-- sciastro:generated:start -->
