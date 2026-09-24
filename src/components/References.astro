@@ -23,13 +23,14 @@ const { references, locale, keys, style, heading = true } = Astro.props;
       {references.map((entry) => (
         <li id={entry.id} value={keys.indexOf(entry.key) + 1}>
           <div class="reference-text" set:html={entry.html} />
-          <div class="reference-meta">
-            <code>{entry.key}</code>
-            {entry.doi && (
-              <a href={`https://doi.org/${encodeURI(entry.doi)}`}>DOI ↗</a>
-            )}
-            {entry.url && <a href={entry.url}>URL ↗</a>}
-          </div>
+          {(entry.doi || entry.url) && (
+            <div class="reference-meta">
+              {entry.doi && (
+                <a href={`https://doi.org/${encodeURI(entry.doi)}`}>DOI ↗</a>
+              )}
+              {entry.url && <a href={entry.url}>URL ↗</a>}
+            </div>
+          )}
         </li>
       ))}
     </ol>

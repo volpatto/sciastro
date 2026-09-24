@@ -1,0 +1,89 @@
+---
+import type { BuiltPage } from '../content.js';
+import type { pageContext } from '../layout.js';
+interface Props {
+  page: BuiltPage;
+  context: ReturnType<typeof pageContext>;
+}
+const { page, context } = Astro.props;
+const pt = page.locale === 'pt';
+const groups = [
+  { title: pt ? 'Subpáginas' : 'Subpages', pages: context.children },
+  { title: pt ? 'Na mesma seção' : 'In this section', pages: context.siblings },
+];
+---
+
+<details class="context-navigation" open>
+  <summary>{pt ? 'Navegação desta página' : 'Page navigation'}</summary>
+  {context.parent && (
+    <p class="context-parent">
+      <a href={context.parent.path}>
+        <span aria-hidden="true">← </span>
+        {context.parent.title}
+      </a>
+    </p>
+  )}
+  {groups.map(
+    (group) =>
+      group.pages.length > 0 && (
+        <nav aria-label={group.title}>
+          <p class="context-label">{group.title}</p>
+          <ul>
+            {group.pages.map((entry) => (
+              <li>
+                <a href={entry.path}>{entry.title}</a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      ),
+  )}
+  {context.headings.length > 0 && (
+    <nav aria-label={pt ? 'Sumário da página' : 'Table of contents'}>
+      <p class="context-label">{pt ? 'Nesta página' : 'On this page'}</p>
+      <ol>
+        {context.headings.map((heading) => (
+          <li class:list={{ 'toc-subheading': heading.depth === 3 }}>
+            <a href={`#${heading.id}`}>
+              {heading.number && (
+                <>
+                  <span class="document-heading-number">
+                    {heading.number}
+                  </span>{' '}
+                </>
+              )}
+              {heading.text}
+            </a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  )}
+</details>
+
+<script>
+  for (const details of document.querySelectorAll<HTMLDetailsElement>(
+    '.context-navigation',
+  )) {
+    const aside = details.closest<HTMLElement>('.page-context');
+    const main = details.closest('main');
+    if (!aside || !main) continue;
+    let previousWide: boolean | undefined;
+    const sync = () => {
+      const wide = getComputedStyle(aside).position === 'sticky';
+      if (wide === previousWide) return;
+      previousWide = wide;
+      // A resize must not hide the link currently used by a keyboard reader.
+      if (
+        !wide &&
+        details.contains(document.activeElement) &&
+        document.activeElement !== details.querySelector('summary')
+      )
+        return;
+      details.open = wide;
+    };
+    sync();
+    new ResizeObserver(sync).observe(main);
+    matchMedia('(min-width: 1100px)').addEventListener('change', sync);
+  }
+</script>

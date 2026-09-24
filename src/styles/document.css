@@ -23,6 +23,10 @@
 .sciastro-document .document-heading {
   position: relative;
 }
+.document-heading-number {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
 .sciastro-document .document-heading-anchor {
   display: inline-block;
   margin-inline-end: 0.35em;

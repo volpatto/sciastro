@@ -1,0 +1,6 @@
+id: lessons
+title: Aulas e materiais
+description: Notas e notebooks organizados por tema.
+paths: { pt: aulas/ }
+icon: lucide:book-open
+layout: listing

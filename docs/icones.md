@@ -49,6 +49,35 @@ You can also define an icon alongside an additional page:
 If present, `icons.navigation.projects` takes precedence over `icon` in `pages.yaml`.
 The same icon is used in both languages and themes.
 
+## Change icon presentation
+
+Glyph selection and presentation are independent. Keep the top-level `icons`
+mapping above and add an appearance profile:
+
+```yaml
+appearance:
+  palette: ocean
+  icons:
+    style: soft
+    weight: regular
+```
+
+| Setting | Choices | Effect |
+| --- | --- | --- |
+| `appearance.icons.style` | `plain`, `accent`, `soft` | Ordinary navigation page icons, accent-colored icons, or icons on a soft accent background |
+| `appearance.icons.weight` | `light`, `regular`, `bold` | Stroke weight for supported icons, including interface controls |
+
+If the mapping is present, omitted fields default to `plain` and `regular`.
+Omit it entirely to preserve the theme's existing icon appearance. The accent
+color follows the selected palette and any explicit light/dark color overrides.
+
+Accent/soft treatment applies only to navigation page icons. It does not add
+colored backgrounds to all interface controls, recolor language flags or modify
+logos. Local image files retain their own drawing and stroke weights. Existing
+glyph overrides and `false` still choose or hide icons independently. See
+[appearance profiles](guides/appearance.md#style-icons-independently-of-their-glyphs)
+for combinations with colors and typography.
+
 ## Choose from a catalog
 
 - [Lucide on Iconify](https://icon-sets.iconify.design/lucide/): use the full name,

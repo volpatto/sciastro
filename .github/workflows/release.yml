@@ -60,6 +60,8 @@ jobs:
       - name: Installed Package Tests against the release archive
         run: pixi run --locked pnpm test:package
       - run: pixi run --locked -e docs docs-build
+      - name: Build release example gallery
+        run: pixi run --locked docs-gallery
       - name: Check archive and docs versions; record integrity
         run: pixi run --locked node scripts/release.mjs artifacts
       - name: Validate the npm publication command without publishing

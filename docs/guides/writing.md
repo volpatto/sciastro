@@ -106,6 +106,36 @@ body: notes/first-note.md
 The `body` path is relative to `contentDir`, **not** to the YAML file. For
 translations, use `body: {pt: notes/note.pt.md, en: notes/note.en.md}`.
 
+### Section numbering
+
+Number article sections by adding this setting to `sciastro.yaml`:
+
+```yaml
+numberSections: true
+```
+
+An individual article can override the global setting in its YAML or Markdown
+front matter:
+
+```yaml
+layout: article
+numberSections: false
+```
+
+Conversely, use `numberSections: true` on one article to opt in while leaving
+the global default off. This works with Markdown files and Markdown cells in
+Jupyter notebooks, for every site profile and theme.
+
+Headings `##` through `######` receive hierarchical numbers such as `1`, `1.1`
+and `2`. Skipped heading levels do not introduce zero components or empty
+sections: `## A`, `#### B`, `### C`, `## D` become `1 A`, `1.1 B`, `1.2 C`,
+`2 D`. The page title and `#` headings remain unnumbered. Composed YAML section
+titles, automatic card titles and the references list are not numbered.
+
+The body and its contents list show the same prefixes. Existing heading IDs,
+explicit anchors and links remain unchanged. PDFs include the rendered numbers;
+downloaded notebooks retain their source without inserting these prefixes.
+
 ### Existing automatic websites
 
 You do not have to switch to `pageFiles`. Add equivalent entries to `pages.yaml`:
@@ -352,12 +382,14 @@ missing results cannot be recomputed by the site builder.
 | PNG / JPEG / SVG | Responsive images; SVG plot geometry sanitized |
 | HTML tables and text | Sanitized HTML with site styling |
 | LaTeX | The same numbered MathJax pipeline as Markdown cells |
+| Plotly MIME JSON | Local interactive charts, with saved static image fallback when available; see [interactive plots](plots.md) |
 | JSON / plain text | Readable preformatted output |
 | Markdown attachments | Embedded PNG/JPEG/SVG images |
 | JavaScript widgets / unsupported MIME types | An explanatory fallback and saved plain text when available |
 
-For Plotly, ipywidgets or other interactive tools, save a static PNG/SVG output if
-you want a faithful plot in the published article. Arbitrary notebook scripts,
+For unsupported interactive tools such as ipywidgets, save a static PNG/SVG output
+if you want a faithful plot in the published article. Plotly has dedicated
+[JSON/MIME support](plots.md); arbitrary Plotly HTML exports are not executed. Arbitrary notebook scripts,
 iframes, event handlers and external SVG resources are not executed. Output HTML
 is sanitized; embedded stylesheets and interactive behavior are not preserved.
 Permitted inline styles, such as table-caption text alignment, may remain.

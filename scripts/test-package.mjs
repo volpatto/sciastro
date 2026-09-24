@@ -88,7 +88,7 @@ try {
       (await readdir(scratch)).find((name) => name.endsWith('.tgz')),
     );
   }
-  for (const kind of ['group', 'individual']) {
+  for (const kind of ['group', 'individual', 'course']) {
     const consumer = join(scratch, kind);
     execFileSync(process.execPath, [
       join(root, 'dist/cli.js'),
@@ -102,6 +102,50 @@ try {
     pkg.dependencies.sciastro = `file:${tarball}`;
     await writeFile(packageFile, JSON.stringify(pkg, null, 2));
     run(['install', '--no-frozen-lockfile'], consumer);
+    if (kind === 'course') {
+      assert.match(
+        run(['exec', 'sciastro', 'check'], consumer),
+        /OK: 5 páginas/,
+      );
+      run(['build'], consumer, {
+        SITE_URL: 'https://example.org',
+        BASE_PATH: '/teaching/',
+      });
+      const output = join(consumer, 'dist');
+      await audit(output, '/teaching/');
+      const article = await readFile(
+        join(output, 'aulas/integracao/index.html'),
+        'utf8',
+      );
+      assert.match(article, /data-sciastro-print/);
+      assert.match(article, /data-plotly-spec/);
+      assert.match(
+        article,
+        /href="\/teaching\/_sciastro\/downloads\/pt\/integration.ipynb"/,
+      );
+      const lesson = JSON.parse(
+        await readFile(
+          join(output, '_sciastro/downloads/pt/integration.ipynb'),
+          'utf8',
+        ),
+      );
+      assert.equal(lesson.nbformat, 4);
+      assert(lesson.cells.some((cell) => cell.cell_type === 'code'));
+      assert.equal(
+        await readFile(
+          join(output, '_sciastro/downloads/pt/trapezoid-notebook.ipynb'),
+          'utf8',
+        ),
+        await readFile(
+          join(consumer, 'content/notebooks/trapezoid.ipynb'),
+          'utf8',
+        ),
+      );
+      console.log(
+        'Installed course: pages, Plotly, downloads and nested-base links passed.',
+      );
+      continue;
+    }
     await writeFile(join(consumer, 'public/sharing.png'), png);
     // Exercise scientific writing through the installed archive for both kinds.
     const pagesFile = join(consumer, 'content/pages.yaml');

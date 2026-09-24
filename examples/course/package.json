@@ -1,0 +1,13 @@
+{
+  "name": "sciastro-example-course",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "astro build",
+    "dev": "astro dev --host 127.0.0.1 --port 4344"
+  },
+  "dependencies": {
+    "sciastro": "workspace:*",
+    "astro": "7.3.3"
+  }
+}

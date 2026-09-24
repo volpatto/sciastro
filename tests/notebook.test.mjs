@@ -4,6 +4,8 @@ import MarkdownIt from 'markdown-it';
 import { renderNotebook } from '../dist/notebook.js';
 import { createDocumentContext } from '../dist/document.js';
 import { Bibliography } from '../dist/bibliography.js';
+import { validatePlotSpec } from '../dist/plots.js';
+import { articleDownloads } from '../dist/downloads.js';
 
 const png =
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+j7mcAAAAASUVORK5CYII=';
@@ -350,7 +352,7 @@ test('widgets with a saved static image render the image instead of a duplicate 
     notebook([
       code([
         display({
-          'application/vnd.plotly.v1+json': {},
+          'application/vnd.jupyter.widget-view+json': { model_id: 'id' },
           'image/png': png,
           'text/plain': 'Plot',
         }),
@@ -360,6 +362,68 @@ test('widgets with a saved static image render the image instead of a duplicate 
   );
   assert.match(html, /data:image\/png/);
   assert.doesNotMatch(html, /notebook-output-note/);
+});
+
+test('Plotly.py legacy MIME server config is discarded from the browser without changing the source download', () => {
+  const spec = {
+    data: [
+      {
+        type: 'scatter',
+        x: [0, 1, 2],
+        y: [0, 1, 4],
+        hovertemplate: 'x=%{x}<br>y=%{y}<extra></extra>',
+      },
+    ],
+    layout: { template: { data: { scatter: [{ type: 'scatter' }] } } },
+    config: { plotlyServerURL: 'https://plot.ly', responsive: true },
+  };
+  const original = structuredClone(spec);
+  Object.freeze(spec.config);
+  Object.freeze(spec);
+  const sanitized = validatePlotSpec(spec);
+  assert.deepEqual(sanitized, { ...original, config: { responsive: true } });
+  assert.deepEqual(spec, original);
+  const source = notebook([
+    code([display({ 'application/vnd.plotly.v1+json': spec })]),
+  ]);
+  const html = renderNotebook(source, context());
+  const rendered = JSON.parse(
+    /data-plotly-spec>([^]*?)<\/script>/.exec(html)[1],
+  );
+  assert.deepEqual(rendered, sanitized);
+  assert.doesNotMatch(html, /plotlyServerURL|https:\/\/plot\.ly/);
+  const downloaded = articleDownloads({
+    id: 'saved-plot',
+    locale: 'en',
+    layout: 'article',
+    base: '/course/',
+    sourcePage: 'https://example.org/course/saved-plot/',
+    source: { format: 'notebook', content: source },
+    defaults: { notebook: true, pdf: false },
+  });
+  assert.equal(downloaded.file.content, source);
+  assert.deepEqual(
+    JSON.parse(downloaded.file.content).cells[0].outputs[0].data[
+      'application/vnd.plotly.v1+json'
+    ],
+    original,
+  );
+  assert.throws(
+    () =>
+      validatePlotSpec({
+        ...spec,
+        config: { ...spec.config, showSendToCloud: true },
+      }),
+    /config.showSendToCloud/,
+  );
+  assert.throws(
+    () =>
+      validatePlotSpec({
+        ...spec,
+        config: { ...spec.config, topojsonURL: 'https://example.org/' },
+      }),
+    /config.topojsonURL/,
+  );
 });
 
 test('streams, traceback and JSON outputs are escaped and ANSI terminal sequences are removed', () => {

@@ -1,7 +1,7 @@
 # My SciAstro website
 
 Edit `sciastro.yaml` and the files in `content/`. Put public images and downloads
-in `public/`. References live in `content/references.bib`; cite them with `[@key]`.
+in `public/`. If configured, references live in `content/references.bib`; cite them with `[@key]`.
 Generated pages and styles are provided by the SciAstro package.
 
 Analytics is optional and off by default. Configure Cloudflare Web Analytics or
@@ -20,16 +20,21 @@ In this website's directory:
 pixi install
 ```
 
-**If SciAstro is not published on npm yet**, install a local package archive before
-running the normal installation. Assuming sibling `sciastro` and website directories:
+Install the dependencies pinned by the generated project:
+
+```sh
+pixi run pnpm install
+```
+
+For unpublished framework changes, install a local package archive instead.
+Assuming sibling `sciastro` and website directories:
 
 ```sh
 pixi run pnpm add sciastro@file:../sciastro/artifacts/sciastro-VERSION.tgz --save-exact
 ```
 
 The archive is created with `pixi run --locked pack` in the SciAstro repository.
-Replace `VERSION` with the archive version printed by `pack` and adjust the path. If you have a version already
-published to npm, use `pixi run pnpm install` instead.
+Replace `VERSION` with the archive version printed by `pack` and adjust the path.
 
 Start the preview:
 
@@ -49,10 +54,13 @@ pixi run --locked dev-stop
 
 ## Language and content
 
-The starter includes Portuguese and English, with Portuguese as the default.
+The individual/group starters include Portuguese and English, with Portuguese as the default.
 Use `locales: [en]` and `defaultLocale: en` for an English-only site, or keep both
 languages and set `defaultLocale: en` for English at the root URL. Existing English
 content files are ready to edit; research/person names in the starter are fictional.
+The course starter is Portuguese-only. To change its language, update `locales`,
+`defaultLocale`, page paths and text together; adding a language requires a path
+and translation for every page.
 
 - `sciastro.yaml`: site identity, languages, theme, icons and bibliography settings.
 - `content/home.*.md`: introduction.
@@ -63,6 +71,18 @@ content files are ready to edit; research/person names in the starter are fictio
 - `content/pages.yaml`: additional pages and their Markdown paths.
 - `content/references.bib`: available citations; select your own work separately
   in `bibliography.publications`.
+
+The course uses an explicit `pageFiles` list instead: edit `content/pages/*.md`
+and `.yaml`, `content/notebooks/*.ipynb` and `content/plots/*.json`. These files
+define the overview, syllabus, lesson index and computational materials.
+See the [course tutorial](https://volpatto.github.io/sciastro/tutorials/course/).
+
+Use `layout` in `sciastro.yaml` to choose top/sidebar navigation and an optional
+right-side context panel. Article notebook/PDF actions are controlled by
+`downloads`; PDF opens the browser print dialog. The notebook example contains
+no executed cells or saved outputs: run it in your own Jupyter environment to
+produce results. See [layouts](https://volpatto.github.io/sciastro/guides/layouts/)
+and [downloads](https://volpatto.github.io/sciastro/guides/downloads/).
 
 ## Validate, build and deploy
 

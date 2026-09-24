@@ -6,13 +6,20 @@ import '../styles/sections.css';
 import '../styles/lncc.css';
 import '../styles/document.css';
 import '../styles/articles.css';
+import '../styles/experience.css';
+import '../styles/navigation.css';
+import '../styles/appearance.css';
+import '../styles/glass-navigation.css';
 import Icon from './Icon.astro';
+import ThemeToggle from './ThemeToggle.astro';
 import Navigation from './Navigation.astro';
 import SciAstroMark from '../assets/sciastro-monogram.svg';
 import iconLicenses from '../../docs/icon-licenses.txt?raw';
 import fontLicenses from '../../docs/font-licenses.txt?raw';
 import type { BuiltSite, BuiltPage } from '../content.js';
 import { navigationTree } from '../navigation.js';
+import { resolveIcon } from '../icons.js';
+import { resolveAppearance } from '../appearance.js';
 import {
   translate,
   labelsFor,
@@ -34,6 +41,8 @@ const navigation = navigationTree(
   config.navigationDepth,
 );
 const lncc = config.theme === 'lncc';
+const navigationMode = config.layout?.navigation ?? (lncc ? 'sidebar' : 'top');
+const menuChevron = resolveIcon('lucide:chevron-down', 'Navigation disclosure');
 const canonical = new URL(page.path, config.url);
 const title =
   page.id === 'home' ? config.name : `${page.title} · ${config.name}`;
@@ -41,26 +50,19 @@ const description =
   page.description ?? translate(config.description, page.locale);
 const socialImage = site.socialImage;
 const appearance = config.appearance;
+const resolvedAppearance = resolveAppearance(appearance);
 const tokens = (values: Record<string, string>) =>
   Object.entries(values)
     .map(([key, value]) => `--${key}:${value}`)
     .join(';');
-const captionDefaults = appearance?.captions;
-const appearanceProperties = appearance
-  ? [
-      `--content-width:${appearance.contentWidth}px`,
-      appearance.bodyFont && `--body-font:${appearance.bodyFont}`,
-      appearance.headingFont && `--heading:${appearance.headingFont}`,
-      captionDefaults && `--figure-caption-align:${captionDefaults.figures}`,
-      captionDefaults && `--table-caption-align:${captionDefaults.tables}`,
-      captionDefaults &&
-        `--figure-caption-links-align:${captionDefaults.figures === 'center' ? 'center' : captionDefaults.figures === 'right' ? 'flex-end' : 'flex-start'}`,
-    ]
-      .filter(Boolean)
-      .join(';')
-  : '';
+// Explicit preferences and the system preference are separate scopes. A partial
+// light override must never leak into the automatic dark theme.
 const style = appearance
-  ? `:root:root[data-design] {${appearanceProperties}} :root:root[data-design]:not([data-theme="dark"]) {${tokens(appearance.light)}} :root:root[data-design][data-theme="dark"] {${tokens(appearance.dark)}} @media(prefers-color-scheme:dark){:root:root[data-design]:not([data-theme="light"]){${tokens(appearance.dark)}}}`
+  ? `:root:root[data-design] {${tokens(resolvedAppearance.properties)}}
+     :root:root[data-design][data-theme="light"] {${tokens(resolvedAppearance.light)}}
+     :root:root[data-design][data-theme="dark"] {${tokens(resolvedAppearance.dark)}}
+     @media(prefers-color-scheme:light){:root:root[data-design]:not([data-theme]){${tokens(resolvedAppearance.light)}}}
+     @media(prefers-color-scheme:dark){:root:root[data-design]:not([data-theme]){${tokens(resolvedAppearance.dark)}}}`
   : '';
 ---
 
@@ -69,6 +71,16 @@ const style = appearance
   lang={page.locale === 'pt' ? 'pt-BR' : 'en'}
   data-design={config.theme}
   data-theme-key={config.themeStorageKey}
+  data-navigation={navigationMode}
+  data-subnavigation={config.layout?.subnavigation ?? 'inline'}
+  data-motion={config.appearance?.motion ?? 'none'}
+  data-typography={appearance?.typography}
+  data-icon-style={appearance?.icons?.style}
+  data-navigation-style={appearance?.navigation}
+  data-gradient={appearance?.gradient ? appearance.gradient.style : undefined}
+  data-gradient-targets={
+    appearance?.gradient ? appearance.gradient.targets.join(' ') : undefined
+  }
 >
   <head>
     <Fragment set:html={`<!--\n${iconLicenses}\n${fontLicenses}\n-->`} />
@@ -264,43 +276,31 @@ const style = appearance
               ))}
             </nav>
           )}
-          <button
-            class="theme-toggle"
-            type="button"
-            hidden
-            aria-label={l.theme}
-            title={l.theme}
-            aria-pressed="false"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              width="20"
-              height="20"
-              aria-hidden="true"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.6"
-            >
-              <circle cx="12" cy="12" r="8" />
-              <path d="M12 4a8 8 0 0 1 0 16Z" fill="currentColor" />
-            </svg>
-          </button>
+          <ThemeToggle locale={page.locale} base={config.base} />
         </div>
       </div>
     </header>
-    <div class:list={['container site-shell', { 'lncc-shell': lncc }]}>
+    <div
+      class:list={[
+        'container site-shell',
+        {
+          'lncc-shell': lncc && navigationMode === 'sidebar',
+          'sidebar-shell': navigationMode === 'sidebar',
+        },
+      ]}
+    >
       <aside class="site-navigation">
         <details class="navigation" open>
           <summary>
             {l.menu}
-            <span aria-hidden="true">＋</span>
+            <Icon icon={menuChevron} base={config.base} />
           </summary>
           <nav aria-label={l.navigation}>
             <Navigation
               nodes={navigation}
               base={config.base}
               locale={page.locale}
-              expandActive={lncc}
+              expandActive={navigationMode === 'sidebar'}
             />
           </nav>
         </details>
@@ -359,10 +359,21 @@ const style = appearance
       const system = matchMedia('(prefers-color-scheme: dark)');
       const isDark = () =>
         root.dataset.theme ? root.dataset.theme === 'dark' : system.matches;
-      const sync = () => button?.setAttribute('aria-pressed', String(isDark()));
+      const sync = () => {
+        if (!button) return;
+        const dark = isDark();
+        button.dataset.themeState = dark ? 'dark' : 'light';
+        const label = dark
+          ? button.dataset.lightLabel
+          : button.dataset.darkLabel;
+        if (label) {
+          button.setAttribute('aria-label', label);
+          button.title = label;
+        }
+      };
       if (button) {
-        button.hidden = false;
         sync();
+        button.hidden = false;
         system.addEventListener('change', sync);
         button.addEventListener('click', () => {
           root.dataset.theme = isDark() ? 'light' : 'dark';
@@ -381,22 +392,88 @@ const style = appearance
         }
       });
       const menu = document.querySelector<HTMLDetailsElement>('.navigation');
+      // Keep anchor destinations and contextual navigation below a glass bar,
+      // including wrapped labels, larger text and the expanded mobile menu.
+      if (
+        menu &&
+        root.dataset.navigation === 'top' &&
+        root.dataset.navigationStyle === 'glass'
+      ) {
+        const offset = () =>
+          root.style.setProperty(
+            '--top-navigation-offset',
+            `${Math.ceil(menu.getBoundingClientRect().height) + 24}px`,
+          );
+        offset();
+        if ('ResizeObserver' in window)
+          new ResizeObserver(offset).observe(menu);
+      }
       const desktop = matchMedia(
-        root.dataset.design === 'lncc'
+        root.dataset.navigation === 'sidebar'
           ? '(min-width: 851px)'
           : '(min-width: 760px)',
       );
       if (menu) {
+        const popoverMode = () =>
+          root.dataset.navigation === 'top' && desktop.matches;
+        const closePopovers = () => {
+          if (!popoverMode()) return;
+          menu
+            .querySelectorAll<HTMLDetailsElement>('.navigation-branch[open]')
+            .forEach((branch) => {
+              branch.open = false;
+            });
+        };
         const syncMenu = () => {
           menu.open = desktop.matches;
         };
         syncMenu();
         desktop.addEventListener('change', syncMenu);
+        menu.addEventListener(
+          'toggle',
+          (event) => {
+            const branch = event.target;
+            if (
+              !popoverMode() ||
+              !(branch instanceof HTMLDetailsElement) ||
+              !branch.open ||
+              !branch.matches(
+                '.navigation-tree > .navigation-item > .navigation-branch',
+              )
+            )
+              return;
+            menu
+              .querySelectorAll<HTMLDetailsElement>(
+                '.navigation-tree > .navigation-item > .navigation-branch[open]',
+              )
+              .forEach((other) => {
+                if (other !== branch) other.open = false;
+              });
+          },
+          true,
+        );
+        menu.addEventListener('focusout', (event) => {
+          if (
+            event.relatedTarget instanceof Node &&
+            !menu.contains(event.relatedTarget)
+          )
+            closePopovers();
+        });
+        document.addEventListener('pointerdown', (event) => {
+          if (event.target instanceof Node && !menu.contains(event.target))
+            closePopovers();
+        });
         document.addEventListener('keydown', (event) => {
           if (event.key === 'Escape' && event.target instanceof Element) {
-            const branch = event.target.closest<HTMLDetailsElement>(
-              '.navigation-branch[open]',
-            );
+            const branch =
+              event.target.closest<HTMLDetailsElement>(
+                '.navigation-branch[open]',
+              ) ??
+              (popoverMode() && menu.contains(event.target)
+                ? menu.querySelector<HTMLDetailsElement>(
+                    '.navigation-tree > .navigation-item > .navigation-branch[open]',
+                  )
+                : null);
             if (branch) {
               branch.open = false;
               branch.querySelector('summary')?.focus();

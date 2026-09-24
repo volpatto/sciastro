@@ -1,0 +1,27 @@
+schemaVersion: 1
+kind: course
+name: Métodos Numéricos
+description: Um curso demonstrativo de métodos numéricos com notas, exercícios e notebooks.
+url: https://example.org
+base: /
+locales: [pt]
+defaultLocale: pt
+theme: modern
+layout:
+  navigation: top
+  subnavigation: right
+appearance:
+  motion: subtle
+downloads:
+  notebook: true
+  pdf: true
+contentDir: content
+navigation: [home, syllabus, lessons]
+navigationDepth: 2
+pageFiles:
+  - pages/home.md
+  - pages/syllabus.md
+  - pages/lessons.yaml
+  - pages/integration.md
+  - pages/notebook.yaml
+footer: Curso fictício para demonstrar o SciAstro. Adapte o conteúdo antes de publicar.

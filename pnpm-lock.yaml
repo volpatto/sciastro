@@ -41,6 +41,9 @@ importers:
       markdown-it:
         specifier: 15.0.2
         version: 15.0.2
+      plotly.js-dist-min:
+        specifier: ^4.1.1
+        version: 4.1.1
       sanitize-html:
         specifier: ^2.17.0
         version: 2.17.7
@@ -81,6 +84,15 @@ importers:
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
+
+  examples/course:
+    dependencies:
+      astro:
+        specifier: 7.3.3
+        version: 7.3.3(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@types/node@26.6.2)(yaml@2.9.1)
+      sciastro:
+        specifier: workspace:*
+        version: link:../..
 
   examples/group:
     dependencies:
@@ -1565,6 +1577,9 @@ packages:
     resolution: {integrity: sha512-+7ziBLidS4NaNCdt57SUDT+wYmmd5fmiQejUic/kb+YsYSCPyOOE9sebzMjNmQrsnNpDJqd4WHvV/8lfKfUDUg==}
     engines: {node: '>=20'}
     hasBin: true
+
+  plotly.js-dist-min@4.1.1:
+    resolution: {integrity: sha512-4Jg6n9FKcn5WBuqHESZmueEBYOLjGlsz8ivzMCl03WCX+GAAOgIALvdONwIi54JDMq0tkxbu+vs5Yj7QSPQtgg==}
 
   postcss@8.5.28:
     resolution: {integrity: sha512-RRuzqDtt5Y9h3quz5hWhK+TPnsmVs6WwSU6LkJMeY4HstUEDuYTG8UJSdawMRzmzAtV+KEoG8N3Qg2qLy5vM/A==}
@@ -3422,6 +3437,8 @@ snapshots:
   playwright@1.63.0:
     dependencies:
       playwright-core: 1.63.0
+
+  plotly.js-dist-min@4.1.1: {}
 
   postcss@8.5.28:
     dependencies:

@@ -14,6 +14,15 @@ analytics: false
 locales: [pt, en]
 defaultLocale: pt
 theme: classic
+appearance:
+  palette: ocean
+  typography: editorial
+  icons: { style: accent, weight: regular }
+  gradient:
+    style: linear
+    colors: [ocean, violet]
+    targets: [hero]
+    angle: 135
 # Ícones opcionais: omitir mantém os padrões; false oculta um ícone.
 # Veja docs/icones.md no SciAstro para catálogos e arquivos próprios.
 icons:

@@ -1,0 +1,65 @@
+/* A material treatment for top navigation, independent of the reading theme.
+   Keep the opaque fallback first; translucency never gates functionality. */
+:root[data-navigation='top'][data-navigation-style='glass'] {
+  scroll-padding-top: var(--top-navigation-offset, 100px);
+}
+:root[data-navigation='top'][data-navigation-style='glass'] .site-header {
+  position: static;
+}
+:root[data-navigation='top'][data-navigation-style='glass'] .site-navigation {
+  position: sticky;
+  top: 12px;
+  z-index: 30;
+  padding-top: 0;
+  margin-block: 12px 24px;
+}
+:root[data-navigation='top'][data-navigation-style='glass'] .navigation {
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: 0 6px 24px color-mix(in srgb, var(--ink) 7%, transparent);
+}
+:root[data-navigation='top'][data-navigation-style='glass'] .navigation nav a {
+  color: var(--ink);
+}
+:root[data-navigation='top'][data-navigation-style='glass']
+  .navigation
+  nav
+  a:is([aria-current], [data-active-ancestor]) {
+  color: var(--accent);
+}
+:root[data-navigation='top'][data-navigation-style='glass'][data-subnavigation='right']
+  .site-shell
+  > main {
+  --context-top: var(--top-navigation-offset, 100px);
+}
+@supports (
+  (backdrop-filter: blur(16px)) or (-webkit-backdrop-filter: blur(16px))
+) {
+  :root[data-navigation='top'][data-navigation-style='glass'] .navigation {
+    background: color-mix(in srgb, var(--paper) 92%, transparent);
+    -webkit-backdrop-filter: blur(16px) saturate(120%);
+    backdrop-filter: blur(16px) saturate(120%);
+  }
+}
+@media (max-width: 759px) {
+  :root[data-navigation='top'][data-navigation-style='glass'] .navigation {
+    max-height: calc(100svh - 24px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+@media (prefers-reduced-transparency: reduce), (forced-colors: active), print {
+  :root[data-navigation='top'][data-navigation-style='glass'] .navigation {
+    background: var(--surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: none;
+  }
+}
+@media print {
+  :root[data-navigation='top'][data-navigation-style='glass'] .site-navigation {
+    position: static;
+  }
+}

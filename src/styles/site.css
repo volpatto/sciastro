@@ -202,34 +202,6 @@ code {
   color: var(--accent);
   text-decoration: underline;
 }
-.theme-toggle {
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border: 1px solid var(--line);
-  border-radius: 50%;
-  color: var(--ink);
-  background: transparent;
-}
-.navigation summary {
-  display: none;
-}
-.navigation nav {
-  display: flex;
-  gap: 29px;
-  flex-wrap: wrap;
-}
-.navigation nav a {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  position: relative;
-  padding: 0 0 14px;
-  color: var(--muted);
-  text-decoration: none;
-  font-size: 0.86rem;
-}
 .ui-icon {
   display: inline-block;
   width: 1.15rem;
@@ -241,19 +213,6 @@ code {
 .languages .ui-icon {
   width: 1.2rem;
   height: 1.2rem;
-}
-.navigation nav a[aria-current] {
-  color: var(--accent);
-  font-weight: 650;
-}
-.navigation nav a[aria-current]:after {
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  right: 0;
-  content: '';
-  height: 2px;
-  background: var(--accent);
 }
 main {
   min-height: 58vh;
@@ -550,13 +509,22 @@ main {
   padding: 0;
   max-width: 900px;
 }
-.reference-list li {
-  border-bottom: 1px solid var(--line);
-  padding: 0 0 22px;
-  margin-bottom: 22px;
+/* ABNT-inspired spacing; the selected CSL style still formats each citation.
+   Use the font's normal line metrics, not line-height: 1, to avoid crowding. */
+.reference-list > li {
+  padding: 0;
+  margin: 0;
   font-size: 0.91rem;
+  line-height: normal;
+  text-align: left;
+  text-indent: 0;
+  break-inside: avoid;
   scroll-margin-top: 25px;
   overflow-wrap: anywhere;
+}
+.reference-list > li + li {
+  margin-top: 1.25em;
+  margin-top: 1lh;
 }
 .reference-list.numeric {
   list-style: decimal;
@@ -672,25 +640,6 @@ main {
   .languages {
     gap: 8px;
     font-size: 0.69rem;
-  }
-  .theme-toggle {
-    width: 29px;
-    height: 29px;
-  }
-  .navigation summary {
-    display: flex;
-    justify-content: space-between;
-    cursor: pointer;
-    font-size: 0.8rem;
-    padding: 8px 0 14px;
-    color: var(--muted);
-  }
-  .navigation nav {
-    padding: 10px 0;
-    gap: 10px 22px;
-  }
-  .navigation nav a {
-    padding-bottom: 9px;
   }
   .home-introduction {
     grid-template-columns: 1fr;

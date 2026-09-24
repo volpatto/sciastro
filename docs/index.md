@@ -16,7 +16,7 @@ title: Overview
 </div>
 
 SciAstro is a package for academic websites **built on [Astro](https://astro.build/)**,
-for individual researchers and research groups. Maintain your content in
+for individual researchers, research groups and courses. Maintain your content in
 **Markdown, YAML and BibTeX**; Astro generates a static website, with the structure,
 themes and content validation supplied by SciAstro.
 
@@ -38,6 +38,18 @@ so unreleased changes on `main` appear only in local previews and CI artifacts.
 
     [Follow the group tutorial](tutorials/group.md)
 
+-   :material-school-outline: **A course website**
+
+    A syllabus, lesson index, scientific notes, notebooks and downloadable materials.
+
+    [Follow the course tutorial](tutorials/course.md)
+
+-   :material-view-dashboard-outline: **Live examples**
+
+    Explore the profiles, themes and layouts in complete example websites.
+
+    [Open the gallery](gallery.md)
+
 -   :material-palette-outline: **Your own presentation**
 
     Three themes, bilingual content, icons, composed pages and component extensions.
@@ -57,10 +69,13 @@ so unreleased changes on `main` appear only in local previews and CI artifacts.
 | Need | SciAstro provides |
 | --- | --- |
 | Academic structure | Automatic Home/About, Research, Team/Supervision and selected Publications pages |
+| Teaching | A course starter with an overview, syllabus, lesson hierarchy and computational materials |
 | Additional content | Markdown pages or explicit pages composed from ten section types |
 | Scientific writing | [Markdown articles and saved notebooks](guides/writing.md), highlighted code, callouts, numbered equations, figures and tables |
+| Interactive figures | [Plotly graphs](guides/plots.md) from local JSON or notebook outputs |
+| Article exports | [Notebook downloads and PDF printing](guides/downloads.md), configured globally or per article |
 | Page hierarchy | Nested menus, configurable depth, breadcrumbs, automatic article indexes and links by page identifier |
-| Presentation | `classic`, `modern`, `lncc`; responsive navigation; persistent light/dark preference |
+| Presentation | `classic`, `modern`, `lncc`; [top/sidebar and contextual layouts](guides/layouts.md); optional motion; persistent light/dark preference |
 | Languages | Portuguese and English, individually or together; translated content is checked |
 | People | Faculty, researchers, students by configurable level, separate alumni |
 | Citations | Local BibTeX, APA or Vancouver, linked citations and page bibliographies |
@@ -103,6 +118,7 @@ Third-party dependencies and bundled resources retain their own licenses:
 | Resource | License and notices |
 | --- | --- |
 | Astro, Citation.js, markdown-it, Zod and sanitize-html | MIT; see each dependency's license file |
+| Plotly.js | MIT; see its bundled dependency license and [upstream license](https://github.com/plotly/plotly.js/blob/master/LICENSE) |
 | YAML parser | ISC; see the dependency's license file |
 | Lucide icons | ISC, with MIT notices for icons derived from Feather; see [icon notices](icon-licenses.txt) |
 | Circle Flags | MIT; see [icon notices](icon-licenses.txt) |

@@ -1,4 +1,5 @@
 import { readFile, access } from 'node:fs/promises';
+import { readFileSync, realpathSync } from 'node:fs';
 import {
   resolve,
   relative,
@@ -28,8 +29,15 @@ import {
 import { translate, routePath, labels } from './i18n.js';
 import { Bibliography, referenceId, type Reference } from './bibliography.js';
 import { markdownContext } from './markdown.js';
-import { createDocumentContext } from './document.js';
+import { createDocumentContext, type DocumentHeading } from './document.js';
 import { renderNotebook } from './notebook.js';
+import { parsePlotSpec } from './plots.js';
+import {
+  articleDownloads,
+  type BuiltPageDownloads,
+  type BuiltNotebookDownload,
+  type NotebookSource,
+} from './downloads.js';
 import { resolveSocialImage, type BuiltSocialImage } from './social.js';
 import {
   composedPageSchema,
@@ -67,7 +75,8 @@ export interface BuiltPage {
   authors?: string[];
   tags?: string[];
   toc?: boolean;
-  headings?: Array<{ id: string; text: string; depth: number }>;
+  headings?: DocumentHeading[];
+  downloads?: BuiltPageDownloads;
 }
 export interface BuiltSite {
   config: SiteConfig;
@@ -78,6 +87,7 @@ export interface BuiltSite {
   bibliographyKeys: string[];
   copyright: Partial<Record<Locale, string>>;
   footer: Partial<Record<Locale, string>>;
+  downloads?: BuiltNotebookDownload[];
 }
 
 export function within(root: string, file: string): string {
@@ -163,14 +173,42 @@ async function documentBody(
   locale: Locale,
   base: string,
   options?: { showCode?: boolean; collapseCode?: boolean },
-  links?: { resolveLink?: (target: string) => string; reservedIds?: string[] },
+  links?: {
+    resolveLink?: (target: string) => string;
+    reservedIds?: string[];
+    numberSections?: boolean;
+  },
 ) {
-  const context = await createDocumentContext(
-    bibliography,
-    locale,
-    base,
-    links,
-  );
+  const context = await createDocumentContext(bibliography, locale, base, {
+    ...links,
+    resolvePlot(source) {
+      if (
+        !/\.json$/i.test(source) ||
+        /[\\?#\u0000-\u001f]/.test(source) ||
+        /^[a-z][a-z0-9+.-]*:/i.test(source)
+      )
+        throw new Error(
+          'Plotly src must name a local .json file inside contentDir.',
+        );
+      const path = within(dir, source);
+      const actual = realpathSync(path);
+      const root = realpathSync(dir);
+      const delta = relative(root, actual);
+      if (
+        delta === '..' ||
+        delta.startsWith(`..${process.platform === 'win32' ? '\\' : '/'}`) ||
+        isAbsolute(delta)
+      )
+        throw new Error(`Plotly source escapes contentDir: ${source}`);
+      try {
+        return parsePlotSpec(readFileSync(actual, 'utf8'));
+      } catch (error) {
+        throw new Error(
+          `${source}: ${error instanceof Error ? error.message : error}`,
+        );
+      }
+    },
+  });
   const path = file ? within(dir, file) : undefined;
   try {
     const raw = source ?? (path ? await read(path) : '');
@@ -180,7 +218,21 @@ async function documentBody(
       path && extname(path).toLowerCase() === '.ipynb'
         ? renderNotebook(raw, context, options)
         : context.render(raw);
-    return { ...context.finish(html), references: context.references() };
+    const downloadSource: NotebookSource | undefined =
+      path || source !== undefined
+        ? {
+            format:
+              path && extname(path).toLowerCase() === '.ipynb'
+                ? 'notebook'
+                : 'markdown',
+            content: raw,
+          }
+        : undefined;
+    return {
+      ...context.finish(html),
+      references: context.references(),
+      downloadSource,
+    };
   } catch (error) {
     throw new Error(
       `${path ?? 'Markdown page'}: ${error instanceof Error ? error.message : error}`,
@@ -530,6 +582,7 @@ export async function loadSite(
     config.bibliography?.style,
   );
   const pages: BuiltPage[] = [];
+  const downloads: BuiltNotebookDownload[] = [];
   const links: PageLink[] = [];
   for (const locale of config.locales) {
     const l = labels[locale];
@@ -622,6 +675,9 @@ export async function loadSite(
         {
           resolveLink: pageLinkResolver(config, entry.slug, locale, links),
           reservedIds: bibliography.keys.map(referenceId),
+          numberSections:
+            entry.layout === 'article' &&
+            (entry.numberSections ?? config.numberSections),
         },
       );
       page.html = document.html;
@@ -637,6 +693,20 @@ export async function loadSite(
       page.tags = entry.tags;
       page.toc = entry.toc;
       page.navigation = entry.navigation;
+      const download = articleDownloads({
+        id: page.id,
+        locale,
+        layout: page.layout,
+        base: config.base,
+        sourcePage: new URL(page.path, config.url).href,
+        title: page.title,
+        description: page.description,
+        source: document.downloadSource,
+        defaults: config.downloads,
+        overrides: entry.downloads,
+      });
+      page.downloads = download.presentation;
+      if (download.file) downloads.push(download.file);
       pages.push(page);
     }
   }
@@ -646,6 +716,7 @@ export async function loadSite(
     languageIcons,
     socialImage,
     pages,
+    downloads,
     members,
     bibliographyKeys: bibliography.keys,
     copyright: Object.fromEntries(
@@ -792,6 +863,7 @@ async function loadComposed(
               );
           }
   const pages: BuiltPage[] = [];
+  const downloads: BuiltNotebookDownload[] = [];
   const links: PageLink[] = [];
   for (const locale of config.locales)
     for (const { page: entry, source } of sources) {
@@ -812,6 +884,9 @@ async function loadComposed(
         entry.notebook,
         {
           resolveLink,
+          numberSections:
+            entry.layout === 'article' &&
+            (entry.numberSections ?? config.numberSections),
           reservedIds: [
             ...collectIds(entry.sections),
             ...bibliography.keys.map(referenceId),
@@ -841,6 +916,23 @@ async function loadComposed(
           (target) => `/${resolveLink(target).slice(config.base.length)}`,
         ),
       );
+      const download = articleDownloads({
+        id: entry.id,
+        locale,
+        layout: entry.layout,
+        base: config.base,
+        sourcePage: new URL(routePath(config, entry.id, locale), config.url)
+          .href,
+        title: translate(entry.title, locale),
+        description: entry.description
+          ? translate(entry.description, locale)
+          : undefined,
+        source: document.downloadSource,
+        hasSections: sections.length > 0,
+        defaults: config.downloads,
+        overrides: entry.downloads,
+      });
+      if (download.file) downloads.push(download.file);
       pages.push({
         id: entry.id,
         title: translate(entry.title, locale),
@@ -863,6 +955,7 @@ async function loadComposed(
         authors: entry.authors,
         tags: entry.tags,
         toc: entry.toc,
+        downloads: download.presentation,
         sections,
         references: bibliography.references(
           [
@@ -881,6 +974,7 @@ async function loadComposed(
   return {
     config,
     pages,
+    downloads,
     members,
     bibliographyKeys: bibliography.keys,
     languageIcons: Object.fromEntries(

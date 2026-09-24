@@ -109,10 +109,8 @@ test('theme follows the system until a saved choice persists across navigation a
 }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.goto('/');
-  const toggle = page.getByRole('button', {
-    name: 'Alternar modo claro e escuro',
-  });
-  await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+  const toggle = page.locator('.theme-toggle');
+  await expect(toggle).toHaveAccessibleName('Ativar modo claro');
   const darkBackground = await page
     .locator('body')
     .evaluate((body) => getComputedStyle(body).backgroundColor);
@@ -124,7 +122,7 @@ test('theme follows the system until a saved choice persists across navigation a
       .evaluate((body) => getComputedStyle(body).backgroundColor),
   ).not.toBe(darkBackground);
   await page.reload();
-  await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+  await expect(toggle).toHaveAccessibleName('Ativar modo escuro');
   await page.goto('/equipe/');
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   await toggle.click();
@@ -238,7 +236,7 @@ test('people use circular portraits, per-person symbols and site or built-in fal
     }
   }
   await page
-    .getByRole('button', { name: 'Alternar modo claro e escuro' })
+    .getByRole('button', { name: 'Ativar modo escuro' })
     .click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await expect(

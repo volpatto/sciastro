@@ -1,6 +1,7 @@
 import { stripVTControlCharacters } from 'node:util';
 import sanitizeHtml from 'sanitize-html';
 import type { DocumentContext, DocumentFigureOptions } from './document.js';
+import { plotMarkup } from './plots.js';
 
 type ObjectValue = Record<string, unknown>;
 type FigureOptions = DocumentFigureOptions;
@@ -523,6 +524,35 @@ export function renderNotebook(
           /javascript|widget|plotly|vega|bokeh/i.test(mime),
         );
         const image = imageBundle(data, outputLocation);
+        if (data['application/vnd.plotly.v1+json'] !== undefined) {
+          const figure = {
+            ...(!cellCaptionUsed ? fallbackFigure : {}),
+            ...figureOptions(outputMetadata, `${outputLocation} metadata`),
+          };
+          cellCaptionUsed = true;
+          const fallback = image
+            ? `<img src="${image.src}" alt="${escape(figure.caption ?? labels.image)}" loading="lazy" />`
+            : '';
+          try {
+            return wrap(
+              prompt +
+                context.figure(
+                  plotMarkup(
+                    data['application/vnd.plotly.v1+json'],
+                    context.locale,
+                    fallback,
+                    figure.caption,
+                  ),
+                  figure,
+                ),
+              'plotly',
+            );
+          } catch (error) {
+            throw new Error(
+              `${outputLocation}: ${error instanceof Error ? error.message : error}`,
+            );
+          }
+        }
         if (image) {
           const figure = {
             ...(!cellCaptionUsed ? fallbackFigure : {}),

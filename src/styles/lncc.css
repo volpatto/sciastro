@@ -79,31 +79,6 @@
   align-self: stretch;
   padding-top: 42px;
 }
-.lncc-shell .navigation {
-  position: sticky;
-  top: 110px;
-  padding: 0;
-  margin: 0;
-  border: 0;
-}
-.lncc-shell .navigation nav {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 0;
-}
-.lncc-shell .navigation a {
-  padding: 8px 10px;
-  font-size: 0.85rem;
-  color: var(--muted);
-  border-left: 2px solid transparent;
-  border-bottom: 0;
-}
-.lncc-shell .navigation a[aria-current] {
-  color: var(--accent);
-  border-left-color: var(--accent);
-  background: var(--surface);
-}
 .lncc-shell main {
   padding-top: 44px;
   padding-bottom: 40px;
@@ -148,24 +123,8 @@
   .lncc-shell .site-navigation {
     padding-top: 18px;
   }
-  .lncc-shell .navigation {
-    position: static;
-  }
-  .lncc-shell .navigation summary {
-    display: flex;
-    justify-content: space-between;
-    padding: 12px 0;
-  }
-  .lncc-shell .navigation:not([open]) nav {
-    display: none;
-  }
   .lncc-shell main {
     padding-top: 26px;
-  }
-}
-@media (min-width: 851px) {
-  .lncc-shell .navigation summary {
-    display: none;
   }
 }
 @media (max-width: 600px) {
@@ -207,8 +166,4 @@
   .sp-entry {
     break-inside: avoid;
   }
-}
-
-.lncc-shell .navigation nav a[aria-current]::after {
-  display: none;
 }

@@ -242,6 +242,34 @@ Its default address is `http://127.0.0.1:4342/`. Existing themes `classic` and
 
 ## Colors, typography and width
 
+Theme, layout, palette and typography are independent choices. All appearance
+profiles work with Classic, Modern and LNCC and with individual, group and course
+sites. Omit the new options to retain the selected theme's existing appearance.
+
+```yaml
+theme: lncc
+layout:
+  navigation: sidebar
+  subnavigation: right
+appearance:
+  palette: { base: slate, accent: violet }
+  typography: editorial
+  icons: { style: accent, weight: regular }
+```
+
+Five named palettes (`violet`, `ocean`, `forest`, `amber`, `slate`) can be used
+whole or combined as separate `base` and `accent` selections, giving 25
+combinations. Typography profiles are `editorial` (Newsreader headings, Manrope
+body), `humanist` (Manrope throughout), and `technical` (system UI fonts with
+monospace metadata). For recipes, icon treatment and opt-in gradients, see
+[palettes, typography and decorative accents](guides/appearance.md).
+
+Top navigation can also opt into `appearance.navigation: glass` for a translucent
+menu that stays near the top while scrolling. It does not change a sidebar; see
+the [top-menu recipe and fallbacks](guides/appearance.md#use-a-translucent-top-menu).
+
+Existing fine-grained overrides remain available:
+
 ```yaml
 appearance:
   contentWidth: 1160
@@ -255,8 +283,10 @@ appearance:
   headingFont: "'Newsreader Variable', Georgia, serif"
 ```
 
-Each palette accepts `paper`, `surface`, `ink`, `muted`, `accent` and `line`, using
-six-digit hexadecimal colors. Omitted values inherit the selected theme.
+The `light` and `dark` mappings accept `paper`, `surface`, `ink`, `muted`, `accent`
+and `line`, using six-digit hexadecimal colors. Explicit values override the named
+palette; omitted values inherit it, or the theme when no palette is selected.
+Explicit `bodyFont` and `headingFont` override the corresponding typography profile.
 `contentWidth` is in pixels (720–1600). Setting a font family does not download that
 font: load additional local fonts through your CSS entry point. Check both modes
 and text contrast after changing colors.

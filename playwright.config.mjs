@@ -6,6 +6,7 @@ const sites = [
   { kind: 'individual', port: 4361 },
   { kind: 'lncc', port: 4362 },
   { kind: 'writing', port: 4363 },
+  { kind: 'course', port: 4364 },
 ];
 
 export default defineConfig({
@@ -43,6 +44,9 @@ export default defineConfig({
       use: { javaScriptEnabled: false },
     },
     { name: 'analytics', testMatch: '**/analytics.spec.mjs' },
+    { name: 'layouts', testMatch: '**/layouts.spec.mjs' },
+    { name: 'appearance', testMatch: '**/appearance.spec.mjs' },
+    { name: 'theme', testMatch: '**/theme.spec.mjs' },
     ...sites.flatMap(({ kind, port }) =>
       [
         { label: 'desktop', width: 1280, height: 800 },
@@ -50,11 +54,13 @@ export default defineConfig({
       ].map(({ label, width, height }) => ({
         name: `${kind}-${label}`,
         testMatch:
-          kind === 'writing'
-            ? '**/writing.spec.mjs'
-            : kind === 'lncc'
-              ? '**/lncc.spec.mjs'
-              : '**/site.spec.mjs',
+          kind === 'course'
+            ? '**/course.spec.mjs'
+            : kind === 'writing'
+              ? '**/writing.spec.mjs'
+              : kind === 'lncc'
+                ? '**/lncc.spec.mjs'
+                : '**/site.spec.mjs',
         metadata: { kind, mobile: label === 'mobile' },
         use: {
           baseURL: `http://127.0.0.1:${port}`,

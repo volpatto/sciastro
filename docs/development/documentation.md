@@ -21,12 +21,23 @@ For the production build:
 
 ```sh
 pixi run --locked -e docs docs-build
+pixi run --locked docs-gallery
 ```
 
 The `docs` environment contains Python, MkDocs and Material and excludes the
 default Node.js/pnpm feature. The shared `pixi.lock` locks both environments for
 all supported platforms. Updating a documentation dependency requires updating
 that lockfile; CI always installs with `--locked`.
+
+The separate `docs-gallery` task uses the **default** environment, compiles the
+package and builds all example sites at the documentation URL. It copies them
+into `site/examples/` only after the MkDocs output exists. Always run it after
+`docs-build`, because MkDocs replaces its output on subsequent builds. See
+[the gallery](../gallery.md#build-the-gallery-locally) for destination overrides.
+Gallery builds use an isolated `.test-output/gallery-build/` output directory;
+they do not replace the normal example builds used by browser tests or previews.
+`docs-serve` alone previews the prose; it does not assemble the static example
+sites behind the gallery links.
 
 ## Organization
 
@@ -39,7 +50,10 @@ that lockfile; CI always installs with `--locked`.
   responsive banner styling. Theme selection remains controlled by Material.
 - `docs/overrides/main.html`: link-preview metadata using the configured
   `site_url` and the branded PNG. Templates are excluded from the built content.
-- `docs/tutorials/`: end-to-end individual and group examples.
+- `docs/tutorials/`: end-to-end individual, group and course examples.
+- `docs/gallery.md`: descriptions and live links to the bundled examples.
+- `scripts/build-gallery.mjs`: builds previews under the docs origin/base and
+  safely copies their static output into the existing documentation build.
 - `docs/guides/`: focused tasks and section recipes.
 - `docs/reference/`: configuration, CLI and public API.
 - `docs/development/`: documentation and release maintenance.
@@ -72,8 +86,9 @@ to take precedence, and portrait fallback symbols remain independent.
 ## Checks
 
 Strict MkDocs builds fail on missing navigation targets, broken internal links and
-missing anchors. The unit suite also reconstructs the two tutorial sites from their
-named code blocks and validates their content. A public-export coverage test helps
+missing anchors. The unit suite reconstructs the individual/group tutorials from
+their named code blocks, validates course scaffolding and checks gallery path
+handling and output preservation. A public-export coverage test helps
 keep the API page aligned with the implementation; it is not a proof that prose is
 correct, so review behavioral descriptions when changing the API.
 
@@ -81,10 +96,18 @@ Use relative `.md` links inside the documentation. Link to source examples with 
 full repository URL instead of a relative path outside `docs/`. Keep examples
 fictional and avoid adding a dependency on private scientific assets.
 
+Gallery preview links use relative HTML anchors because their targets are
+generated after MkDocs processes the Markdown sources. Keep them synchronized
+with `galleryExamples` in the build script. CI adds the gallery before uploading
+the documentation artifact, so reviewers can inspect the same combined output
+that a release deploys.
+
 ## Deployment policy
 
 CI builds and checks the documentation on pushes to `main` and PRs targeting
 `main`. It does **not** deploy it then. The [release workflow](releases.md) deploys the built site only after the
-same version has passed all tests and reached npm. There is no separate manual
+same version has passed all tests and reached npm. The gallery is built from
+that same checkout and deployed as part of the documentation, without a separate
+repository, organization or Pages site. There is no separate manual
 docs-deploy workflow. The public URL shows the most recently deployed release,
 including prereleases; this first implementation does not retain a version selector.

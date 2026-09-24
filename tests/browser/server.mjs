@@ -4,11 +4,11 @@ import { resolve, relative, isAbsolute, extname, join } from 'node:path';
 
 const [kind, portText] = process.argv.slice(2);
 if (
-  !['group', 'individual', 'lncc', 'writing'].includes(kind) ||
+  !['group', 'individual', 'lncc', 'writing', 'course'].includes(kind) ||
   !/^\d+$/.test(portText ?? '')
 )
   throw new Error(
-    'Use: node tests/browser/server.mjs group|individual|lncc|writing <porta>',
+    'Use: node tests/browser/server.mjs group|individual|lncc|writing|course <porta>',
   );
 const root = resolve('examples', kind, 'dist');
 const base = kind === 'writing' ? '/caderno/' : '/';
@@ -18,6 +18,7 @@ const mime = {
   '.css': 'text/css; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
   '.json': 'application/json',
+  '.ipynb': 'application/x-ipynb+json',
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
   '.jpg': 'image/jpeg',

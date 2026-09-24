@@ -1,0 +1,11 @@
+id: trapezoid-notebook
+title: Laboratório de quadratura
+description: Um notebook para executar e verificar a regra dos trapézios.
+paths: { pt: aulas/laboratorio/ }
+parent: lessons
+layout: article
+tags: [Jupyter, Verificação]
+body: notebooks/trapezoid.ipynb
+notebook:
+  showCode: true
+  collapseCode: false
