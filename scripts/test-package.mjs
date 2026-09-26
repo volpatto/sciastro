@@ -6,6 +6,7 @@ import {
   readFile,
   writeFile,
   readdir,
+  realpath,
   rename,
   rm,
   stat,
@@ -16,11 +17,16 @@ import assert from 'node:assert/strict';
 import { parse, stringify } from 'yaml';
 import { png } from '../tests/fixtures/social.mjs';
 
-const root = resolve('.');
+const root = await realpath('.');
 const sourcePackage = JSON.parse(
   await readFile(join(root, 'package.json'), 'utf8'),
 );
-const scratch = await mkdtemp(join(tmpdir(), 'sciastro-package-'));
+// Windows can expose tmpdir() through an 8.3 alias such as RUNNER~1.
+// Astro's page IDs and Vite's resolved modules must use the same physical path;
+// otherwise the CSS build can treat valid stylesheets as orphaned and drop them.
+const scratch = await realpath(
+  await mkdtemp(join(tmpdir(), 'sciastro-package-')),
+);
 const pnpm = process.env.npm_execpath;
 assert(pnpm, 'Execute este teste com pnpm test:package.');
 const run = (args, cwd = root, extraEnv = {}) =>
