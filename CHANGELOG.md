@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.1.1
+
+<!-- sciastro:generated:start -->
+<!-- Source: v1.1.0..6ad01d992dc5d9683a69f1f092f8f1dadf9c21ea -->
+
+### Features
+
+- enhance deployment documentation and configuration for university personal pages; add validation for base paths (#25) ([6ad01d9](https://github.com/volpatto/sciastro/commit/6ad01d992dc5d9683a69f1f092f8f1dadf9c21ea))
+
+<!-- sciastro:generated:end -->
+
 ## 1.1.0
 
 <!-- sciastro:generated:start -->
