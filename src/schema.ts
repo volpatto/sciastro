@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { analyticsSchema, analyticsEventSchema } from './analytics.js';
+import { basePathPattern } from './base-path.js';
 
 export const localeSchema = z.enum(['pt', 'en']);
 export type Locale = z.infer<typeof localeSchema>;
@@ -132,7 +133,7 @@ export const configSchema = z
     }, 'Informe somente a origem; configure o subdiretório em base.'),
     base: z
       .string()
-      .regex(/^\/(?:[a-zA-Z0-9_-]+\/)*$/, 'Use / ou um caminho como /grupo/.')
+      .regex(basePathPattern, 'Use / ou um caminho como /grupo/ ou /~usuario/.')
       .default('/'),
     locales: z.array(localeSchema).nonempty().default(['pt']),
     defaultLocale: localeSchema.default('pt'),

@@ -94,16 +94,45 @@ pixi run pnpm check
 
 Before deployment, set `url` and `base` in `sciastro.yaml`. For a site hosted at
 `https://example.org/my-group/`, use `url: https://example.org` and `base: /my-group/`.
-`SITE_URL` and `BASE_PATH` can also override the destination during the build.
+For a university personal page at `https://institute.example/~username/`, use:
+
+```yaml
+url: https://institute.example
+base: /~username/
+```
+
+`SITE_URL` and `BASE_PATH` can also override the destination. SciAstro reads them
+from the process environment; placing them in `.env` alone does not configure the
+build. For example, in a POSIX shell:
+
+```sh
+SITE_URL='https://institute.example' BASE_PATH='/~username/' pixi run --locked build
+```
+
+With the destination saved in `sciastro.yaml`, run:
 
 ```sh
 pixi run --locked build
 ```
 
-This checks the content and generates `dist/`. Publish only the contents of
-`dist/`, preserving its directories. The production server only needs to serve
-static files, including `index.html` for directories and `404.html` with HTTP 404
-for missing pages. No Node.js process is needed on the hosting server.
+This checks the content and generates `dist/`. Preview it with
+`pixi run --locked pnpm preview`, using the printed URL including `/~username/`
+when configured. If you built with environment overrides, pass the same values
+to the preview command. Stop it with `pixi run --locked pnpm preview:stop`.
+
+Build locally and publish only the **contents** of `dist/`, preserving its
+directories. For a server that maps your public address to `~/htdocs/`, upload
+`dist/index.html` as `~/htdocs/index.html`, alongside `_astro/` and the generated
+page directories. Do not nest the enclosing `dist/` folder or create a
+`~username/` directory there. Confirm the public directory with your institution
+and preserve existing server files such as `.htaccess`.
+
+The production server only needs to serve static files, including `index.html`
+for directories and `404.html` with HTTP 404 for missing pages. It does not need
+Node.js, Pixi, pnpm or Chromium. Rebuild whenever the public origin or base changes.
+See the [deployment guide](https://volpatto.github.io/sciastro/guides/deployment/)
+for the complete university hosting workflow, optional Apache UTF-8 settings,
+and explanations of NFS cache warnings and browser-test dependencies.
 
 For package development, installation details and configuration guides, see the
 [SciAstro README](https://github.com/volpatto/sciastro#readme).
