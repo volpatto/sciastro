@@ -6,6 +6,7 @@ import { join, resolve } from 'node:path';
 import { parse, stringify } from 'yaml';
 import { loadSite, within } from '../dist/content.js';
 import { configSchema, teamSchema } from '../dist/schema.js';
+import { validBasePaths, invalidBasePaths } from './fixtures/base-paths.mjs';
 
 test('group home has short cards pointing to stable research section identifiers', async () => {
   const site = await loadSite(resolve('examples/group/sciastro.yaml'));
@@ -42,14 +43,35 @@ test('individual site uses Sobre/Orientações', async () => {
   );
 });
 
-test('all generated routes and Markdown links can be mounted in a subdirectory', async () => {
-  const site = await loadSite(resolve('examples/group/sciastro.yaml'), {
-    url: 'https://university.example.org',
-    base: '/research/lab/',
-  });
-  assert(site.pages.every((page) => page.path.startsWith('/research/lab/')));
-  assert(site.pages.some((page) => page.path === '/research/lab/en/team/'));
+test('configuration accepts literal tilde mounts and rejects malformed base paths', () => {
+  const config = {
+    schemaVersion: 1,
+    kind: 'group',
+    name: 'Lab',
+    description: 'A lab',
+    url: 'https://example.org',
+    home: { body: 'home.md' },
+  };
+  for (const base of validBasePaths)
+    assert.equal(configSchema.parse({ ...config, base }).base, base);
+  for (const base of invalidBasePaths) {
+    const result = configSchema.safeParse({ ...config, base });
+    assert.equal(result.success, false, JSON.stringify(base));
+    assert(result.error.issues.some((issue) => issue.path[0] === 'base'));
+  }
 });
+
+for (const base of ['/research/lab/', '/~volpatto/', '/~user/group/']) {
+  test(`all generated routes can be mounted at ${base}`, async () => {
+    const site = await loadSite(resolve('examples/group/sciastro.yaml'), {
+      url: 'https://university.example.org',
+      base,
+    });
+    assert.equal(site.config.base, base);
+    assert(site.pages.every((page) => page.path.startsWith(base)));
+    assert(site.pages.some((page) => page.path === `${base}en/team/`));
+  });
+}
 
 test('student levels and periods must be consistent', () => {
   assert.throws(

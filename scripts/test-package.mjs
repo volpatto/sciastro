@@ -11,7 +11,7 @@ import {
   stat,
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join, resolve, dirname } from 'node:path';
+import { join, resolve, dirname, relative, sep } from 'node:path';
 import assert from 'node:assert/strict';
 import { parse, stringify } from 'yaml';
 import { png } from '../tests/fixtures/social.mjs';
@@ -38,10 +38,23 @@ async function htmlFiles(dir) {
   }
   return files;
 }
-async function audit(directory, base) {
+async function audit(directory, base, origin = 'https://example.org') {
   const files = await htmlFiles(directory);
   for (const file of files) {
     const html = await readFile(file, 'utf8');
+    const route = relative(directory, file)
+      .split(sep)
+      .join('/')
+      .replace(/(^|\/)index\.html$/, '$1');
+    const canonical = `${origin}${base}${route}`;
+    assert(
+      html.includes(`rel="canonical" href="${canonical}"`),
+      `${file}: canonical must preserve the literal deployment base`,
+    );
+    assert(
+      html.includes(`property="og:url" content="${canonical}"`),
+      `${file}: sharing URL must preserve the literal deployment base`,
+    );
     const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map((match) => match[1]);
     assert.equal(
       new Set(ids).size,
@@ -74,6 +87,40 @@ async function audit(directory, base) {
         );
     }
   }
+  const assets = join(directory, '_astro');
+  const stylesheets = (await readdir(assets)).filter((file) =>
+    file.endsWith('.css'),
+  );
+  assert(stylesheets.length, `${directory}: missing emitted stylesheets`);
+  let fonts = 0;
+  for (const stylesheet of stylesheets) {
+    const file = join(assets, stylesheet);
+    const css = await readFile(file, 'utf8');
+    for (const [, raw] of css.matchAll(/url\(([^)]+)\)/g)) {
+      const url = raw.trim().replace(/^(['"])(.*)\1$/, '$2');
+      // Small fonts may be inlined by Astro; they have no deployment path.
+      if (url.startsWith('data:')) continue;
+      assert(
+        !/^(?:[a-z]+:|\/\/)/i.test(url),
+        `${file}: bundled assets must be self-hosted: ${url}`,
+      );
+      if (url.startsWith('/'))
+        assert(
+          url.startsWith(base),
+          `${file}: ${url} does not respect the literal base ${base}`,
+        );
+      const path = url.split(/[?#]/)[0];
+      const target = path.startsWith('/')
+        ? join(directory, decodeURIComponent(path.slice(base.length)))
+        : resolve(assets, decodeURIComponent(path));
+      assert(
+        (await stat(target)).isFile(),
+        `${file}: missing CSS asset ${url}`,
+      );
+      if (/\.woff2?$/.test(path)) fonts++;
+    }
+  }
+  assert(fonts > 0, `${directory}: missing emitted local font references`);
   return files.length;
 }
 
@@ -102,26 +149,35 @@ try {
     pkg.dependencies.sciastro = `file:${tarball}`;
     await writeFile(packageFile, JSON.stringify(pkg, null, 2));
     run(['install', '--no-frozen-lockfile'], consumer);
+    // Cover root, Apache UserDir and a nested UserDir with the same installs.
+    const overrides = {
+      SITE_URL: 'https://example.org',
+      BASE_PATH:
+        kind === 'group'
+          ? '/'
+          : kind === 'individual'
+            ? '/~researcher/'
+            : '/~researcher/teaching/',
+    };
     if (kind === 'course') {
       assert.match(
-        run(['exec', 'sciastro', 'check'], consumer),
+        run(['exec', 'sciastro', 'check'], consumer, overrides),
         /OK: 5 páginas/,
       );
-      run(['build'], consumer, {
-        SITE_URL: 'https://example.org',
-        BASE_PATH: '/teaching/',
-      });
+      run(['build'], consumer, overrides);
       const output = join(consumer, 'dist');
-      await audit(output, '/teaching/');
+      await audit(output, overrides.BASE_PATH);
       const article = await readFile(
         join(output, 'aulas/integracao/index.html'),
         'utf8',
       );
       assert.match(article, /data-sciastro-print/);
       assert.match(article, /data-plotly-spec/);
-      assert.match(
-        article,
-        /href="\/teaching\/_sciastro\/downloads\/pt\/integration.ipynb"/,
+      assert(
+        article.includes(
+          `href="${overrides.BASE_PATH}_sciastro/downloads/pt/integration.ipynb"`,
+        ),
+        'Notebook download URL must preserve the literal nested UserDir base.',
       );
       const lesson = JSON.parse(
         await readFile(
@@ -131,6 +187,10 @@ try {
       );
       assert.equal(lesson.nbformat, 4);
       assert(lesson.cells.some((cell) => cell.cell_type === 'code'));
+      assert.equal(
+        lesson.metadata.sciastro.source_page,
+        `${overrides.SITE_URL}${overrides.BASE_PATH}aulas/integracao/`,
+      );
       assert.equal(
         await readFile(
           join(output, '_sciastro/downloads/pt/trapezoid-notebook.ipynb'),
@@ -142,7 +202,7 @@ try {
         ),
       );
       console.log(
-        'Installed course: pages, Plotly, downloads and nested-base links passed.',
+        `Installed course: pages, Plotly, fonts, downloads and nested-base links passed; base=${overrides.BASE_PATH}`,
       );
       continue;
     }
@@ -212,7 +272,7 @@ This page is built from the installed package.
       await writeFile(configPath, stringify(config));
     }
     assert.match(
-      run(['exec', 'sciastro', 'check'], consumer),
+      run(['exec', 'sciastro', 'check'], consumer, overrides),
       /OK: [1-9]\d* páginas/,
     );
     const generated = join(scratch, `${kind}-from-installed-cli`);
@@ -250,10 +310,6 @@ This page is built from the installed package.
       generatedPackage.dependencies.astro,
       sourcePackage.devDependencies.astro,
     );
-    const overrides =
-      kind === 'group'
-        ? { SITE_URL: 'https://example.org', BASE_PATH: '/lab/' }
-        : { SITE_URL: 'https://example.org', BASE_PATH: '/' };
     // Exercise customization in a real installed consumer, including assets
     // beneath a deployment base path and with both sharing-image policies.
     if (kind === 'group') {
@@ -349,7 +405,7 @@ finally { await server.stop(); }`,
     assert(identity, 'Installed consumers must render their header identity.');
     if (kind === 'group') {
       assert.match(identity, /class="brand-logo"/);
-      assert.match(identity, /src="\/lab\/sharing.png"/);
+      assert(identity.includes(`src="${overrides.BASE_PATH}sharing.png"`));
       assert.doesNotMatch(identity, /class="brand-mark"/);
     } else {
       assert.match(identity, /class="brand-mark"/);
@@ -385,7 +441,7 @@ finally { await server.stop(); }`,
     assert.match(home, /data-icon="lucide:code-xml"/);
     assert.match(home, /data-icon="lucide:mail"/);
     if (kind === 'group') {
-      assert.match(home, /src="\/lab\/icons\/custom.svg"/);
+      assert(home.includes(`src="${overrides.BASE_PATH}icons/custom.svg"`));
       assert.match(home, /data-icon="lucide:microscope"/);
       assert.match(home, /data-icon="lucide:languages"/);
       assert.doesNotMatch(home, /data-icon="(?:lucide:house|circle-flags:br)"/);
@@ -433,7 +489,11 @@ finally { await server.stop(); }`,
       ),
     );
     if (kind === 'group') {
-      assert.match(member('pedro-lima'), /src="\/lab\/icons\/custom.svg"/);
+      assert(
+        member('pedro-lima').includes(
+          `src="${overrides.BASE_PATH}icons/custom.svg"`,
+        ),
+      );
     } else {
       assert.match(member('pedro-lima'), /avatar-fallback/);
       assert.match(member('pedro-lima'), /viewBox="0 0 64 64"/);
@@ -496,7 +556,11 @@ finally { await server.stop(); }`,
         SITE_URL: 'https://institute.example.org',
         BASE_PATH: base,
       });
-      const count = await audit(join(consumer, 'dist'), base);
+      const count = await audit(
+        join(consumer, 'dist'),
+        base,
+        'https://institute.example.org',
+      );
       const home = await readFile(join(consumer, 'dist/index.html'), 'utf8');
       assert.match(home, /data-design="lncc"/);
       assert.match(home, /data-custom-component="project-note"/);

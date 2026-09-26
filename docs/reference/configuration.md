@@ -17,7 +17,7 @@ a value for every enabled locale: `{ pt: Pesquisa, en: Research }`.
 | `description` | Required, localized | Site description and fallback page metadata |
 | `affiliation` | Optional, localized | Institution(s) |
 | `url` | Required | HTTP(S) origin only; no path, query or fragment |
-| `base` | `/` | Deployment prefix, e.g. `/lab/`; must end with `/` |
+| `base` | `/` | Deployment prefix, e.g. `/lab/` or `/~username/`; must start and end with `/` |
 | `locales` | `[pt]` | Nonempty unique subset of `[pt, en]` |
 | `defaultLocale` | `pt` | Must be included in `locales` |
 | `contentDir` | `content` | Directory inside the website root |
@@ -32,7 +32,20 @@ a value for every enabled locale: `{ pt: Pesquisa, en: Research }`.
 | `structuredData` | Optional object | Additional JSON-LD fields; author is responsible for correctness |
 
 `SITE_URL` and `BASE_PATH` override `url` and `base` in the CLI and Astro integration.
-The lower-level `loadSite` API takes explicit overrides instead of reading the environment.
+These are process environment variables; SciAstro does not automatically load
+them from `.env`. Set them in the shell or CI environment before checking,
+building or previewing, using the same destination for each command. The
+lower-level `loadSite` API takes explicit overrides instead of reading the
+environment.
+
+For `https://institute.example/~username/`, use `url: https://institute.example`
+and `base: /~username/`. The tilde is literal; do not use `%7E`. The prefix is a
+public URL path, not a filesystem directory. Apart from the root `/`, each
+slash-separated segment must be nonempty and contain only ASCII letters, digits,
+`-`, `_` or `~`. Dots, percent escapes, query strings and fragments are rejected.
+Keep content paths such as
+`/images/portrait.jpg` free of the deployment prefix. See
+[deployment](../guides/deployment.md) for a complete build and upload workflow.
 
 ## Navigation layout
 

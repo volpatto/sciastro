@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import MarkdownIt from 'markdown-it';
+import { basePathPattern } from './base-path.js';
 
 export interface DownloadSettings {
   notebook: boolean;
@@ -167,7 +168,7 @@ export function articleDownloads({
   if (
     !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id) ||
     !/^[a-z]{2}$/.test(locale) ||
-    !/^\/(?:[a-zA-Z0-9_-]+\/)*$/.test(base)
+    !basePathPattern.test(base)
   )
     throw new Error(
       'Invalid notebook download identifier, locale or base path.',

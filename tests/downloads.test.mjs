@@ -12,6 +12,7 @@ import {
   markdownNotebook,
   notebookResponse,
 } from '../dist/downloads.js';
+import { validBasePaths, invalidBasePaths } from './fixtures/base-paths.mjs';
 
 const originalNotebook =
   JSON.stringify(
@@ -300,6 +301,74 @@ test('Markdown front matter is excluded from the exported notebook source', asyn
     'https://example.org/notas/post/',
   );
 });
+
+for (const automatic of [false, true]) {
+  test(`${automatic ? 'automatic' : 'composed'} pages preserve tilde mounts for Markdown and notebook downloads`, async (t) => {
+    const f = await fixture(t, { automatic });
+    f.config.downloads = { notebook: true };
+    for (const base of ['/~volpatto/', '/~user/group/']) {
+      f.config.base = base;
+      await f.save();
+      const site = await loadSite(f.file);
+      assert.equal(site.config.base, base);
+      assert.equal(site.downloads.length, 4);
+      for (const locale of ['pt', 'en']) {
+        for (const id of ['lesson', 'calculation']) {
+          const page = site.pages.find(
+            (entry) => entry.id === id && entry.locale === locale,
+          );
+          const path = `${base}_sciastro/downloads/${locale}/${id}.ipynb`;
+          assert.equal(page.downloads.notebook.path, path);
+          const file = site.downloads.find((entry) => entry.path === path);
+          assert(file);
+          assert.equal(file.filename, `${id}-${locale}.ipynb`);
+          assert.equal(await notebookResponse(file).text(), file.content);
+          if (id === 'calculation') {
+            assert.equal(file.content, originalNotebook);
+          } else {
+            const notebook = JSON.parse(file.content);
+            assert.equal(
+              notebook.metadata.sciastro.source_page,
+              `https://example.org${page.path}`,
+            );
+            assert(page.path.startsWith(base));
+            assert.equal(notebook.cells.at(-1).source, 'x = 1 + 1\n');
+          }
+        }
+      }
+    }
+  });
+}
+
+for (const format of ['markdown', 'notebook']) {
+  test(`${format} downloads accept literal tilde mounts and reject malformed base paths`, () => {
+    const input = {
+      id: 'lesson',
+      locale: 'en',
+      layout: 'article',
+      sourcePage: 'https://example.org/lesson/',
+      source: {
+        format,
+        content: format === 'markdown' ? 'Text' : originalNotebook,
+      },
+      defaults: { notebook: true, pdf: false },
+    };
+    for (const base of validBasePaths) {
+      const result = articleDownloads({ ...input, base });
+      assert.equal(
+        result.file.path,
+        `${base}_sciastro/downloads/en/lesson.ipynb`,
+      );
+      assert.equal(result.presentation.notebook.path, result.file.path);
+    }
+    for (const base of invalidBasePaths)
+      assert.throws(
+        () => articleDownloads({ ...input, base }),
+        /Invalid notebook download/,
+        JSON.stringify(base),
+      );
+  });
+}
 
 test('empty original notebooks and section-only articles do not produce misleading notebooks', async (t) => {
   const f = await fixture(t);
